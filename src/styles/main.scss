@@ -1,0 +1,147 @@
+
+*, *:before, *:after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  // background: #222;
+}
+
+:root {
+  --c-main: #fff;
+  --c-sub: #eee;
+  --c-text: #222;
+  --c-text-2: #4e4e4e;
+  --c-text-warn: #df0c3a;
+  --c-menu-bg: #eee;
+
+  --c-shadow: rgba(0, 0, 0, 0.3);
+
+  --c-switch-bg: #828688;
+  --c-switch-bg-2: #00a7e9;
+  --c-switch-c: #fff;
+  --c-switch-off: #222;
+  --c-switch-on: #fff;
+
+  --c-text-member: #70b600;
+  --c-text-moderator: #007add;
+  --c-text-owner: #e66c09;
+
+  --c-superchat-bg: #f0fbff;
+  --c-superchat-c: #000;
+
+  --c-border-1: #ccc;
+  --c-border-2: #ddd;
+
+  --c-input-bg: #fff;
+  --c-input-c: #222;
+  --c-input-c-2: #888;
+  --c-input-bd: #c0c0c0;
+  --c-input-s: rgba(0, 0, 0, 0.3);
+
+  --c-accent-1: #10c5e6;
+  --c-accent-2: #07a0bb;
+
+  --c-scrollbar-border: #eee;
+  --c-scrollbar-thumb: #555;
+  --c-scrollbar-thumb-h: #222;
+
+  --c-header-main: #eee;
+  --c-header-text: #222;
+  --c-header-button-bg: #eee;
+  --c-header-button-bg-2: #ddd;
+  --c-header-button-bg-3: #df0c3a;
+  --c-header-button-c: #222;
+  --c-header-button-c-2: #222;
+  --c-header-button-c-3: #fff;
+
+  --c-btn-1-bg: #00a7e9;
+  --c-btn-1-bg-2: #58d0ff;
+  --c-btn-1-c: #fff;
+  --c-btn-1-c-2: #fff;
+
+  --c-btn-2-bg: #e90032;
+  --c-btn-2-bg-2: #ff587c;
+  --c-btn-2-c: #fff;
+  --c-btn-2-c-2: #fff;
+}
+
+.theme-dark {
+  --c-main: #2e2a2a;
+  --c-sub: #141414;
+  --c-text: #fff;
+  --c-text-2: #d1d1d1;
+  --c-text-warn: #ff2e5c;
+  --c-menu-bg: #222;
+
+  --c-shadow: rgba(0, 0, 0, 1);
+
+  --c-text-member: #aaff20;
+  --c-text-moderator: #1cbfff;
+  --c-text-owner: #ff8b2c;
+  
+  --c-superchat-bg: #111;
+  --c-superchat-c: #fff;
+
+  --c-border-1: #000;
+  --c-border-2: #111;
+
+  --c-input-bg: #383434;
+  --c-input-c: #fff;
+  --c-input-c-2: #888;
+  --c-input-bd: #1a1a1a;
+  --c-input-s: rgba(0, 0, 0, 0.8);
+
+  --c-accent-1: #10c5e6;
+  --c-accent-2: #07a0bb;
+
+  --c-scrollbar-border: #141414;
+  --c-scrollbar-thumb: #555;
+  --c-scrollbar-thumb-h: #eee;
+
+  --c-header-main: #111;
+  --c-header-text: #fff;
+  --c-header-button-bg: #111;
+  --c-header-button-bg-2: #242424;
+  --c-header-button-bg-3: #e90c3c;
+  --c-header-button-c: #fff;
+  --c-header-button-c-2: #fff;
+  --c-header-button-c-3: #fff;
+}
+
+[data-anony-blur=true] {
+  .message,
+  .author {
+    filter: blur(5px);
+  }
+}
+
+
+@media screen and (max-width: 550px) {
+  .hide-550 {
+    display: none!important;
+  }
+}
+
+@media screen and (max-width: 450px) {
+  .hide-450 {
+    display: none!important;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .hide-400 {
+    display: none!important;
+  }
+}
+
+@media screen and (max-width: 350px) {
+  .hide-350 {
+    display: none!important;
+  }
+}
