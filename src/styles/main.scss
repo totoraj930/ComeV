@@ -4,6 +4,7 @@
   margin: 0;
   padding: 0;
   border: 0;
+  font-family: "Roboto","Arial",sans-serif;
 }
 
 html, body {
@@ -31,6 +32,11 @@ html, body {
   --c-text-member: #70b600;
   --c-text-moderator: #007add;
   --c-text-owner: #e66c09;
+
+  --c-member-header-bg: #0a8043;
+  --c-member-header-c: #fff;
+  --c-member-body-bg: #0f9d58;
+  --c-member-body-c: #fff;
 
   --c-superchat-bg: #f0fbff;
   --c-superchat-c: #000;

@@ -5,6 +5,12 @@
 /.pnp
 .pnp.js
 
+# 一旦外しとく
+*.png
+*.svg
+*.ico
+*.icns
+
 # testing
 /coverage
 

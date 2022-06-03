@@ -2,6 +2,7 @@ import { ChatItem as YTChatItemData, EmojiItem, ImageItem, MessageItem } from "y
 import styled from "styled-components";
 import { ChatItem, AppChatItemData, dummyParts } from "../services/liveChatService";
 import { useSettings } from "../hooks/useSettings";
+import { useMemo } from "react";
 
 export interface ChatItemViewOptions {
   showTime?: boolean;
@@ -21,6 +22,8 @@ const AuthorIcon: React.VFC<{
 const YTChatMessage: React.VFC<{
   items: MessageItem[]
 }> = ({ items }) => {
+
+  if (items.length <= 0) return <></>;
 
   return <p className="message">
     {items.map((item, i) => {
@@ -111,9 +114,95 @@ const YTSuperChatItemView: React.VFC<{
       </div>
 
       <YTChatMessage items={data.message} />
+      { data.superchat.sticker && (
+        <img
+          className="sticker"
+          src={data.superchat.sticker.url}
+          alt={data.superchat.sticker.alt} />
+      )}
     </SuperChat>
   </Item>;
 }
+
+// YouTubeのメンバーシップ
+const YTMembershipItemView: React.VFC<{
+  data: YTChatItemData;
+}> = ({ data }) => {
+  if (!data.membership) return <></>;
+  return <Item>
+    <p className="time">
+      {convertTime(data.timestamp)}
+    </p>
+    <SuperChat style={{ borderColor: "var(--c-member-body-bg)" }}>
+      <div className="author"
+          data-is-member={data.isMembership}
+          data-is-owner={data.isOwner}
+          data-is-moderator={data.isModerator}>
+          <AuthorIcon imageItem={data.author.thumbnail} />
+          <div>
+            <p className="name" title={data.author.name}>
+                <span>{data.author.name}</span>
+                {data.author.badge && (
+                  <img
+                    className="badge"
+                    src={data.author.badge.thumbnail.url}
+                    alt={data.author.badge.thumbnail.alt}
+                    title={data.author.badge.label} />
+                )}
+            </p>
+            <YTChatMessage items={data.membership.text} />
+          </div>
+      </div>
+
+      <YTChatMessage items={data.message} />
+    </SuperChat>
+  </Item>;
+}
+
+// メンバーシップギフト
+
+const YTMembershipGiftView: React.VFC<{
+  data: YTChatItemData;
+}> = ({ data }) => {
+  const bgImage = useMemo(() => {
+    return `url(${
+      data.membershipGift?.image?.url ||
+      "https://www.gstatic.com/youtube/img/sponsorships/sponsorships_gift_purchase_announcement_artwork.png"
+    })`;
+  }, [data]);
+  if (!data.membershipGift) return <></>;
+  return <Item>
+    <p className="time">
+      {convertTime(data.timestamp)}
+    </p>
+    <SuperChat style={{
+      borderColor: "var(--c-member-body-bg)",
+      backgroundImage: bgImage,
+    }}>
+      <div className="author"
+          data-is-member={data.isMembership}
+          data-is-owner={data.isOwner}
+          data-is-moderator={data.isModerator}>
+          <AuthorIcon imageItem={data.author.thumbnail} />
+          <div>
+            <p className="name" title={data.author.name}>
+                <span>{data.author.name}</span>
+                {data.author.badge && (
+                  <img
+                    className="badge"
+                    src={data.author.badge.thumbnail.url}
+                    alt={data.author.badge.thumbnail.alt}
+                    title={data.author.badge.label} />
+                )}
+            </p>
+            <p className="message">メンバーシップ ギフト</p>
+          </div>
+      </div>
+      <YTChatMessage items={data.membershipGift.message} />
+    </SuperChat>
+  </Item>;
+}
+
 
 // システム通知
 const AppChatItemView: React.VFC<{
@@ -133,11 +222,15 @@ export const ChatItemView: React.VFC<{
   chatItem: ChatItem;
   options?: ChatItemViewOptions;
 }> = ({ chatItem, options = {showTime: true, showAuthorName: true, showAuthorBadge: true, showAuthorIcon: true} }) => {
-
   if (chatItem.type === "YouTube") {
     if (chatItem.data.superchat) {
       return <YTSuperChatItemView data={chatItem.data} />
     } else {
+      if (chatItem.data.membership) {
+        return <YTMembershipItemView data={chatItem.data} />;
+      } else if (chatItem.data.membershipGift) {
+        return <YTMembershipGiftView data={chatItem.data} />;
+      }
       return <YTChatItemView data={chatItem.data} />;
     }
   } else if (chatItem.type === "App") {
@@ -191,7 +284,10 @@ const SuperChat = styled.div`
   border-radius: 10px;
   border-width: 0 10px;
   border-style: solid;
-  background: var(--c-superchat-bg);
+  background-color: var(--c-superchat-bg);
+  background-position: right 10px top 10px;
+  background-size: 50px;
+  background-repeat: no-repeat;
   color: var(--c-superchat-c);
   .author {
     display: flex;
@@ -211,9 +307,15 @@ const SuperChat = styled.div`
       font-size: 16px;
       font-weight: bold;
     }
+    .message {
+      font-size: 15px;
+      font-weight: bold;
+    }
     .icon {
       width: 50px;
       height: 50px;
+      min-width: 50px;
+      min-height: 50px;
       /* border: 2px solid var(--c-border-2); */
       margin-right: 10px;
       border-radius: 50%;
@@ -238,17 +340,26 @@ const SuperChat = styled.div`
       font-size: 24px;
     }
   }
+  .sticker {
+    width: 80px;
+    height: 80px;
+  }
   @media screen and (max-width: 400px) {
     .author {
       .icon {
-        width: 40px;
-        height: 40px;
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
       }
       .name {
         font-size: 14px;
       }
       .amout {
         font-size: 15px;
+      }
+      .message {
+        font-size: 14px;
       }
     }
   }
@@ -302,14 +413,15 @@ const NormalChat = styled.div`
     }
   }
   .message {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     font-size: 15px;
     overflow-wrap: anywhere;
     .emoji {
-      display: inline-block;
       width: 24px;
       height: 24px;
       margin-left: 4px;
-      vertical-align: middle;
     }
     span.emoji {
       width: auto;
@@ -346,6 +458,9 @@ const NormalChat = styled.div`
         font-size: 11px;
         /* display: none; */
       }
+    }
+    .message {
+      font-size: 13px;
     }
   }
 `;

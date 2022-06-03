@@ -99,6 +99,28 @@ export const dummyParts: {
   },
 }
 
+function getDummyYTChatItemData(
+  message?: string | MessageItem[] | null,
+  name?: string | null,
+): YTChatItemData {
+  return {
+    id: uuid(),
+    author: {
+      name: name || "ダミー太郎",
+      thumbnail: { ...dummyParts.icon },
+      channelId: "UCxqaEngWUWEOiIecETprfTQ",
+    },
+    message: typeof message === "string"
+      ? [{ text: message }]
+      : message || [],
+    isMembership: false,
+    isVerified: false,
+    isOwner: false,
+    isModerator: false,
+    timestamp: new Date(),
+  };
+}
+
 
 export function createDummyYTChatItem(
   message?: string | MessageItem[] | null,
@@ -110,19 +132,13 @@ export function createDummyYTChatItem(
   const res: YTChatItem = {
     type: "YouTube",
     id: uuid(),
+    isDummy: true,
     data: {
-      id: uuid(),
-      author: {
-        name: name || "ダミー太郎",
-        thumbnail: { ...dummyParts.icon },
-        channelId: "UCxqaEngWUWEOiIecETprfTQ",
-      },
-      message: [],
+      ...getDummyYTChatItemData(message, name),
       isMembership: !!isMembership,
       isVerified: false,
       isOwner: !!isOwner,
       isModerator: !!isModerator,
-      timestamp: new Date(),
     },
   };
   if (isMembership) {
@@ -137,6 +153,104 @@ export function createDummyYTChatItem(
     res.data.message = [{ text: message }]
   } else {
     res.data.message = message;
+  }
+  return res;
+}
+
+export function createDummyYTSuperChatItem(
+  message?: string | MessageItem[] | null,
+  name?: string | null,
+  amout?: string
+) {
+  const res: YTChatItem = {
+    type: "YouTube",
+    id: uuid(),
+    isDummy: true,
+    data: {
+      ...getDummyYTChatItemData(message, name),
+      superchat: {
+        amount: amout || "￥610",
+        color: "#1DE9B6",
+        colorList: {
+          headerBackgroundColor: "rgba(0, 191, 165, 1)",
+          headerTextColor: "rgba(0, 0, 0, 1)",
+          bodyBackgroundColor: "rgba(29, 233, 182, 1)",
+          bodyTextColor: "rgba(0, 0, 0, 1)",
+          authorNameTextColor: "rgba(0, 0, 0, 0.5411764705882353)",
+        }
+      }
+    }
+  }
+  return res;
+}
+
+export function createDummyYTStickerItem(name?: string | null, amout?: string) {
+  const res: YTChatItem = {
+    type: "YouTube",
+    id: uuid(),
+    isDummy: true,
+    data: {
+      ...getDummyYTChatItemData(null, name),
+      superchat: {
+        amount: amout || "￥200",
+        color: "#00E5FF",
+        sticker: {
+          url: "https://lh3.googleusercontent.com/whWdCHvpK52qWkxadxxRiATHijar8KkJZCHtmwa3KeLyzf1hT3jqIGKE5FTJvvrmWWxneg1CGQ7VuQ624HKy=s148-rwa",
+          alt: "none"
+        },
+        colorList: {
+          authorNameTextColor: "rgba(0, 0, 0, 0.701961)",
+          backgroundColor: "rgba(0, 229, 255, 1)",
+        },
+      },
+    },
+  }
+  return res;
+}
+
+export function createDummyYTGiftItem(name?: string | null) {
+  const res: YTChatItem = {
+    type: "YouTube",
+    id: uuid(),
+    isDummy: true,
+    data: {
+      ...getDummyYTChatItemData(null, name),
+      membershipGift: {
+        message: [
+          { text: "10" },
+          { text: " 件の " },
+          { text: "■■■■" },
+          { text: " のメンバーシップ ギフトを贈りました" },
+        ]
+      }
+    },
+  }
+  return res;
+}
+
+export function createDummyYTMembershipItem(name?: string | null, isFirst: boolean = true) {
+  const res: YTChatItem = {
+    type: "YouTube",
+    id: uuid(),
+    isDummy: true,
+    data: {
+      ...createDummyYTChatItem(null, name, true).data,
+      message: isFirst ? [] : [{ text: "これはメンバー継続メッセージ" }],
+      membership: isFirst
+        ? {
+          text: [
+            { text: "■■■■" },
+            { text: " へようこそ！" }
+          ]
+        }
+        : {
+          text: [
+            { "text": "メンバー歴 " },
+            { "text": "2" },
+            { "text": " か月" }
+          ]
+        }
+    },
   }
   return res;
 }

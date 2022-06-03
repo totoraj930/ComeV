@@ -13,7 +13,7 @@ export const defaultConfig: AppConfig = {
   bouyomi: {
     enable: false,
     port: 50080,
-    format: "$(Name)$(Message)",
+    format: "$(Name) $(Message)",
     includeEmoji: false,
   },
 }

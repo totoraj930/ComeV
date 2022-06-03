@@ -2,10 +2,10 @@
 import { Titlebar } from '../components/titlebar/Titlebar';
 import styled from 'styled-components';
 import { useLiveChat } from '../hooks/useLiveChat';
-import { MdPlayArrow, MdPause, MdDeleteForever, MdPerson, MdMenu, MdExpandLess, MdSettingsSuggest, MdFastForward, MdSkipNext, MdPower, MdSettingsPower, MdPowerSettingsNew, MdSettings, MdOpenInBrowser, MdDashboard } from "react-icons/md";
+import { MdPlayArrow, MdPause, MdDeleteForever, MdPerson, MdMenu, MdExpandLess, MdSettingsSuggest, MdFastForward, MdSkipNext, MdPower, MdSettingsPower, MdPowerSettingsNew, MdSettings, MdOpenInBrowser, MdDashboard, MdAttachMoney, MdChat, MdGrade, MdCardGiftcard, MdPersonAdd } from "react-icons/md";
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { ChatView } from '../components/ChatView';
-import { ChatItem, createDummyYTChatItem } from '../services/liveChatService';
+import { ChatItem, createDummyYTChatItem, createDummyYTGiftItem, createDummyYTMembershipItem, createDummyYTStickerItem, createDummyYTSuperChatItem } from '../services/liveChatService';
 import { fs, invoke } from "@tauri-apps/api"
 import { useSettings } from '../hooks/useSettings';
 import { requestBouyomi, sendBouyomi } from '../utils/bouyomi';
@@ -29,6 +29,56 @@ export const LiveView: React.VFC<{
   const [isShowSettings, setIsShowSettings] = useState<boolean>(false);
   // const { state: config } = useContext(AppConfigContext);
   const { settings, settingsUpdater } = useSettings();
+
+  const sendDummyChat = useCallback((type: "normal" | "superchat" | "sticker" | "membership" | "gift" | "random") => {
+    let item: ChatItem;
+    const r = (t?: number) => Math.random() < (t || 0.5);
+    const sChat = createDummyYTSuperChatItem(r() ? "これはダミーのスーパーチャット" : null, null);
+    const sChat2 = createDummyYTStickerItem();
+    const chat = createDummyYTChatItem(null, null, r(), r(0.3), r(0.3));
+    switch (type) {
+      case "normal": {
+        item = chat;
+        break;
+      }
+      case "superchat": {
+        item = sChat;
+        break;
+      }
+      case "sticker": {
+        item = sChat2;
+        break;
+      }
+      case "membership": {
+        item = createDummyYTMembershipItem(null, r());
+        break;
+      }
+      case "gift": {
+        item = createDummyYTGiftItem();
+        break;
+      }
+      case "random": {
+        item = r(0.3)
+          ? r(0.5) ? sChat : sChat2
+          : chat;
+        break;
+      }
+      default: {
+        item = chat;
+        break;
+      }
+    }
+    dispatch({
+      type: "ADD",
+      config: settings,
+      actionId: uuid(),
+      chatItem: item,
+    });
+    sendBouyomi(item, settings.bouyomi);
+    invoke("send_chat", { data: JSON.stringify(item) });
+    invoke("send_chat", { data: JSON.stringify({type: "YouTube-List", data: [item]}) });
+
+  }, [dispatch, settings]);
 
 
   const onChangeUrl = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,7 +129,7 @@ export const LiveView: React.VFC<{
     // console.log(Date.now(), chatState.items.length);
     
     fs.writeFile({
-      path: "demo.js",
+      path: "log.js",
       contents: getOutputChatText(chatItems)
     }, { dir: fs.BaseDirectory.Resource })
 
@@ -170,29 +220,12 @@ export const LiveView: React.VFC<{
               <span>設定リロード</span>
             </Btn2>
 
-            <Btn2 onClick={() => liveChatUpdater({ type: "CLEAR" })}>
+            <Btn2 onClick={() => {
+              liveChatUpdater({ type: "CLEAR" });
+              invoke("send_chat", {data: JSON.stringify({type: "CLEAR"})});
+            }} className="warn">
               <MdDeleteForever className="icon" />
               <span>クリア</span>
-            </Btn2>
-
-            <Btn2 onClick={() => {
-                const item = createDummyYTChatItem(
-                  null,
-                  "YouTube",
-                  true,
-                  false,
-                  true,
-                );
-                dispatch({
-                  type: "ADD",
-                  config: settings,
-                  actionId: uuid(),
-                  chatItem: item,
-                });
-                sendBouyomi(item, settings.bouyomi);
-              }}>
-              <MdSettingsSuggest className="icon" />
-              <span>テスト</span>
             </Btn2>
           </Line>
 
@@ -229,6 +262,39 @@ export const LiveView: React.VFC<{
             </Btn2>
 
 
+          </Line>
+
+          <hr />
+
+          {/* テスト用機能 */}
+          <Line>
+            <p className="title">表示テスト</p>
+            <div className="body">
+              <Btn2 onClick={() => sendDummyChat("normal")}>
+                <MdChat className="icon" />
+                <span className="hide-400">通常</span>
+              </Btn2>
+              <Btn2 onClick={() => sendDummyChat("superchat")}>
+                <MdAttachMoney className="icon" />
+                <span className="hide-400">スパチャ</span>
+              </Btn2>
+              <Btn2 onClick={() => sendDummyChat("sticker")}>
+                <MdAttachMoney className="icon" />
+                <span className="hide-400">ステッカー</span>
+              </Btn2>
+              <Btn2 onClick={() => sendDummyChat("membership")}>
+                <MdPersonAdd className="icon" />
+                <span className="hide-400">メンバー</span>
+              </Btn2>
+              <Btn2 onClick={() => sendDummyChat("gift")}>
+                <MdCardGiftcard className="icon" />
+                <span className="hide-400">ギフト</span>
+              </Btn2>
+              {/* <Btn2 onClick={() => sendDummyChat("random")}>
+                <MdGrade className="icon" />
+                <span className="hide-400">ランダム</span>
+              </Btn2> */}
+            </div>
           </Line>
         </MenuPanel>
       )}
@@ -354,6 +420,12 @@ const Line = styled.div`
   padding: 5px 10px;
   gap: 6px;
   font-size: 14px;
+  > .body {
+    display: flex;
+    flex-wrap: wrap;
+    flex: 1;
+    gap: 6px;
+  }
   .line-r {
     margin-left: auto;
   }
@@ -525,6 +597,9 @@ const Btn1 = styled.button`
   &:hover {
     color: var(--c-btn-1-bg);
   }
+  &.warn:hover {
+    color: var(--c-text-warn);
+  }
   .icon {
     width: 20px;
     height: 20px;
@@ -544,5 +619,8 @@ const Btn2 = styled.button`
   }
   &:hover {
     color: var(--c-btn-1-bg);
+  }
+  &.warn:hover {
+    color: var(--c-text-warn);
   }
 `;

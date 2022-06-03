@@ -78,9 +78,9 @@ fn main() {
   let chat_server = Mutex::new(ChatServer::new());
   tauri::Builder::default()
     .manage(chat_server)
-    .on_page_load(|window, _payload| {
-      window_shadows::set_shadow(&window, true).expect("Not Support");
-    })
+    // .on_page_load(|window, _payload| {
+    //   window_shadows::set_shadow(&window, true).expect("Not Support");
+    // })
     .invoke_handler(tauri::generate_handler![
       show_system_menu,
       start_chat_server,

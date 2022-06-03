@@ -4,13 +4,14 @@ use std::thread;
 use actix_files as fs;
 use actix_files::NamedFile;
 use actix_web::{
-  http::header::{self, ContentType},
+  dev::Service as _,
+  http::header::{self, HeaderValue},
   middleware,
-  web::{self, Data, Path},
+  web::{self, Data},
   App, HttpResponse, HttpRequest, HttpServer, Responder,
 };
 
-use crate::cmd::broadcast::{Broadcaster, Client};
+use crate::cmd::broadcast::{Broadcaster};
 
 async fn index(req: HttpRequest) -> Result<NamedFile, std::io::Error> {
   let path: PathBuf = req.match_info().query("filename").parse().unwrap();
@@ -24,6 +25,15 @@ pub async fn run(rx_stop: mpsc::Receiver<()>, port: u16, path: &'static str, tx:
   tx.send(data.clone());
   let server = HttpServer::new( move || {
     App::new()
+      .wrap_fn(|req, srv| {
+        let fut = srv.call(req);
+        async {
+            let mut res = fut.await?;
+            res.headers_mut()
+                .insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, HeaderValue::from_static("*"));
+            Ok(res)
+        }
+      })
       .app_data(data.clone())
       .wrap(middleware::Logger::default())
       .route("/api", web::get().to(new_client))

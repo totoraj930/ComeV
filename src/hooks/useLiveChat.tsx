@@ -45,7 +45,7 @@ function initListener(
     const items: ChatItem[] = data.map((item) => {
       return {
         type: "YouTube",
-        id: item.id,
+        id: uuid(),
         data: item
       }
     });

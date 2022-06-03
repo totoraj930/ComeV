@@ -52,7 +52,7 @@ export const SettingsView: React.VFC<{
             <label htmlFor="max_chat_item_num" 
               className="title">表示上限</label>
             <div>
-              <input
+              <Input1
                 type="number"
                 name="max_chat_item_num" id="max_chat_item_num"
                 min="50" max="800" step="50"
@@ -68,7 +68,7 @@ export const SettingsView: React.VFC<{
             <label htmlFor="interval_ms"
               className="title">チャット取得間隔</label>
             <div>
-              <input
+              <Input1
                 type="number"
                 name="interval_ms" id="interval_ms"
                 min="1000" max="10000" step="500"
@@ -104,7 +104,8 @@ export const SettingsView: React.VFC<{
           <label htmlFor="api_server__port"
             className="title">ポート番号</label>
           <div>
-            <input type="number"
+            <Input1
+              type="number"
               name="api_server__port" id="api_server__port"
               min="49152" max="65535"
               defaultValue={ copiedS.apiServer.port }
@@ -136,7 +137,8 @@ export const SettingsView: React.VFC<{
           <label htmlFor="bouyomi__port"
             className="title">ポート番号</label>
           <div>
-            <input type="number"
+            <Input1
+              type="number"
               name="bouyomi__port" id="bouyomi__port"
               min="49152" max="65535"
               defaultValue={ copiedS.bouyomi.port }
@@ -144,6 +146,20 @@ export const SettingsView: React.VFC<{
               placeholder={def.bouyomi.port + ""} />
           </div>
           <p className="description">棒読みちゃんのHTTP連携のポート番号</p>
+        </Item>
+        <Item>
+          <label htmlFor="bouyomi__format"
+            className="title">読み上げ形式</label>
+          <div>
+            <Input1
+              type="text"
+              name="bouyomi__format" id="bouyomi__format"
+              defaultValue={ copiedS.bouyomi.format }
+              onChange={(event) => { copiedS.bouyomi.format = event.target.value }}
+              placeholder={def.bouyomi.format}
+              />
+          </div>
+          <p className="description">$(Message)をチャット本文、$(Name)を投稿者名に置き換えて読み上げます</p>
         </Item>
       </section>
     </Main>
@@ -318,16 +334,6 @@ const Item = styled.div`
     color: var(--c-text-2);
     font-size: 13px;
   }
-  input[type=number] {
-    width: 120px;
-    padding: 10px 5px;
-    font-size: 16px;
-    background: var(--c-input-bg);
-    color: var(--c-input-c);
-    border: 1px solid var(--c-input-bd);
-    border-radius: 4px;
-    box-shadow: inset 0 0 4px var(--c-input-s);
-  }
   select {
     width: 120px;
     padding: 10px 5px;
@@ -346,5 +352,22 @@ const Item = styled.div`
     > .description {
       padding-left: 5px;
     }
+  }
+`;
+
+const Input1 = styled.input`
+  padding: 10px 5px;
+  font-size: 16px;
+  background: var(--c-input-bg);
+  color: var(--c-input-c);
+  border: 1px solid var(--c-input-bd);
+  border-radius: 4px;
+  box-shadow: inset 0 0 4px var(--c-input-s);
+  
+  &[type=number] {
+    width: 120px;
+  }
+  &[type=text] {
+    width: 200px;
   }
 `;

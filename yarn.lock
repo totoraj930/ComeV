@@ -9907,9 +9907,9 @@ yocto-queue@^0.1.0:
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
 
-"youtube-chat-tauri@git+https://github.com/totoraj930/youtube-chat.git#c876446d459228029d7f5010a13dd5c52fc5aabf":
-  version "2.1.1-t3"
-  resolved "git+https://github.com/totoraj930/youtube-chat.git#c876446d459228029d7f5010a13dd5c52fc5aabf"
+"youtube-chat-tauri@git+https://github.com/totoraj930/youtube-chat.git#f3d199d31298ed9996f37db6734410d00b158362":
+  version "2.1.1-t5"
+  resolved "git+https://github.com/totoraj930/youtube-chat.git#f3d199d31298ed9996f37db6734410d00b158362"
   dependencies:
     "@tauri-apps/api" "^1.0.0-rc.5"
     axios "^0.24.0"
