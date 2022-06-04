@@ -550,8 +550,9 @@ export const Switch = styled.label`
       content: "off";
       position: absolute;
       font-size: 10px;
-      top: 3px;
+      top: 0;
       left: 21px;
+      line-height: 20px;
       color: var(--c-switch-off);
       text-transform: uppercase;
       transition: 200ms;
