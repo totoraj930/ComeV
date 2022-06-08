@@ -45,7 +45,7 @@
       "http": {
         "all": true,
         "request": true,
-        "scope": ["https://www.youtube.com/*", "http://**"]
+        "scope": ["https://www.youtube.com/*", "http://**", "https://**"]
       },
       "window": {
         "all": true
