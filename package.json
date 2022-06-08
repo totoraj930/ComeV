@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@tauri-apps/api": "^1.0.0-rc.3",
+    "@tauri-apps/api": "^1.0.0-rc.6",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^12.0.0",
     "@testing-library/user-event": "^13.2.1",
@@ -15,7 +15,7 @@
     "styled-components": "^5.3.5",
     "typescript": "^4.8.0-dev.20220513",
     "web-vitals": "^2.1.0",
-    "youtube-chat-tauri": "git+https://github.com/totoraj930/youtube-chat.git#f3d199d31298ed9996f37db6734410d00b158362"
+    "youtube-chat-tauri": "git+https://github.com/totoraj930/youtube-chat.git#f92861fdc5aa154a1cc619eda12358002bed39bd"
   },
   "scripts": {
     "start": "cross-env BROWSER=none react-scripts start",

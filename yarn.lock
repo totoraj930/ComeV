@@ -1662,17 +1662,17 @@
     "@svgr/plugin-svgo" "^5.5.0"
     loader-utils "^2.0.0"
 
-"@tauri-apps/api@^1.0.0-rc.3":
-  version "1.0.0-rc.6"
-  resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.0.0-rc.6.tgz#6c3358bc8c2cba705d52c1194e2d340cedf1697a"
-  integrity sha512-/PbVs3/dUzid0/1XbML8tAkRSOmp+6Gv9ql02HGt3aIjNTvaL2902qEbiTX6xK++3oUoKJJ88t+V6IiNd1JUkw==
-  dependencies:
-    type-fest "2.12.2"
-
 "@tauri-apps/api@^1.0.0-rc.5":
   version "1.0.0-rc.5"
   resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.0.0-rc.5.tgz#6c4e8b103d730553d7e97dcb71fe707103d9bc97"
   integrity sha512-IiQg7pLByl/W3KRx9Whn1EWh9ZrBojkl9FAgCRJ4//e58var1WmNPHA92YC0i0DLSIF0JLLp0EQKRHJa+aaqlQ==
+  dependencies:
+    type-fest "2.12.2"
+
+"@tauri-apps/api@^1.0.0-rc.6":
+  version "1.0.0-rc.6"
+  resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.0.0-rc.6.tgz#6c3358bc8c2cba705d52c1194e2d340cedf1697a"
+  integrity sha512-/PbVs3/dUzid0/1XbML8tAkRSOmp+6Gv9ql02HGt3aIjNTvaL2902qEbiTX6xK++3oUoKJJ88t+V6IiNd1JUkw==
   dependencies:
     type-fest "2.12.2"
 
@@ -9907,9 +9907,9 @@ yocto-queue@^0.1.0:
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
 
-"youtube-chat-tauri@git+https://github.com/totoraj930/youtube-chat.git#f3d199d31298ed9996f37db6734410d00b158362":
-  version "2.1.1-t5"
-  resolved "git+https://github.com/totoraj930/youtube-chat.git#f3d199d31298ed9996f37db6734410d00b158362"
+"youtube-chat-tauri@git+https://github.com/totoraj930/youtube-chat.git#f92861fdc5aa154a1cc619eda12358002bed39bd":
+  version "2.1.1-t6"
+  resolved "git+https://github.com/totoraj930/youtube-chat.git#f92861fdc5aa154a1cc619eda12358002bed39bd"
   dependencies:
     "@tauri-apps/api" "^1.0.0-rc.5"
     axios "^0.24.0"
