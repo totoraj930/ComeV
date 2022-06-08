@@ -3,6 +3,7 @@
   windows_subsystem = "windows"
 )]
 
+use std::process::Command;
 use std::{sync::{Mutex, mpsc}, thread, borrow::{BorrowMut, Cow}};
 
 use actix_web::web::Data;
@@ -23,7 +24,7 @@ fn start_chat_server(app_handle: tauri::AppHandle, chat_server: State<Mutex<Chat
   let (tx, rx) = mpsc::channel::<()>();
   let (tx2, rx2) = mpsc::channel::<Data<Broadcaster>>();
   chat_server.tx_stop = Some(Mutex::new(tx));
-  let path = app_handle.path_resolver().resource_dir().unwrap();
+  let path = app_handle.path_resolver().app_dir().unwrap();
   let path = path.into_os_string().into_string().unwrap();
   thread::spawn(move || {
     let i:&'static str = Box::leak(path.into_boxed_str());
@@ -73,6 +74,14 @@ fn open_in_browser(url: &str) -> Result<(), String> {
   Ok(())
 }
 
+#[tauri::command]
+fn open_in_explorer(path: &str) -> Result<(), String> {
+  Command::new("explorer")
+    .arg(path)
+    .spawn()
+    .unwrap();
+  Ok(())
+}
 
 fn main() {
   let chat_server = Mutex::new(ChatServer::new());
@@ -87,7 +96,8 @@ fn main() {
       stop_chat_server,
       send_chat,
       has_chat_server,
-      open_in_browser
+      open_in_browser,
+      open_in_explorer
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

@@ -1,14 +1,14 @@
 
-import React, { useCallback, useContext, useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { LiveChatContext } from "../context/liveChat";
 import { ChatItem, LiveChat, liveChatService } from "../services/liveChatService";
 import { LiveChat as YTLiveChat } from "youtube-chat-tauri";
 import { uuid } from "../utils/uuid"
 import { ChatItemAction, ChatItemContext } from "../context/chatItem";
-import { invoke } from "@tauri-apps/api";
-import { saveConfig, useSettings } from "./useSettings";
+import { useSettings } from "./useSettings";
 import { sendBouyomi } from "../utils/bouyomi";
 import { AppConfig } from "../context/config";
+import { sendChatApi } from "../utils/sendChatApi";
 
 export type LiveChatAction = 
   | StartYTChatAction
@@ -51,13 +51,13 @@ function initListener(
     });
 
     for (const item of items) {
-      invoke("send_chat", {data: JSON.stringify(item) });
+      sendChatApi("youtube", item);
       if (settings.bouyomi.enable && !_isFirst) {
         sendBouyomi(item, settings.bouyomi);
       }
     }
 
-    invoke("send_chat", { data: JSON.stringify({ type: "YouTube-List", data: items }) });
+    sendChatApi("youtube-list", items);
     dispatchChatItem({
       config: settings,
       type: "ADD",
@@ -131,13 +131,14 @@ function initListener(
 
 export function useLiveChat() {
   const { state: liveChat, dispatch } = useContext(LiveChatContext);
-  const { state: chatItems, dispatch: dispatchChatItem } = useContext(ChatItemContext);
+  const { dispatch: dispatchChatItem } = useContext(ChatItemContext);
   const { settings, settingsUpdater } = useSettings();
 
   useEffect(() => {
+    liveChat.ytLiveChat.interval = settings.intervalMs;
     initListener(liveChat, settings, dispatch, dispatchChatItem, !liveChat.isStarted);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings]);
+  }, [settings, liveChat]);
 
   const liveChatUpdater = (action: LiveChatAction) => {
     if (!liveChat) return;
@@ -186,7 +187,6 @@ export function useLiveChat() {
 
   return {
     liveChat,
-    chatItems,
     liveChatUpdater
   };
 }

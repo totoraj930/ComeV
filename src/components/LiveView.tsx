@@ -1,28 +1,27 @@
 
-import { Titlebar } from '../components/titlebar/Titlebar';
 import styled from 'styled-components';
 import { useLiveChat } from '../hooks/useLiveChat';
-import { MdPlayArrow, MdPause, MdDeleteForever, MdPerson, MdMenu, MdExpandLess, MdSettingsSuggest, MdFastForward, MdSkipNext, MdPower, MdSettingsPower, MdPowerSettingsNew, MdSettings, MdOpenInBrowser, MdDashboard, MdAttachMoney, MdChat, MdGrade, MdCardGiftcard, MdPersonAdd } from "react-icons/md";
+import { MdPlayArrow, MdPause, MdDeleteForever, MdPerson, MdMenu, MdExpandLess, MdSettingsSuggest, MdFastForward, MdSkipNext, MdSettings, MdOpenInBrowser, MdDashboard, MdAttachMoney, MdChat, MdCardGiftcard, MdPersonAdd } from "react-icons/md";
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { ChatView } from '../components/ChatView';
 import { ChatItem, createDummyYTChatItem, createDummyYTGiftItem, createDummyYTMembershipItem, createDummyYTStickerItem, createDummyYTSuperChatItem } from '../services/liveChatService';
-import { fs, invoke } from "@tauri-apps/api"
+import { fs, invoke as invokeOrigin } from "@tauri-apps/api"
+import { invoke } from "../utils/tauriInvoke"
 import { useSettings } from '../hooks/useSettings';
 import { requestBouyomi, sendBouyomi } from '../utils/bouyomi';
 import { ChatItemContext } from '../context/chatItem';
 import { uuid } from '../utils/uuid';
 import { SettingsView } from './SettingsView';
 import { AppConfig } from '../context/config';
+import { sendChatApi } from '../utils/sendChatApi';
+import { writeFile } from '../utils/tauriInvoke';
 
-function getOutputChatText(items: ChatItem[]): string {
-  const itemsText = JSON.stringify(items.slice(-100));
-  return `export const items = ${itemsText}`;
-}
+
 export const LiveView: React.VFC<{
 }> = () => {
   
-  const { liveChat, liveChatUpdater, chatItems } = useLiveChat();
-  const { state, dispatch } = useContext(ChatItemContext);
+  const { liveChat, liveChatUpdater } = useLiveChat();
+  const { state: chatItems, dispatch: dispatchChatItem } = useContext(ChatItemContext);
   const [url, setUrl] = useState<string>(liveChat.url);
 
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
@@ -68,17 +67,17 @@ export const LiveView: React.VFC<{
         break;
       }
     }
-    dispatch({
+    dispatchChatItem({
       type: "ADD",
       config: settings,
       actionId: uuid(),
       chatItem: item,
     });
     sendBouyomi(item, settings.bouyomi);
-    invoke("send_chat", { data: JSON.stringify(item) });
-    invoke("send_chat", { data: JSON.stringify({type: "YouTube-List", data: [item]}) });
+    sendChatApi("youtube", item);
+    sendChatApi("youtube-list", [item]);
 
-  }, [dispatch, settings]);
+  }, [dispatchChatItem, settings]);
 
 
   const onChangeUrl = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,10 +127,16 @@ export const LiveView: React.VFC<{
   useEffect(() => {
     // console.log(Date.now(), chatState.items.length);
     
-    fs.writeFile({
-      path: "log.js",
-      contents: getOutputChatText(chatItems)
-    }, { dir: fs.BaseDirectory.Resource })
+    writeFile("log.json", JSON.stringify(chatItems), fs.BaseDirectory.App);
+    // fs.writeFile({
+    //   path: "log.json",
+    //   contents: JSON.stringify(chatItems)
+    // }, { dir: fs.BaseDirectory.App }).catch((err) => {
+    //   console.error(err);
+    // });
+    // setTimeout(() => {
+    //   console.log(JSON.stringify(chatItems));
+    // }, 100);
 
   }, [chatItems]);
 
@@ -141,7 +146,6 @@ export const LiveView: React.VFC<{
     settingsUpdater({
       type: "LOAD"
     });
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -222,7 +226,7 @@ export const LiveView: React.VFC<{
 
             <Btn2 onClick={() => {
               liveChatUpdater({ type: "CLEAR" });
-              invoke("send_chat", {data: JSON.stringify({type: "CLEAR"})});
+              sendChatApi("clear", {});
             }} className="warn">
               <MdDeleteForever className="icon" />
               <span>クリア</span>

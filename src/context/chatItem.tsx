@@ -34,34 +34,22 @@ export const ChatItemContext = createContext<{
 });
 
 export function chatItemReducer(state: ChatItem[], action: ChatItemAction): ChatItem[] {
-  let res = state.slice();
   switch (action.type) {
     case "ADD": {
       if (Array.isArray(action.chatItem)) {
-        res = res.concat(action.chatItem);
+        return state.concat(action.chatItem).slice(-action.config.maxChatItemNum);
       } else {
-        res.push(action.chatItem);
+        return [...state, action.chatItem].slice(-action.config.maxChatItemNum);
       }
-      
-      if (res.length === action.config.maxChatItemNum + 1) {
-        res.shift();
-      } else if (res.length > action.config.maxChatItemNum){
-        res = res.slice(-action.config.maxChatItemNum);
-      }
-      break;
     }
     case "UPDATE": {
-      res = state;
-      break;
+      return state;
     }
     case "CLEAR": {
-      res = [];
-      break;
+      return [];
     }
     default: {
-      res = state;
-      break;
+      return state;
     }
   }
-  return res;
 }

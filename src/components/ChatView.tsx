@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import styled from "styled-components";
 import { useSettings } from "../hooks/useSettings";
@@ -35,6 +35,10 @@ export const ChatView: React.VFC<{
       }
     }
   }
+
+  const chatItemViewList = useMemo(() => {
+    return chatItems.map((item, i) => <li key={item.id}><ChatItemView chatItem={item} /></li>);
+  }, [chatItems]);
   
   useEffect(() => {
     if (!$view.current) return;
@@ -51,7 +55,7 @@ export const ChatView: React.VFC<{
   }, [chatItems, enabledAutoScroll]);
   return <View className="view" data-anony-blur={settings.enableAnonyView}>
     <ul ref={$view} onScroll={onScroll}>
-      {chatItems.map((item, i) => <li key={item.id}><ChatItemView chatItem={item} /></li>)}
+      {chatItemViewList}
     </ul>
     {!enabledAutoScroll && (
       <button className="btn-1" onClick={scrollToBottom}>

@@ -75,7 +75,7 @@ impl Broadcaster {
   }
 
   pub fn send(&self, msg: &str) {
-      let msg = Bytes::from(["data: ", msg, "\n\n"].concat());
+      let msg = Bytes::from([msg, "\n\n"].concat());
 
       let inner = self.inner.lock();
       for client in inner.clients.iter() {

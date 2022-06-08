@@ -1,6 +1,7 @@
 import { useCallback, useContext } from "react";
 import { AppConfig, AppConfigContext, copyConfig, parseJson } from "../context/config";
-import { fs, invoke } from "@tauri-apps/api";
+import { fs, invoke as invokeOrigin, path } from "@tauri-apps/api";
+import { invoke } from "../utils/tauriInvoke"
 import { ChatItemContext } from "../context/chatItem";
 import { uuid } from "../utils/uuid";
 import { createAppChatItem } from "../services/liveChatService";
@@ -31,13 +32,21 @@ export interface ChangeAndSaveSettingsAction extends BaseAction {
 }
 
 const FILE_PATH = "settings.json";
-const BASE_DIR = fs.BaseDirectory.Resource;
+const BASE_DIR = fs.BaseDirectory.App;
 
-export function saveConfig(config: AppConfig) {
+export async function saveConfig(config: AppConfig) {
   return fs.writeFile({
     path: FILE_PATH,
     contents: JSON.stringify(config, null, "    ")
   }, { dir: BASE_DIR });
+}
+
+export async function initConfigDir() {
+  try {
+    await fs.readDir("./", { dir: BASE_DIR });
+  } catch {
+    return await fs.createDir(await path.appDir());
+  }
 }
 
 export function useSettings() {
@@ -47,22 +56,39 @@ export function useSettings() {
   const updater = useCallback((action: SettingsManagerAction) => {
     switch (action.type) {
       case "LOAD": {
-        fs.readDir(".", { dir: BASE_DIR })
+        initConfigDir()
+        .then(() => fs.readDir("./", { dir: BASE_DIR }))
         .then(async (files) => {
           for (const file of files) {
             if (file.name === FILE_PATH) {
               const rawText = await fs.readTextFile(FILE_PATH, { dir: BASE_DIR });
               try {
-                console.log("LOAD: saveConfig");
+                console.log("LOAD: setting.json");
                 const rawJson = JSON.parse(rawText);
                 const res = parseJson(rawJson, state);
-                saveConfig(res);
+                saveConfig(res).catch(() => {
+                  dispatchChatItem({
+                    config: state,
+                    type: "ADD",
+                    actionId: uuid(),
+                    chatItem: createAppChatItem("error", "設定ファイルの保存に失敗しました")
+                  });
+                });
                 return Promise.resolve(res);
               } catch (err) {
                 return Promise.reject(err);
               }
             }
           }
+          console.log("INIT: setting.json");
+          saveConfig(state).catch(() => {
+            dispatchChatItem({
+              config: state,
+              type: "ADD",
+              actionId: uuid(),
+              chatItem: createAppChatItem("error", "設定ファイルの保存に失敗しました")
+            });
+          });
           return state;
         })
         .then((res) => {

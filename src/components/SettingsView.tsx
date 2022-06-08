@@ -1,4 +1,7 @@
+import { invoke as invokeOrigin, path } from "@tauri-apps/api";
+import { invoke } from "../utils/tauriInvoke"
 import { useEffect, useMemo, useState } from "react";
+import { MdFolderOpen } from "react-icons/md";
 import styled from "styled-components";
 import { AppConfig, copyConfig, defaultConfig } from "../context/config";
 import { useSettings } from "../hooks/useSettings";
@@ -26,6 +29,13 @@ export const SettingsView: React.VFC<{
       <section>
         <p className="title">
           基本設定
+          <Btn1 className="ml-a"
+            onClick={async () => {
+              invoke("open_in_explorer", { path: await path.appDir()});
+            }}>
+              <MdFolderOpen className="icon" />
+              保存場所を開く
+          </Btn1>
         </p>
         <div className="body">
           <Item>
@@ -263,6 +273,8 @@ const Main = styled.div`
   > section {
     padding: 10px;
     > .title {
+      display: flex;
+      align-items: center;
       position: relative;
       margin-bottom: 10px;
       font-weight: bold;

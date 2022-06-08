@@ -86,7 +86,8 @@ export const dummyParts: {
   },
   badge: {
     thumbnail: {
-      url: `${process.env.PUBLIC_URL}/yt-dummy-badge.png`,
+      // url: `${process.env.PUBLIC_URL}/yt-dummy-badge.png`,
+      url: "https://www.youtube.com/s/gaming/emoji/0f0cae22/emoji_u1f633.svg",
       alt: "Member (1 months)",
     },
     label: "Member (1 months)",
@@ -221,7 +222,11 @@ export function createDummyYTGiftItem(name?: string | null) {
           { text: " 件の " },
           { text: "■■■■" },
           { text: " のメンバーシップ ギフトを贈りました" },
-        ]
+        ],
+        image: {
+          url: "https://www.gstatic.com/youtube/img/sponsorships/sponsorships_gift_purchase_announcement_artwork.png",
+          alt: ""
+        }
       }
     },
   }

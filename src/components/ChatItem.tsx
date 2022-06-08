@@ -1,7 +1,6 @@
 import { ChatItem as YTChatItemData, EmojiItem, ImageItem, MessageItem } from "youtube-chat-tauri/dist/types/data";
 import styled from "styled-components";
-import { ChatItem, AppChatItemData, dummyParts } from "../services/liveChatService";
-import { useSettings } from "../hooks/useSettings";
+import { ChatItem, AppChatItemData } from "../services/liveChatService";
 import { useMemo } from "react";
 
 export interface ChatItemViewOptions {
@@ -413,15 +412,18 @@ const NormalChat = styled.div`
     }
   }
   .message {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
     font-size: 15px;
     overflow-wrap: anywhere;
+    span {
+      display: inline;
+      vertical-align: middle;
+    }
     .emoji {
+      display: inline-block;
       width: 24px;
       height: 24px;
       margin-left: 4px;
+      vertical-align: middle;
     }
     span.emoji {
       width: auto;
