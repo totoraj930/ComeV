@@ -2,6 +2,7 @@
 import EventEmitter from "events";
 import { ChatUserstate, Client as TmiClient } from "tmi.js"
 import TypedEmitter from "typed-emitter";
+import { uuid } from "./uuid";
 
 export interface TwitchChatOptions {
   token: string;
@@ -73,7 +74,7 @@ export interface TwitchUser {
   id?: string;
   name?: string;
   displayName?: string;
-  type?: "" | "admin" | "global_mod" | "staff";
+  type?: "" | "admin" | "global_mod" | "staff" | "mod";
   color?: string;
   isSubscriber: boolean;
   isModerator: boolean;
@@ -86,6 +87,7 @@ export interface TwitchChatItem {
   id: string;
   auther: TwitchUser;
   message: (TwitchEmote | string)[];
+  timestamp: Date;
 }
 
 type TwitchChatEvents = {
@@ -131,22 +133,10 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
       }
     });
     this.#tmi.on("message", (channel, userState, message, self) => {
-      console.log(userState);
-      const badges = userState.badges || {};
-      const badgeInfo = userState["badge-info"] || {};
-      const resBadges: TwitchBadge[] = [];
-      for (const set_id in badges) {
-        const version = badges[set_id];
-        const info = badgeInfo[set_id];
-        if (!version) continue;
-        resBadges.push(this.createResponseBadge(set_id, version, info));
-      }
-      const resMessage = this.convertMessage(message, userState.emotes);
-      console.log(resBadges);
-      console.log(resMessage);
+      const item = this.createChatItem(userState, message);
+      this.emit("chat", item);
     });
     this.#tmi.on("emotesets", (sets, obj) => {
-      console.log(sets);
       this.getEmoteSets(sets.split(","));
     });
   }
@@ -155,20 +145,60 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
       await this.stop();
     }
     await this.#tmi.connect();
-    await this.#tmi.join(channel)
-      .then((res) => {
-
-      });
+    await this.#tmi.join(channel);
     this.#channel = channel;
     this.#isStarted = true;
+    this.emit("start");
   }
   async stop() {
     if (!this.#isStarted) return;
     await this.#tmi.disconnect();
     this.#isStarted = false;
     this.#channel = undefined;
+    this.emit("end");
   }
 
+  /** チャットアイテムの生成 */
+  createChatItem(userState: ChatUserstate, rawMessage: string): TwitchChatItem {
+
+    // メッセージの生成
+    const message = this.convertMessage(rawMessage, userState.emotes);
+
+    return {
+      id: userState.id || uuid(),
+      auther: this.createUser(userState),
+      message: message,
+      timestamp: new Date(userState["tmi-sent-ts"] || Date.now())
+    }
+  }
+
+  /** ユーザーの生成 */
+  createUser(userState: ChatUserstate): TwitchUser {
+    // バッジの生成
+    const rawBadges = userState.badges || {};
+    const badgeInfo = userState["badge-info"] || {};
+    const badges: TwitchBadge[] = [];
+    for (const set_id in rawBadges) {
+      const version_id = rawBadges[set_id];
+      const info = badgeInfo[set_id];
+      if (!version_id) continue;
+      badges.push(this.createResponseBadge(set_id, version_id, info));
+    }
+
+    return {
+      id: userState["user-id"],
+      name: userState.username,
+      displayName: userState["display-name"],
+      type: userState["user-type"] || "",
+      color: userState.color,
+      isSubscriber: !!userState.subscriber,
+      isModerator: !!userState.mod,
+      isTurbo: !!userState.turbo,
+      badges: badges,
+    }
+  }
+
+  /** エモートの情報を含んだMessageにする */
   convertMessage(rawMessage: string, emotes?: { [emoteid: string]: string[] }) {
     if (!emotes) return [rawMessage];
     const parts: {
@@ -233,10 +263,6 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
       // 空文字を削除
       return !(typeof item === "string" && item.length === 0)
     });
-  }
-
-  addBadge(rawBadge: TwitchRawBadge) {
-    this.#badges[rawBadge.set_id] = rawBadge;
   }
 
   addBadges(jsonData: TwitchGetBadgeResponse, isGlobal: boolean = false) {
@@ -304,7 +330,6 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
     for (const rawEmote of jsonData.data) {
       this.addEmote(rawEmote, jsonData.template);
     }
-    console.log(this.#emotes);
   }
 
   /** グローバルエモートを取得して追加 */
