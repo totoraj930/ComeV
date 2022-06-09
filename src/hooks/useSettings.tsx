@@ -71,7 +71,7 @@ export function useSettings() {
                     config: state,
                     type: "ADD",
                     actionId: uuid(),
-                    chatItem: createAppChatItem("error", "設定ファイルの保存に失敗しました")
+                    chatItem: [createAppChatItem("error", "設定ファイルの保存に失敗しました")]
                   });
                 });
                 return Promise.resolve(res);
@@ -86,7 +86,7 @@ export function useSettings() {
               config: state,
               type: "ADD",
               actionId: uuid(),
-              chatItem: createAppChatItem("error", "設定ファイルの保存に失敗しました")
+              chatItem: [createAppChatItem("error", "設定ファイルの保存に失敗しました")]
             });
           });
           return state;
@@ -96,7 +96,7 @@ export function useSettings() {
             config: state,
             type: "ADD",
             actionId: uuid(),
-            chatItem: createAppChatItem("log", "設定ファイルを読み込みました")
+            chatItem: [createAppChatItem("log", "設定ファイルを読み込みました")]
           });
           dispatch({
             type: "CHANGE",
@@ -114,7 +114,7 @@ export function useSettings() {
             config: state,
             type: "ADD",
             actionId: uuid(),
-            chatItem: createAppChatItem("error", "設定ファイルの読み込みに失敗しました")
+            chatItem: [createAppChatItem("error", "設定ファイルの読み込みに失敗しました")]
           });
         });
         break;

@@ -189,7 +189,7 @@ export const LiveView: React.VFC<{
                   type: "ADD",
                   actionId: uuid(),
                   config: settings,
-                  chatItem: createAppChatItem("info", "Twitchにログインしました")
+                  chatItem: [createAppChatItem("info", "Twitchにログインしました")]
                 });
               });
 
@@ -205,7 +205,7 @@ export const LiveView: React.VFC<{
                   type: "ADD",
                   actionId: uuid(),
                   config: settings,
-                  chatItem: createAppChatItem("error", "Twitchのログインに失敗しました")
+                  chatItem: [createAppChatItem("error", "Twitchのログインに失敗しました")]
                 });
               });
             }}>

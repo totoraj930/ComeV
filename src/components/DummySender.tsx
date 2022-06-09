@@ -54,7 +54,7 @@ export const DummySender: React.VFC<{
       type: "ADD",
       config: settings,
       actionId: uuid(),
-      chatItem: item,
+      chatItem: [item],
     });
     sendBouyomi(item, settings.bouyomi);
     sendChatApi("youtube", item);

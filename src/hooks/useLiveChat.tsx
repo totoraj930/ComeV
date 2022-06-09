@@ -1,7 +1,7 @@
 
 import React, { useContext, useEffect } from "react";
 import { LiveChatContext } from "../context/liveChat";
-import { ChatItem, LiveChat, liveChatService } from "../services/liveChatService";
+import { ChatItem, createAppChatItem, LiveChat, liveChatService } from "../services/liveChatService";
 import { LiveChat as YTLiveChat } from "youtube-chat-tauri";
 import { uuid } from "../utils/uuid"
 import { ChatItemAction, ChatItemContext } from "../context/chatItem";
@@ -49,18 +49,12 @@ function initListener(
         data: item
       }
     });
-
-    for (const item of items) {
-      sendChatApi("youtube", item);
-      if (settings.bouyomi.enable && !_isFirst) {
-        sendBouyomi(item, settings.bouyomi);
-      }
-    }
-
-    sendChatApi("youtube-list", items);
+    
     dispatchChatItem({
       config: settings,
       type: "ADD",
+      unique: _isFirst,
+      useBouyomi: settings.bouyomi.enable && !_isFirst,
       actionId: uuid(),
       chatItem: items
     });
@@ -77,15 +71,7 @@ function initListener(
       config: settings,
       type: "ADD",
       actionId: uuid(),
-      chatItem: {
-        type: "App",
-        id: uuid(),
-        data: {
-          type: "error",
-          message: data as string + "",
-          timestamp: new Date(),
-        }
-      }
+      chatItem: [createAppChatItem("error", data as string + "")]
     });
   });
   liveChat.ytLiveChat.on("start", (liveId) => {
@@ -94,17 +80,10 @@ function initListener(
       config: settings,
       type: "ADD",
       actionId: uuid(),
-      chatItem: {
-        type: "App",
-        id: uuid(),
-        data: {
-          type: "info",
-          message: `接続しました(${liveId})`,
-          timestamp: new Date(),
-        }
-      }
+      chatItem: [createAppChatItem("info", `接続しました(${liveId})`)]
     });
     dispatch({...liveChat});
+    _isFirst = true;
   });
   liveChat.ytLiveChat.on("end", () => {
     liveChat.isStarted = false;
@@ -112,17 +91,10 @@ function initListener(
       config: settings,
       type: "ADD",
       actionId: uuid(),
-      chatItem: {
-        type: "App",
-        id: uuid(),
-        data: {
-          type: "info",
-          message: "切断しました",
-          timestamp: new Date(),
-        }
-      }
+      chatItem: [createAppChatItem("info", "切断しました")]
     });
     dispatch({...liveChat});
+    _isFirst = true;
   });
 }
 
@@ -138,7 +110,7 @@ export function useLiveChat() {
     liveChat.ytLiveChat.interval = settings.intervalMs;
     initListener(liveChat, settings, dispatch, dispatchChatItem, !liveChat.isStarted);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings, liveChat]);
+  }, [settings]);
 
   const liveChatUpdater = (action: LiveChatAction) => {
     if (!liveChat) return;
