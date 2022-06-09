@@ -6,6 +6,10 @@ export const defaultConfig: AppConfig = {
   themeName: "dark",
   prevUrl: "",
   enableAnonyView: false,
+  twitch: {
+    clientId: "u7y21ic3v3nsrl9jmxsij78eciy3fl",
+    token: "",
+  },
   apiServer: {
     enable: true,
     port: 50930,
@@ -38,6 +42,11 @@ export type BouyomiConfig = {
   includeEmoji: boolean;
 }
 
+export type TwitchConfig = {
+  clientId: string;
+  token: string;
+}
+
 
 export interface AppConfig {
   maxChatItemNum: number;
@@ -45,8 +54,24 @@ export interface AppConfig {
   themeName: string;
   prevUrl: string;
   enableAnonyView: boolean;
+  twitch: TwitchConfig;
   apiServer: ApiServerConfig;
   bouyomi: BouyomiConfig;
+}
+
+// settings.jsonの.twitchのパース
+export function parseTwitchConfig(raw: any, def: TwitchConfig) {
+  if (typeof raw !== "object") return { ...def };
+  const res = { ...def, ...raw } as TwitchConfig;
+
+  if (typeof res.clientId !== "string") {
+    res.clientId = def.clientId;
+  }
+
+  if (typeof res.token !== "string") {
+    res.token = def.token;
+  }
+  return res;
 }
 
 // settings.jsonの.apiServerのパース
@@ -105,6 +130,7 @@ export function parseJson(rawJson: any, def: AppConfig) {
     res.prevUrl = def.prevUrl;
   }
 
+  res.twitch = parseTwitchConfig(res.twitch, def.twitch);
   res.apiServer = parseApiServerConfig(res.apiServer, def.apiServer);
   res.bouyomi = parseBouyomiConfig(res.bouyomi, def.bouyomi);
 

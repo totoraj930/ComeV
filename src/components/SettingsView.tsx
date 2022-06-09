@@ -93,7 +93,7 @@ export const SettingsView: React.VFC<{
         </div>
       </section>
       <hr />
-      <section>
+      <section style={{display: "none"}}>
         <p className="title">
           外部連携
         </p>
@@ -125,7 +125,7 @@ export const SettingsView: React.VFC<{
           <p className="description">サーバーを開くポート番号(基本変えなくて大丈夫)</p>
         </Item>
       </section>
-      <hr />
+      {/* <hr /> */}
       <section>
         <p className="title">
           棒読みちゃん

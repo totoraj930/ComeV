@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width">
+  <title>ComeV - Twitchログイン結果</title>
+</head>
+<body>
+  <h1 id="result"></h1>
+<script>
+  (async () => {
+    const $res = document.body.querySelector("#result");
+    const searchParams = new URLSearchParams(location.search);
+    // ログインに失敗したとき
+    if (searchParams.has("error")) {
+      const req = new Request(`/twitch_token?error=${searchParams.get("error")}`);
+      const res = await fetch(req);
+      console.log(res);
+      $res.innerHTML = "Twitchの連携に失敗しました";
+      return;
+    }
+
+    const params = new URLSearchParams(location.hash.replace(/^#/, ""));
+    // ログインに成功したとき
+    if (params.has("access_token")) {
+      const query = [
+        `access_token=${params.get("access_token")}`,
+        `scope=${params.get("scope")}`,
+        `token_type=${params.get("token_type")}`
+      ].join("&");
+      const req = new Request(`/twitch_token?${query}`);
+      const res = await fetch(req);
+      console.log(res);
+      $res.innerHTML = "Twitchと連携しました！<br>このページを閉じてComeVに戻ってください。";
+    }
+
+  })();
+</script>
+</body>
+</html>

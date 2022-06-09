@@ -1,20 +1,23 @@
 
 import styled from 'styled-components';
 import { useLiveChat } from '../hooks/useLiveChat';
-import { MdPlayArrow, MdPause, MdDeleteForever, MdPerson, MdMenu, MdExpandLess, MdSettingsSuggest, MdFastForward, MdSkipNext, MdSettings, MdOpenInBrowser, MdDashboard, MdAttachMoney, MdChat, MdCardGiftcard, MdPersonAdd } from "react-icons/md";
+import { MdPlayArrow, MdPause, MdDeleteForever, MdPerson, MdMenu, MdExpandLess, MdSettingsSuggest, MdFastForward, MdSkipNext, MdSettings, MdOpenInBrowser, MdDashboard } from "react-icons/md";
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { ChatView } from '../components/ChatView';
-import { ChatItem, createDummyYTChatItem, createDummyYTGiftItem, createDummyYTMembershipItem, createDummyYTStickerItem, createDummyYTSuperChatItem } from '../services/liveChatService';
-import { fs, invoke as invokeOrigin } from "@tauri-apps/api"
+import { fs } from "@tauri-apps/api"
 import { invoke } from "../utils/tauriInvoke"
 import { useSettings } from '../hooks/useSettings';
-import { requestBouyomi, sendBouyomi } from '../utils/bouyomi';
+import { requestBouyomi } from '../utils/bouyomi';
 import { ChatItemContext } from '../context/chatItem';
-import { uuid } from '../utils/uuid';
 import { SettingsView } from './SettingsView';
-import { AppConfig } from '../context/config';
+import { AppConfig, copyConfig } from '../context/config';
 import { sendChatApi } from '../utils/sendChatApi';
 import { writeFile } from '../utils/tauriInvoke';
+import { TwitchChat } from '../utils/twitch';
+import { DummySender } from './DummySender';
+import { listen, UnlistenFn } from '@tauri-apps/api/event';
+import { uuid } from '../utils/uuid';
+import { createAppChatItem } from '../services/liveChatService';
 
 
 export const LiveView: React.VFC<{
@@ -28,57 +31,6 @@ export const LiveView: React.VFC<{
   const [isShowSettings, setIsShowSettings] = useState<boolean>(false);
   // const { state: config } = useContext(AppConfigContext);
   const { settings, settingsUpdater } = useSettings();
-
-  const sendDummyChat = useCallback((type: "normal" | "superchat" | "sticker" | "membership" | "gift" | "random") => {
-    let item: ChatItem;
-    const r = (t?: number) => Math.random() < (t || 0.5);
-    const sChat = createDummyYTSuperChatItem(r() ? "これはダミーのスーパーチャット" : null, null);
-    const sChat2 = createDummyYTStickerItem();
-    const chat = createDummyYTChatItem(null, null, r(), r(0.3), r(0.3));
-    switch (type) {
-      case "normal": {
-        item = chat;
-        break;
-      }
-      case "superchat": {
-        item = sChat;
-        break;
-      }
-      case "sticker": {
-        item = sChat2;
-        break;
-      }
-      case "membership": {
-        item = createDummyYTMembershipItem(null, r());
-        break;
-      }
-      case "gift": {
-        item = createDummyYTGiftItem();
-        break;
-      }
-      case "random": {
-        item = r(0.3)
-          ? r(0.5) ? sChat : sChat2
-          : chat;
-        break;
-      }
-      default: {
-        item = chat;
-        break;
-      }
-    }
-    dispatchChatItem({
-      type: "ADD",
-      config: settings,
-      actionId: uuid(),
-      chatItem: item,
-    });
-    sendBouyomi(item, settings.bouyomi);
-    sendChatApi("youtube", item);
-    sendChatApi("youtube-list", [item]);
-
-  }, [dispatchChatItem, settings]);
-
 
   const onChangeUrl = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(event.target.value);
@@ -125,19 +77,7 @@ export const LiveView: React.VFC<{
   }, [settings]);
 
   useEffect(() => {
-    // console.log(Date.now(), chatState.items.length);
-    
     writeFile("log.json", JSON.stringify(chatItems), fs.BaseDirectory.App);
-    // fs.writeFile({
-    //   path: "log.json",
-    //   contents: JSON.stringify(chatItems)
-    // }, { dir: fs.BaseDirectory.App }).catch((err) => {
-    //   console.error(err);
-    // });
-    // setTimeout(() => {
-    //   console.log(JSON.stringify(chatItems));
-    // }, 100);
-
   }, [chatItems]);
 
   // 初回マウント時
@@ -146,6 +86,11 @@ export const LiveView: React.VFC<{
     settingsUpdater({
       type: "LOAD"
     });
+
+
+    return () => {
+    }
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -231,6 +176,41 @@ export const LiveView: React.VFC<{
               <MdDeleteForever className="icon" />
               <span>クリア</span>
             </Btn2>
+
+            <Btn2 onClick={() => {
+              console.log(settings);
+              const twitchChat = new TwitchChat({
+                token: settings.twitch.token,
+                clientId: settings.twitch.clientId,
+                name: "ComeV"
+              });
+              twitchChat.on("token", () => {
+                dispatchChatItem({
+                  type: "ADD",
+                  actionId: uuid(),
+                  config: settings,
+                  chatItem: createAppChatItem("info", "Twitchにログインしました")
+                });
+              });
+
+              twitchChat.login()
+              .then((token) => {
+                settingsUpdater({
+                  type: "CHANGE_SAVE",
+                  data: {...settings, twitch: { ...settings.twitch, token: token }}
+                });
+              })
+              .catch((err) => {
+                dispatchChatItem({
+                  type: "ADD",
+                  actionId: uuid(),
+                  config: settings,
+                  chatItem: createAppChatItem("error", "Twitchのログインに失敗しました")
+                });
+              });
+            }}>
+              <span>テスト</span>
+            </Btn2>
           </Line>
 
           <hr />
@@ -271,35 +251,7 @@ export const LiveView: React.VFC<{
           <hr />
 
           {/* テスト用機能 */}
-          <Line>
-            <p className="title">表示テスト</p>
-            <div className="body">
-              <Btn2 onClick={() => sendDummyChat("normal")}>
-                <MdChat className="icon" />
-                <span className="hide-400">通常</span>
-              </Btn2>
-              <Btn2 onClick={() => sendDummyChat("superchat")}>
-                <MdAttachMoney className="icon" />
-                <span className="hide-400">スパチャ</span>
-              </Btn2>
-              <Btn2 onClick={() => sendDummyChat("sticker")}>
-                <MdAttachMoney className="icon" />
-                <span className="hide-400">ステッカー</span>
-              </Btn2>
-              <Btn2 onClick={() => sendDummyChat("membership")}>
-                <MdPersonAdd className="icon" />
-                <span className="hide-400">メンバー</span>
-              </Btn2>
-              <Btn2 onClick={() => sendDummyChat("gift")}>
-                <MdCardGiftcard className="icon" />
-                <span className="hide-400">ギフト</span>
-              </Btn2>
-              {/* <Btn2 onClick={() => sendDummyChat("random")}>
-                <MdGrade className="icon" />
-                <span className="hide-400">ランダム</span>
-              </Btn2> */}
-            </div>
-          </Line>
+          <DummySender />
         </MenuPanel>
       )}
 
@@ -418,7 +370,7 @@ const ChatControl = styled.div`
 `;
 
 
-const Line = styled.div`
+export const Line = styled.div`
   display: flex;
   flex-wrap: wrap;
   padding: 5px 10px;
@@ -611,7 +563,7 @@ const Btn1 = styled.button`
   }
 `;
 
-const Btn2 = styled.button`
+export const Btn2 = styled.button`
   display: flex;
   cursor: pointer;
   background: transparent;

@@ -1,3 +1,4 @@
+use std::fmt::Error;
 use std::path::PathBuf;
 use std::sync::{mpsc, Mutex};
 use std::thread;
@@ -7,9 +8,10 @@ use actix_web::{
   dev::Service as _,
   http::header::{self, HeaderValue},
   middleware,
-  web::{self, Data},
+  web::{self, Data}, Route,
   App, HttpResponse, HttpRequest, HttpServer, Responder,
 };
+use tauri::Manager;
 
 use crate::cmd::broadcast::{Broadcaster};
 
@@ -18,12 +20,31 @@ async fn index(req: HttpRequest) -> Result<NamedFile, std::io::Error> {
   Ok(NamedFile::open(path)?)
 }
 
+// async fn twitch_login(req: HttpRequest) -> Result<HttpResponse, actix_web::Error> {
+//   let query_str = req.query_string();
+//   let mut res = HttpResponse::Ok();
+//   let res_str:&'static str = Box::leak(query_str.into());
+//   res.body(res_str);
+//   Ok(res.finish())
+// }
+
+async fn twitch_redirect(req: HttpRequest, app_handle: Data<tauri::AppHandle>) -> Result<NamedFile, actix_web::Error> {
+  let path: PathBuf = "./files/twitch_redirect.html".parse().unwrap();
+  Ok(NamedFile::open(path)?)
+}
+
+async fn twitch_token(app_handle: Data<tauri::AppHandle>, req: HttpRequest) -> impl Responder {
+  let query_str = req.query_string();
+  app_handle.emit_all("twitch_token", query_str);
+  HttpResponse::Ok().content_type("text/html").body("Ok")
+}
 
 #[actix_web::main]
-pub async fn run(rx_stop: mpsc::Receiver<()>, port: u16, path: &'static str, tx: mpsc::Sender<Data<Broadcaster>>) {
+pub async fn run(rx_stop: mpsc::Receiver<()>, port: u16, path: &'static str, tx: mpsc::Sender<Data<Broadcaster>>, app_handle: tauri::AppHandle) {
   let data = Broadcaster::create();
   tx.send(data.clone());
   let server = HttpServer::new( move || {
+    let tauri_app = app_handle.clone();
     App::new()
       .wrap_fn(|req, srv| {
         let fut = srv.call(req);
@@ -34,8 +55,11 @@ pub async fn run(rx_stop: mpsc::Receiver<()>, port: u16, path: &'static str, tx:
             Ok(res)
         }
       })
+      .app_data(Data::new(tauri_app))
       .app_data(data.clone())
       .wrap(middleware::Logger::default())
+      .route("/twitch_redirect", web::get().to(twitch_redirect))
+      .route("/twitch_token", web::get().to(twitch_token))
       .route("/api", web::get().to(new_client))
       .service(fs::Files::new("/", path).show_files_listing())
   })

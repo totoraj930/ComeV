@@ -28,7 +28,7 @@ fn start_chat_server(app_handle: tauri::AppHandle, chat_server: State<Mutex<Chat
   let path = path.into_os_string().into_string().unwrap();
   thread::spawn(move || {
     let i:&'static str = Box::leak(path.into_boxed_str());
-    cmd::server::run(rx, port, i, tx2);
+    cmd::server::run(rx, port, i, tx2, app_handle);
   });
   let brs = rx2.recv().unwrap();
   chat_server.broadcaster = Some(brs);

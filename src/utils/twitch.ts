@@ -2,6 +2,8 @@
 import EventEmitter from "events";
 import { ChatUserstate, Client as TmiClient } from "tmi.js"
 import TypedEmitter from "typed-emitter";
+import { invoke } from "./tauriInvoke";
+import { once as tauriOnce } from "@tauri-apps/api/event";
 import { uuid } from "./uuid";
 
 export interface TwitchChatOptions {
@@ -94,6 +96,7 @@ type TwitchChatEvents = {
   start: () => void;
   end: () => void;
   chat: (item: TwitchChatItem) => void;
+  token: (token: string) => void;
   error: (err: Error | unknown) => void;
 }
 
@@ -140,6 +143,20 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
       this.getEmoteSets(sets.split(","));
     });
   }
+
+  /** ログイン処理(tokenが有効なら何もしない) */
+  async login(): Promise<string> {
+    try {
+      await this.validateToken();
+    } catch(err) {
+      const token = await this.getToken();
+      this.#token = token;
+      this.emit("token", token);
+    }
+    return this.#token;
+  }
+
+  /** 指定されたチャンネルに接続 */
   async start(channel: string) {
     if (this.#isStarted) {
       await this.stop();
@@ -150,6 +167,8 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
     this.#isStarted = true;
     this.emit("start");
   }
+
+  /** 切断する */
   async stop() {
     if (!this.#isStarted) return;
     await this.#tmi.disconnect();
@@ -378,6 +397,39 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
     this.addBadges(json as TwitchGetBadgeResponse);
   }
 
+  /** tokenの発行 */
+  async getToken(): Promise<string> {
+    const query = [
+      `client_id=${this.#clientId}`,
+      `response_type=token`,
+      `redirect_uri=http://localhost:50930/twitch_redirect`,
+      `scope=chat:read`
+    ].join("&");
+    return new Promise((resolve, reject) => {
+      tauriOnce("twitch_token", async (event) => {
+        const searchParams = new URLSearchParams(event.payload as string);
+        if (searchParams.has("access_token")) {
+          resolve(searchParams.get("access_token") as string);
+        } else {
+          reject("error");
+        }
+      });
+      invoke("open_in_browser", { url: `https://id.twitch.tv/oauth2/authorize?${query}` });
+    });
+  }
+
+  /** tokenが有効か確認 */
+  async validateToken() {
+    const headers = new Headers();
+    headers.append("Authorization", `Bearer ${this.#token}`);
+    const res = await fetch("https://id.twitch.tv/oauth2/validate", { headers });
+    console.log(res.status);
+    if (res.status === 200) {
+      return res.json();
+    } else {
+      return Promise.reject("error");
+    }
+  }
 
   getReqInit(): RequestInit {
     const headers = new Headers();
