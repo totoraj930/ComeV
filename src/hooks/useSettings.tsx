@@ -10,7 +10,8 @@ export type SettingsManagerAction =
   | LoadSettingsAction
   | SaveSettingsAction
   | ChangeSettingsAction
-  | ChangeAndSaveSettingsAction;
+  | ChangeAndSaveSettingsAction
+  | UpdateTwitchTokenAction;
 
 interface BaseAction {
   type: string;
@@ -29,6 +30,10 @@ export interface ChangeSettingsAction extends BaseAction {
 export interface ChangeAndSaveSettingsAction extends BaseAction {
   type: "CHANGE_SAVE";
   data: AppConfig;
+}
+export interface UpdateTwitchTokenAction extends BaseAction {
+  type: "UPDATE_TWITCH_TOKEN";
+  token: string;
 }
 
 const FILE_PATH = "settings.json";
@@ -132,6 +137,21 @@ export function useSettings() {
       }
       case "CHANGE_SAVE": {
         const res = {...copyConfig(state), ...copyConfig(action.data)};
+        dispatch({
+          type: "CHANGE",
+          data: res
+        });
+        saveConfig(res);
+        break;
+      }
+      case "UPDATE_TWITCH_TOKEN": {
+        const res: AppConfig = {
+          ...copyConfig(state),
+          twitch: {
+            ...state.twitch,
+            token: action.token
+          }
+        };
         dispatch({
           type: "CHANGE",
           data: res

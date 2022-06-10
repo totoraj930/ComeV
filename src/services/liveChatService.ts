@@ -1,6 +1,10 @@
 import { ChatItem as YTChatItemData, EmojiItem, ImageItem, MessageItem, MetadataItem } from "youtube-chat-tauri/dist/types/data";
 import { LiveChat as YTLiveChat } from "youtube-chat-tauri";
 import { uuid } from "../utils/uuid";
+import { TwitchChat } from "../utils/twitch";
+import { TwitchConfig } from "../context/config";
+import { LiveChatYouTube } from "./liveChatYouTube";
+import { LiveChatTwitch } from "./liveChatTwitch";
 
 export type ChatItem = YTChatItem | AppChatItem;
 
@@ -22,12 +26,23 @@ interface AppChatItem {
   data: AppChatItemData;
 }
 
-export interface LiveChat {
-  url: string; // 入力
-  metaData: MetadataItem; // 配信情報
-  ytLiveChat: YTLiveChat; // api
-  isStarted: boolean; // 取得を開始しているか
+// export interface LiveChat {
+//   url: string; // 入力
+//   metaData: MetadataItem; // 配信情報
+//   ytLiveChat: YTLiveChat; // api
+//   isStarted: boolean; // 取得を開始しているか
+// }
+
+// LiveChatBaseを継承したやつ
+export type LiveChat = LiveChatYouTube | LiveChatTwitch;
+
+export interface LiveChatBase {
+  id: string;
+  url: string;
+  isStarted: boolean;
+  type: string;
 }
+
 
 export const liveChatService = {
   parseYTLiveId: (url: string): { channelId: string } | {liveId: string} => {
@@ -42,16 +57,31 @@ export const liveChatService = {
     }
     return { liveId: url };
   },
-  createLiveChat: (url: string): LiveChat => {
+  createLiveChatYouTube: (id: string, url: string): LiveChatYouTube => {
     const ytLiveChat = new YTLiveChat(liveChatService.parseYTLiveId(url));
     return {
+      type: "YouTube",
+      id,
       url,
       metaData: {
         title: "",
         description: ""
       },
-      ytLiveChat,
+      api: ytLiveChat,
       isStarted: false,
+    };
+  },
+  createLiveChatTwitch: (id: string, url: string, config: TwitchConfig): LiveChatTwitch => {
+    return {
+      type: "Twitch",
+      id,
+      url,
+      metaData: {
+        title: "",
+        description: ""
+      },
+      api: new TwitchChat({ token: config.token, clientId: config.clientId, name: ""}),
+      isStarted: false
     };
   }
 }

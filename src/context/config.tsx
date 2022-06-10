@@ -4,7 +4,7 @@ export const defaultConfig: AppConfig = {
   maxChatItemNum: 300,
   intervalMs: 3000,
   themeName: "dark",
-  prevUrl: "",
+  prevUrl: [""],
   enableAnonyView: false,
   twitch: {
     clientId: "u7y21ic3v3nsrl9jmxsij78eciy3fl",
@@ -52,7 +52,7 @@ export interface AppConfig {
   maxChatItemNum: number;
   intervalMs: number;
   themeName: string;
-  prevUrl: string;
+  prevUrl: string[];
   enableAnonyView: boolean;
   twitch: TwitchConfig;
   apiServer: ApiServerConfig;
@@ -126,8 +126,16 @@ export function parseJson(rawJson: any, def: AppConfig) {
     res.themeName = def.themeName;
   }
 
-  if (typeof res.prevUrl !== "string") {
+  if (!Array.isArray(res.prevUrl)) {
     res.prevUrl = def.prevUrl;
+  } else {
+    const urlList = [];
+    for (const url of res.prevUrl) {
+      if (typeof url === "string") {
+        urlList.push(url);
+      }
+    }
+    res.prevUrl = urlList;
   }
 
   res.twitch = parseTwitchConfig(res.twitch, def.twitch);

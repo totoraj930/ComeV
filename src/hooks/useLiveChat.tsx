@@ -6,159 +6,198 @@ import { LiveChat as YTLiveChat } from "youtube-chat-tauri";
 import { uuid } from "../utils/uuid"
 import { ChatItemAction, ChatItemContext } from "../context/chatItem";
 import { useSettings } from "./useSettings";
-import { sendBouyomi } from "../utils/bouyomi";
 import { AppConfig } from "../context/config";
-import { sendChatApi } from "../utils/sendChatApi";
+import { TwitchChat } from "../utils/twitch";
+import { createLiveChatYouTube, initYouTubeListener, isYouTubeUrl, parseYouTubeUrl } from "../services/liveChatYouTube";
+import { createLiveChatTwitch, initTwitchListener, isTwitchUrl, parseTwitchUrl } from "../services/liveChatTwitch";
 
 export type LiveChatAction = 
-  | StartYTChatAction
-  | StopYTChatAction
+  | StartChatAction
+  | StopChatAction
   | ChangeUrlAction
-  | ClearYTChatAction;
+  | ClearChatAction;
 
-export interface ChangeUrlAction {
+interface BaseAction {
+  type: string;
+}
+export interface ChangeUrlAction extends BaseAction {
   type: "CHANGE_URL";
   url: string;
+  targetId: string;
 }
-export interface StartYTChatAction {
-  type: "START_YT_CHAT";
+export interface StartChatAction extends BaseAction {
+  type: "START_CHAT";
+  targetId: string;
 }
-export interface StopYTChatAction {
-  type: "STOP_YT_CHAT";
+export interface StopChatAction extends BaseAction {
+  type: "STOP_CHAT";
+  targetId: string;
 }
-export interface ClearYTChatAction {
+export interface ClearChatAction extends BaseAction {
   type: "CLEAR";
 }
-
-function initListener(
-  liveChat: LiveChat,
-  settings: AppConfig,
-  dispatch: (liveChat: LiveChat) => void,
-  dispatchChatItem: React.Dispatch<ChatItemAction>,
-  isFirst: boolean
-) {
-  liveChat.ytLiveChat.removeAllListeners();
-  let _isFirst = isFirst;
-
-  liveChat.ytLiveChat.on("chatlist", (data) => {
-    // まとめてdispatch
-    const items: ChatItem[] = data.map((item) => {
-      return {
-        type: "YouTube",
-        id: uuid(),
-        data: item
-      }
-    });
-    
-    dispatchChatItem({
-      config: settings,
-      type: "ADD",
-      unique: _isFirst,
-      useBouyomi: settings.bouyomi.enable && !_isFirst,
-      actionId: uuid(),
-      chatItem: items
-    });
-
-    _isFirst = false;
-  });
-  liveChat.ytLiveChat.on("metadata", (item) => {
-    liveChat.metaData = {...liveChat.metaData, ...item};
-    dispatch({...liveChat});
-  });
-  liveChat.ytLiveChat.on("error", (data) => {
-    console.error(data);
-    dispatchChatItem({
-      config: settings,
-      type: "ADD",
-      actionId: uuid(),
-      chatItem: [createAppChatItem("error", data as string + "")]
-    });
-  });
-  liveChat.ytLiveChat.on("start", (liveId) => {
-    liveChat.isStarted = true;
-    dispatchChatItem({
-      config: settings,
-      type: "ADD",
-      actionId: uuid(),
-      chatItem: [createAppChatItem("info", `接続しました(${liveId})`)]
-    });
-    dispatch({...liveChat});
-    _isFirst = true;
-  });
-  liveChat.ytLiveChat.on("end", () => {
-    liveChat.isStarted = false;
-    dispatchChatItem({
-      config: settings,
-      type: "ADD",
-      actionId: uuid(),
-      chatItem: [createAppChatItem("info", "切断しました")]
-    });
-    dispatch({...liveChat});
-    _isFirst = true;
-  });
-}
-
 
 
 
 export function useLiveChat() {
-  const { state: liveChat, dispatch } = useContext(LiveChatContext);
+  const { state: liveChatMap, dispatch } = useContext(LiveChatContext);
   const { dispatch: dispatchChatItem } = useContext(ChatItemContext);
   const { settings, settingsUpdater } = useSettings();
 
   useEffect(() => {
-    liveChat.ytLiveChat.interval = settings.intervalMs;
-    initListener(liveChat, settings, dispatch, dispatchChatItem, !liveChat.isStarted);
+    // liveChatMap.ytLiveChat.interval = settings.intervalMs;
+    // initListener(liveChatMap, settings, dispatch, dispatchChatItem, !liveChatMap.isStarted);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings]);
 
-  const liveChatUpdater = (action: LiveChatAction) => {
+  /** LiveChatの操作 */
+  const liveChatUpdater = async (action: LiveChatAction) => {
+    if (!liveChatMap) return;
+    if (action.type === "CLEAR") {
+      dispatchChatItem({
+        config: settings,
+        type: "CLEAR",
+        actionId: uuid(),
+      })
+      return;
+    }
+    let liveChat = {...liveChatMap[action.targetId]};
     if (!liveChat) return;
-    switch (action.type) {
-      case "CLEAR": {
-        dispatchChatItem({
-          config: settings,
-          type: "CLEAR",
-          actionId: uuid(),
-        })
-        break;
-      }
-      case "START_YT_CHAT": {
-        liveChat.ytLiveChat.start();
-        break;
-      }
-      case "STOP_YT_CHAT": {
-        liveChat.ytLiveChat.stop();
-        liveChat.isStarted = false;
-        break;
-      }
-      case "CHANGE_URL": {
-        if (liveChat.ytLiveChat.liveId && liveChat.isStarted) {
-          liveChat.ytLiveChat.stop();
-          liveChat.ytLiveChat.removeAllListeners();
-        }
-        liveChat.isStarted = false;
-        const liveIdOrChId = liveChatService.parseYTLiveId(action.url);
-        liveChat.ytLiveChat = new YTLiveChat(liveIdOrChId, settings.intervalMs, 5000);
 
-        initListener(liveChat, settings, dispatch, dispatchChatItem, true);
+    // YouTube ------------------------------------------------------
+    if (liveChat.type === "YouTube") {
+      switch (action.type) {
+        case "CHANGE_URL": {
+          liveChat.api.stop();
+          liveChat.api.removeAllListeners();
+          break;
+        }
+        case "STOP_CHAT": {
+          liveChat.api.stop();
+          break;
+        }
+      }
+    }
+    // Twitch ------------------------------------------------------
+    else if (liveChat.type === "Twitch") {
+      switch (action.type) {
+        case "CHANGE_URL": {
+          liveChat.api.stop();
+          liveChat.api.removeAllListeners();
+          break;
+        }
+        case "STOP_CHAT": {
+          liveChat.api.stop();
+          break;
+        }
+      }
+    }
+
+    // 両方 ------------------------------------------------------
+    switch (action.type) {
+      case "CHANGE_URL": {
+        liveChat.isStarted = false;
+        liveChat.url = action.url;
+
+        const prevUrl: string[] = [];
+        for (const id in liveChatMap) {
+          prevUrl.push(liveChatMap[id].url);
+        }
 
         settingsUpdater({
           type: "CHANGE_SAVE",
-          data: {...settings, prevUrl: action.url}
+          data: {...settings, prevUrl}
         });
-
-        liveChat.metaData.title = "";
-        liveChat.metaData.viewership = undefined;
         
         break;
       }
+      case "START_CHAT": {
+        // API接続時にURLを判定
+        if (isYouTubeUrl(liveChat.url)) {
+          // YouTubeに接続する処理 --------------------------------------
+          const liveChatYouTube = createLiveChatYouTube(
+            liveChat.id,
+            liveChat.url,
+            settings);
+          
+          if (!liveChatYouTube) {
+            dispatchChatItem({
+              type: "ADD",
+              actionId: uuid(),
+              config: settings,
+              chatItem: [createAppChatItem("error", "対応していないYouTubeのURLです。")]
+            });
+            return;
+          }
+          liveChat = liveChatYouTube;
+          initYouTubeListener(
+            liveChat,
+            settings,
+            dispatch,
+            dispatchChatItem,
+            true);
+          liveChat.api.start();
+        }
+        else if (isTwitchUrl(liveChat.url)) {
+          // Twitchに接続する処理 --------------------------------------
+          const liveChatTwitch = createLiveChatTwitch(
+            liveChat.id,
+            liveChat.url,
+            settings);
+
+            if (!liveChatTwitch) {
+              dispatchChatItem({
+                type: "ADD",
+                actionId: uuid(),
+                config: settings,
+                chatItem: [createAppChatItem("error", "対応していないTwitchのURLです。")]
+              });
+              return;
+            }
+            liveChat = liveChatTwitch;
+            initTwitchListener(
+              liveChat,
+              settings,
+              dispatch,
+              dispatchChatItem,
+              true);
+            try {
+              // ログインして接続
+              const token = await liveChat.api.login();
+              settingsUpdater({ type: "UPDATE_TWITCH_TOKEN", token });
+              const channelId = parseTwitchUrl(liveChat.url);
+              await liveChat.api.start(channelId || "");
+            } catch (err) {
+              console.error(err);
+              dispatchChatItem({
+                type: "ADD",
+                actionId: uuid(),
+                config: settings,
+                chatItem: [createAppChatItem("error", "Twitchとの連携に失敗しました。")]
+              });
+            }
+        }
+        else {
+          dispatchChatItem({
+            type: "ADD",
+            actionId: uuid(),
+            config: settings,
+            chatItem: [createAppChatItem("error", "対応していないURLです。")]
+          });
+          return;
+        }
+        break;
+      }
     }
-    dispatch({...liveChat});
+    dispatch({
+      type: "UPDATE",
+      targetId: liveChat.id,
+      liveChat,
+    });
   };
 
   return {
-    liveChat,
+    liveChat: liveChatMap,
     liveChatUpdater
   };
 }

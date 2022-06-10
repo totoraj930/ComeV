@@ -10,12 +10,11 @@ import { useSettings } from '../hooks/useSettings';
 import { requestBouyomi } from '../utils/bouyomi';
 import { ChatItemContext } from '../context/chatItem';
 import { SettingsView } from './SettingsView';
-import { AppConfig, copyConfig } from '../context/config';
+import { AppConfig } from '../context/config';
 import { sendChatApi } from '../utils/sendChatApi';
 import { writeFile } from '../utils/tauriInvoke';
 import { TwitchChat } from '../utils/twitch';
 import { DummySender } from './DummySender';
-import { listen, UnlistenFn } from '@tauri-apps/api/event';
 import { uuid } from '../utils/uuid';
 import { createAppChatItem } from '../services/liveChatService';
 
@@ -25,32 +24,11 @@ export const LiveView: React.VFC<{
   
   const { liveChat, liveChatUpdater } = useLiveChat();
   const { state: chatItems, dispatch: dispatchChatItem } = useContext(ChatItemContext);
-  const [url, setUrl] = useState<string>(liveChat.url);
 
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
   const [isShowSettings, setIsShowSettings] = useState<boolean>(false);
   // const { state: config } = useContext(AppConfigContext);
   const { settings, settingsUpdater } = useSettings();
-
-  const onChangeUrl = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUrl(event.target.value);
-  }
-
-  const onClickConnect = useCallback(() => {
-    liveChatUpdater({
-      type: "CHANGE_URL",
-      url
-    });
-    liveChatUpdater({
-      type: "START_YT_CHAT"
-    });
-  }, [liveChatUpdater, url]);
-
-  const onClickPause = useCallback(() => {
-    liveChatUpdater({
-      type: "STOP_YT_CHAT"
-    });
-  }, [liveChatUpdater]);
 
   const onCloseSettings = useCallback((resSettings: AppConfig, isCancel: boolean) => {
     setIsShowSettings(false);
@@ -61,18 +39,8 @@ export const LiveView: React.VFC<{
     });
   }, [settingsUpdater]);
 
-  const onClickOpenInBrowser = useCallback((useDashboard) => {
-    if (!liveChat.ytLiveChat.liveId) return;
-    const liveId = liveChat.ytLiveChat.liveId;
-    let url = `https://www.youtube.com/watch?v=${liveId}`;
-    if (useDashboard) {
-      url = `https://studio.youtube.com/video/${liveId}/livestreaming`;
-    }
-    invoke("open_in_browser", { url });
-  }, [liveChat]);
 
   useEffect(() => {
-    setUrl(settings.prevUrl);
     // console.log(settings);
   }, [settings]);
 
@@ -98,51 +66,8 @@ export const LiveView: React.VFC<{
   {/* <Titlebar size="m" title="ComeV" /> */}
   <Main>
     <ChatControl>
-      <Line>
-        { liveChat.isStarted && (
-          <button onClick={onClickPause} className="btn-base-1 btn-2" title="切断">
-            <MdPause className="icon" />
-            <span className="hide-400">切断</span>
-          </button>
-        )}
-        { !liveChat.isStarted && (
-          <button onClick={onClickConnect} className="btn-base-1 btn-1" title="接続">
-            <MdPlayArrow className="icon" />
-            <span className="hide-400">接続</span>
-          </button>
-        )}
-
-        <Btn2 onClick={() => onClickOpenInBrowser(false)} title="ブラウザで開く">
-          <MdOpenInBrowser className="icon" />
-        </Btn2>
-
-        <Btn2 onClick={() => onClickOpenInBrowser(true)} title="管理画面をブラウザで開く">
-          <MdDashboard className="icon" />
-        </Btn2>
-
-        <input className="url" type="text" name="url" id="url"
-          readOnly={liveChat.isStarted} value={url} onChange={onChangeUrl}
-          placeholder="配信URL or チャンネルURL(推奨)"/>
-
-        <Btn1 onClick={() => setIsShowSettings(true)} title="設定">
-          <span className="hide-400">設定</span>
-          <MdSettings className="icon" />
-        </Btn1>
-
-      </Line>
-      
       
       <Line>
-        <LiveInfo>
-          <p className="viewer">
-            <MdPerson className="icon" />
-            <span>{liveChat.metaData.viewership || "…"}</span>
-          </p>
-          <p className="title" title={liveChat.metaData.title || ""}>
-            <span className="dummy">...</span>
-            <span>{liveChat.metaData.title || ""}</span>
-          </p>
-        </LiveInfo>
         <div className="line-r">
           {!isShowMenu && (
             <Btn2 onClick={() => setIsShowMenu(true)} title="メニュー">
