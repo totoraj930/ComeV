@@ -135,7 +135,7 @@ export function parseJson(rawJson: any, def: AppConfig) {
         urlList.push(url);
       }
     }
-    res.prevUrl = urlList;
+    res.prevUrl = urlList.length ? urlList : [""];
   }
 
   res.twitch = parseTwitchConfig(res.twitch, def.twitch);

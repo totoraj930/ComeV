@@ -34,13 +34,33 @@ interface AppChatItem {
 // }
 
 // LiveChatBaseを継承したやつ
-export type LiveChat = LiveChatYouTube | LiveChatTwitch;
+export type LiveChat = LiveChatYouTube | LiveChatTwitch | LiveChatEmpty;
 
+export interface LiveChatMetaData {
+  title?: string;
+  description?: string;
+  viewership?: string;
+}
 export interface LiveChatBase {
   id: string;
   url: string;
   isStarted: boolean;
   type: string;
+  metaData: LiveChatMetaData;
+}
+
+export interface LiveChatEmpty extends LiveChatBase {
+  type: "Empty";
+}
+
+export function createLiveChatEmpty(id: string, url: string): LiveChatEmpty {
+  return {
+    id,
+    url,
+    isStarted: false,
+    type: "Empty",
+    metaData: {}
+  };
 }
 
 

@@ -17,6 +17,7 @@ interface LiveChatContextProps {
 
 export type LiveChatContextAction =
   | UpdateAction
+  | AddAction
   | DeleteAction;
 
 interface BaseAction {
@@ -28,6 +29,10 @@ interface UpdateAction extends BaseAction {
   targetId: string;
   liveChat: LiveChat;
 }
+interface AddAction extends BaseAction {
+  type: "ADD";
+  liveChat: LiveChat;
+}
 interface DeleteAction extends BaseAction {
   type: "DELETE";
   targetId: string;
@@ -35,6 +40,12 @@ interface DeleteAction extends BaseAction {
 
 function liveChatReducer(state: LiveChatContextState, action: LiveChatContextAction) {
   switch (action.type) {
+    case "ADD": {
+      if (!(action.liveChat.id in state)) {
+        state[action.liveChat.id] = action.liveChat;
+      }
+      break;
+    }
     case "UPDATE": {
       if (action.targetId in state) {
         state[action.targetId] = action.liveChat;

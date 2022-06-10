@@ -58,35 +58,21 @@ export function useSettings() {
   const { state, dispatch } = useContext(AppConfigContext);
   const { dispatch: dispatchChatItem } = useContext(ChatItemContext);
 
-  const updater = useCallback((action: SettingsManagerAction) => {
+  const updater = async (action: SettingsManagerAction): Promise<AppConfig> => {
     switch (action.type) {
       case "LOAD": {
-        initConfigDir()
-        .then(() => fs.readDir("./", { dir: BASE_DIR }))
-        .then(async (files) => {
+        try {
+          await initConfigDir();
+          const files = await fs.readDir("./", { dir: BASE_DIR });
+          let rawText = "{}";
           for (const file of files) {
-            if (file.name === FILE_PATH) {
-              const rawText = await fs.readTextFile(FILE_PATH, { dir: BASE_DIR });
-              try {
-                console.log("LOAD: setting.json");
-                const rawJson = JSON.parse(rawText);
-                const res = parseJson(rawJson, state);
-                saveConfig(res).catch(() => {
-                  dispatchChatItem({
-                    config: state,
-                    type: "ADD",
-                    actionId: uuid(),
-                    chatItem: [createAppChatItem("error", "設定ファイルの保存に失敗しました")]
-                  });
-                });
-                return Promise.resolve(res);
-              } catch (err) {
-                return Promise.reject(err);
-              }
-            }
+            if (file.name !== FILE_PATH) continue;
+            rawText = await fs.readTextFile(FILE_PATH, { dir: BASE_DIR });
+            break;
           }
-          console.log("INIT: setting.json");
-          saveConfig(state).catch(() => {
+          const rawJson = JSON.parse(rawText);
+          const res = parseJson(rawJson, state);
+          saveConfig(res).catch(() => {
             dispatchChatItem({
               config: state,
               type: "ADD",
@@ -94,26 +80,20 @@ export function useSettings() {
               chatItem: [createAppChatItem("error", "設定ファイルの保存に失敗しました")]
             });
           });
-          return state;
-        })
-        .then((res) => {
           dispatchChatItem({
             config: state,
             type: "ADD",
             actionId: uuid(),
             chatItem: [createAppChatItem("log", "設定ファイルを読み込みました")]
           });
-          dispatch({
-            type: "CHANGE",
-            data: res
-          });
           if (res.apiServer.enable) {
             invoke("start_chat_server", { port: res.apiServer.port });
           } else {
             invoke("stop_chat_server");
           }
-        })
-        .catch((err) => {
+          dispatch({ type: "CHANGE", data: res });
+          return res;
+        } catch (err) {
           console.error(err);
           dispatchChatItem({
             config: state,
@@ -121,19 +101,19 @@ export function useSettings() {
             actionId: uuid(),
             chatItem: [createAppChatItem("error", "設定ファイルの読み込みに失敗しました")]
           });
-        });
-        break;
+          return state;
+        }
       }
       case "SAVE": {
         saveConfig(state);
-        break;
+        return state;
       }
       case "CHANGE": {
         dispatch({
           type: "CHANGE",
           data: copyConfig(action.data)
         });
-        break;
+        return action.data;
       }
       case "CHANGE_SAVE": {
         const res = {...copyConfig(state), ...copyConfig(action.data)};
@@ -142,7 +122,7 @@ export function useSettings() {
           data: res
         });
         saveConfig(res);
-        break;
+        return res;
       }
       case "UPDATE_TWITCH_TOKEN": {
         const res: AppConfig = {
@@ -157,13 +137,13 @@ export function useSettings() {
           data: res
         });
         saveConfig(res);
-        break;
+        return res;
       }
       default: {
-        break;
+        return state;
       }
     }
-  }, [state, dispatch, dispatchChatItem]);
+  };
 
   return {
     settings: state,

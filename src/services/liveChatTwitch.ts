@@ -2,14 +2,18 @@ import { ChatItemAction } from "../context/chatItem";
 import { AppConfig } from "../context/config";
 import { LiveChatContextAction } from "../context/liveChat";
 import { TwitchChat } from "../utils/twitch";
-import { LiveChatBase } from "./liveChatService";
+import { uuid } from "../utils/uuid";
+import { createAppChatItem, LiveChatBase, LiveChatMetaData } from "./liveChatService";
 
+export interface TwitchMetaData extends LiveChatMetaData {
+
+}
 
 // Twitch用
 export interface LiveChatTwitch extends LiveChatBase {
   type: "Twitch";
   api: TwitchChat;
-  metaData?: unknown; // TODO: 実装して
+  metaData: TwitchMetaData; // TODO: 実装して
 }
 
 export function createLiveChatTwitch(
@@ -56,6 +60,36 @@ export function initTwitchListener(
 ) {
   liveChat.api.removeAllListeners();
 
+  liveChat.api.on("start", () => {
+    liveChat.isStarted = true;
+    dispatchChatItem({
+      config: settings,
+      type: "ADD",
+      actionId: uuid(),
+      chatItem: [createAppChatItem("info", `接続しました(${""})`)]
+    });
+    dispatch({
+      type: "UPDATE",
+      targetId: liveChat.id,
+      liveChat: {...liveChat}
+    });
+  });
+
+  liveChat.api.on("end", () => {
+    liveChat.isStarted = false;
+    dispatchChatItem({
+      config: settings,
+      type: "ADD",
+      actionId: uuid(),
+      chatItem: [createAppChatItem("info", "切断しました")]
+    });
+    dispatch({
+      type: "UPDATE",
+      targetId: liveChat.id,
+      liveChat: {...liveChat}
+    });
+  });
+  
   liveChat.api.on("chat", (item) => {
 
   });

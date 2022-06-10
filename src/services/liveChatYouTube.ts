@@ -1,5 +1,5 @@
 import { MetadataItem } from "youtube-chat-tauri/dist/types/data";
-import { ChatItem, createAppChatItem, LiveChatBase } from "./liveChatService";
+import { ChatItem, createAppChatItem, LiveChatBase, LiveChatMetaData } from "./liveChatService";
 import { LiveChat as YTLiveChat } from "youtube-chat-tauri";
 import { AppConfig } from "../context/config";
 import { ChatItemAction } from "../context/chatItem";
@@ -7,11 +7,15 @@ import React from "react";
 import { LiveChatContextAction } from "../context/liveChat";
 import { uuid } from "../utils/uuid";
 
+export interface YouTubeMetaData extends LiveChatMetaData {
+  like?: number;
+  dateText?: string;
+}
 // YouTube用
 export interface LiveChatYouTube extends LiveChatBase {
   type: "YouTube";
   api: YTLiveChat;
-  metaData: MetadataItem;
+  metaData: YouTubeMetaData;
 }
 
 export function createLiveChatYouTube(
@@ -100,7 +104,15 @@ export function initYouTubeListener(
     _isFirst = false;
   });
   liveChat.api.on("metadata", (item) => {
-    liveChat.metaData = {...liveChat.metaData, ...item};
+    
+    const metaData: YouTubeMetaData = {};
+    if (item.title) metaData.title = item.title;
+    if (item.description) metaData.description = item.description;
+    if (item.viewership) metaData.viewership = item.viewership + "";
+    if (item.like) metaData.like = item.like;
+    if (item.dateText) metaData.dateText = item.dateText;
+    liveChat.metaData = {...liveChat.metaData, ...metaData};
+
     dispatch({
       type: "UPDATE",
       targetId: liveChat.id,

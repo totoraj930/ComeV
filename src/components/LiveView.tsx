@@ -1,8 +1,8 @@
 
 import styled from 'styled-components';
 import { useLiveChat } from '../hooks/useLiveChat';
-import { MdPlayArrow, MdPause, MdDeleteForever, MdPerson, MdMenu, MdExpandLess, MdSettingsSuggest, MdFastForward, MdSkipNext, MdSettings, MdOpenInBrowser, MdDashboard } from "react-icons/md";
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { MdPlayArrow, MdPause, MdDeleteForever, MdPerson, MdMenu, MdExpandLess, MdSettingsSuggest, MdFastForward, MdSkipNext, MdSettings, MdOpenInBrowser, MdDashboard, MdPlusOne, MdPlaylistAdd } from "react-icons/md";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ChatView } from '../components/ChatView';
 import { fs } from "@tauri-apps/api"
 import { invoke } from "../utils/tauriInvoke"
@@ -16,15 +16,20 @@ import { writeFile } from '../utils/tauriInvoke';
 import { TwitchChat } from '../utils/twitch';
 import { DummySender } from './DummySender';
 import { uuid } from '../utils/uuid';
-import { createAppChatItem } from '../services/liveChatService';
+import { createAppChatItem, createLiveChatEmpty, LiveChat } from '../services/liveChatService';
+import { LiveControl } from './LiveControl';
+import { LiveChatContext } from '../context/liveChat';
+import { LiveInfoView } from './LiveInfoView';
 
 
 export const LiveView: React.VFC<{
 }> = () => {
   
-  const { liveChat, liveChatUpdater } = useLiveChat();
+  const { dispatch: dispatchLiveChat } = useContext(LiveChatContext);
+  const { liveChatMap, liveChatUpdater } = useLiveChat();
   const { state: chatItems, dispatch: dispatchChatItem } = useContext(ChatItemContext);
 
+  const isFirstLoad = useRef(true);
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
   const [isShowSettings, setIsShowSettings] = useState<boolean>(false);
   // const { state: config } = useContext(AppConfigContext);
@@ -38,6 +43,11 @@ export const LiveView: React.VFC<{
       data: {...resSettings}
     });
   }, [settingsUpdater]);
+  
+  const liveChatList: LiveChat[] = useMemo(() => {
+    console.log(Object.keys(liveChatMap))
+    return Object.keys(liveChatMap).map((id) => liveChatMap[id]);
+  }, [liveChatMap]);
 
 
   useEffect(() => {
@@ -53,12 +63,19 @@ export const LiveView: React.VFC<{
     // 設定読み込み
     settingsUpdater({
       type: "LOAD"
+    }).then((_settings) => {
+      for (const url of _settings.prevUrl) {
+        if (Object.keys(liveChatMap).length) return;
+        dispatchLiveChat({
+          type: "ADD",
+          liveChat: createLiveChatEmpty(uuid(), url)
+        });
+      }
     });
 
 
     return () => {
     }
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -67,23 +84,30 @@ export const LiveView: React.VFC<{
   <Main>
     <ChatControl>
       
-      <Line>
-        <div className="line-r">
-          {!isShowMenu && (
-            <Btn2 onClick={() => setIsShowMenu(true)} title="メニュー">
-              <span className="hide-400">メニュー</span>
-              <MdMenu className="icon" />
-              {/* <MdExpandMore className="icon" /> */}
-            </Btn2>
-          )}
-          {isShowMenu && (
-            <Btn2 onClick={() => setIsShowMenu(false)} title="閉じる">
-                <span className="hide-400">閉じる</span>
-              <MdExpandLess className="icon" />
-            </Btn2>
-          )}
-        </div>
-      </Line>
+      <LiveControlList>
+        { liveChatList.map((liveChat) => {
+          return <LiveControl liveChat={liveChat} key={liveChat.id} />
+        }) }
+      </LiveControlList>
+      <InfoBar>
+        <InfoBarLeft>
+          <Btn2 onClick={() => setIsShowSettings(true)} title="設定">
+            <MdSettings className="icon" />
+            <span className="hide-400">設定</span>
+          </Btn2>
+          <LiveInfoView liveChatList={liveChatList} />
+        </InfoBarLeft>
+        <InfoBarRight>
+          <Btn2 onClick={() => setIsShowMenu(!isShowMenu)}
+            title={isShowMenu ? "閉じる" : "メニュー"}>
+            { isShowMenu && <span className="hide-400">閉じる</span> }
+            { isShowMenu && <MdExpandLess className="icon" /> }
+
+            { !isShowMenu && <span className="hide-400">メニュー</span> }
+            { !isShowMenu && <MdMenu className="icon" /> }
+          </Btn2>
+        </InfoBarRight>
+      </InfoBar>
       
       {isShowMenu && (
         <MenuPanel>
@@ -101,6 +125,17 @@ export const LiveView: React.VFC<{
               <MdDeleteForever className="icon" />
               <span>クリア</span>
             </Btn2>
+
+            <Btn2 onClick={() => {
+              dispatchLiveChat({
+                type: "ADD",
+                liveChat: createLiveChatEmpty(uuid(), "")
+              });
+            }} className="warn">
+              <MdPlaylistAdd className="icon" />
+              <span>接続先を追加</span>
+            </Btn2>
+            
 
             <Btn2 onClick={() => {
               console.log(settings);
@@ -295,6 +330,7 @@ const ChatControl = styled.div`
 `;
 
 
+
 export const Line = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -313,6 +349,30 @@ export const Line = styled.div`
   @media screen and (max-width: 550px) {
     padding: 5px 6px;
   }
+`;
+
+const LiveControlList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 5px 7px;
+`;
+const InfoBar = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  padding: 5px 7px;
+`;
+const InfoBarLeft = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 1;
+  flex-grow: 1;
+  gap: 5px;
+`;
+const InfoBarRight = styled.div`
+  display: flex;
+  flex-direction: row;
 `;
 
 const LiveInfo = styled.div`
@@ -362,22 +422,8 @@ const LiveInfo = styled.div`
 `;
 
 const MenuPanel = styled.div`
-  /* position: absolute;
-  width: 100%;
-  top: 100%;
-  left: 0; */
   background: var(--c-menu-bg);
   z-index: 10;
-  /* &:after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: -${ctlShadowSize*2}px;
-    width: calc(100% + ${ctlShadowSize*2}px);
-    height: ${ctlShadowSize}px;
-    box-shadow: inset 20px ${ctlShadowSize}px ${ctlShadowSize}px -${ctlShadowSize}px var(--c-shadow);
-    pointer-events: none;
-  } */
   .title {
     min-width: 100px;
     color: var(--c-text-2);
@@ -470,23 +516,6 @@ export const Switch = styled.label`
   }
 `;
 
-const Btn1 = styled.button`
-  display: flex;
-  align-items: center;
-  background: transparent;
-  color: var(--c-text);
-  cursor: pointer;
-  &:hover {
-    color: var(--c-btn-1-bg);
-  }
-  &.warn:hover {
-    color: var(--c-text-warn);
-  }
-  .icon {
-    width: 20px;
-    height: 20px;
-  }
-`;
 
 export const Btn2 = styled.button`
   display: flex;
@@ -495,6 +524,8 @@ export const Btn2 = styled.button`
   color: var(--c-text);
   align-items: center;
   font-size: 14px;
+  min-width: 20px;
+  min-height: 20px;
   .icon {
     min-width: 20px;
     min-height: 20px;

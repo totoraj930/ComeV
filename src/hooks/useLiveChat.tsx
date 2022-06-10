@@ -12,6 +12,7 @@ import { createLiveChatYouTube, initYouTubeListener, isYouTubeUrl, parseYouTubeU
 import { createLiveChatTwitch, initTwitchListener, isTwitchUrl, parseTwitchUrl } from "../services/liveChatTwitch";
 
 export type LiveChatAction = 
+  | DeleteAction
   | StartChatAction
   | StopChatAction
   | ChangeUrlAction
@@ -35,6 +36,10 @@ export interface StopChatAction extends BaseAction {
 }
 export interface ClearChatAction extends BaseAction {
   type: "CLEAR";
+}
+export interface DeleteAction extends BaseAction {
+  type: "DELETE";
+  targetId: string;
 }
 
 
@@ -74,6 +79,13 @@ export function useLiveChat() {
         }
         case "STOP_CHAT": {
           liveChat.api.stop();
+          liveChat.isStarted = false;
+          break;
+        }
+        case "DELETE": {
+          if (liveChat.isStarted) {
+            liveChat.api.stop();
+          }
           break;
         }
       }
@@ -87,7 +99,14 @@ export function useLiveChat() {
           break;
         }
         case "STOP_CHAT": {
-          liveChat.api.stop();
+          await liveChat.api.stop();
+          liveChat.isStarted = false;
+          break;
+        }
+        case "DELETE": {
+          if (liveChat.isStarted) {
+            liveChat.api.stop();
+          }
           break;
         }
       }
@@ -95,12 +114,34 @@ export function useLiveChat() {
 
     // 両方 ------------------------------------------------------
     switch (action.type) {
+      case "DELETE": {
+        dispatch({
+          type: "DELETE",
+          targetId: action.targetId
+        });
+
+        const prevUrl: string[] = [];
+        for (const id in liveChatMap) {
+          if (id === action.targetId) continue;
+          prevUrl.push(liveChatMap[id].url);
+        }
+
+        settingsUpdater({
+          type: "CHANGE_SAVE",
+          data: {...settings, prevUrl}
+        });
+        return;
+      }
       case "CHANGE_URL": {
         liveChat.isStarted = false;
         liveChat.url = action.url;
 
         const prevUrl: string[] = [];
         for (const id in liveChatMap) {
+          if (id === action.targetId) {
+            prevUrl.push(action.url);
+            continue;
+          }
           prevUrl.push(liveChatMap[id].url);
         }
 
@@ -112,6 +153,17 @@ export function useLiveChat() {
         break;
       }
       case "START_CHAT": {
+        try {
+          new window.URL(liveChat.url);
+        } catch {
+          dispatchChatItem({
+            type: "ADD",
+            actionId: uuid(),
+            config: settings,
+            chatItem: [createAppChatItem("error", "対応していないURLです。")]
+          });
+          return;
+        }
         // API接続時にURLを判定
         if (isYouTubeUrl(liveChat.url)) {
           // YouTubeに接続する処理 --------------------------------------
@@ -197,7 +249,7 @@ export function useLiveChat() {
   };
 
   return {
-    liveChat: liveChatMap,
+    liveChatMap,
     liveChatUpdater
   };
 }
