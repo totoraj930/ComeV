@@ -1,4 +1,4 @@
-import { MetadataItem } from "youtube-chat-tauri/dist/types/data";
+import { MetadataItem, YouTubeLiveId } from "youtube-chat-tauri/dist/types/data";
 import { ChatItem, createAppChatItem, LiveChatBase, LiveChatMetaData } from "./liveChatService";
 import { LiveChat as YTLiveChat } from "youtube-chat-tauri";
 import { AppConfig } from "../context/config";
@@ -42,10 +42,7 @@ export function isYouTubeUrl(urlStr: string) {
   return false;
 }
 
-type YouTubeUrlData = 
-  | { liveId: string }
-  | { channelId: string }
-export function parseYouTubeUrl(urlStr: string): YouTubeUrlData | null {
+export function parseYouTubeUrl(urlStr: string): YouTubeLiveId | null {
   if (!isYouTubeUrl(urlStr)) return null;
   const url = new window.URL(urlStr);
   if (url.pathname === "/watch") {
@@ -63,7 +60,7 @@ export function parseYouTubeUrl(urlStr: string): YouTubeUrlData | null {
     // チャンネルURL
     const parts = url.pathname.split("/");
     if (parts[1] === "c" && parts[2]) {
-      return { channelId: parts[2] }
+      return { customChannelId: parts[2] }
     }
     else if (parts[1] === "channel" && parts[2]) {
       return { channelId: parts[2] }
