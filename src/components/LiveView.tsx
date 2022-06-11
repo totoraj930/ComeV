@@ -139,35 +139,6 @@ export const LiveView: React.VFC<{
 
             <Btn2 onClick={() => {
               console.log(settings);
-              const twitchChat = new TwitchChat({
-                token: settings.twitch.token,
-                clientId: settings.twitch.clientId,
-                name: "ComeV"
-              });
-              twitchChat.on("token", () => {
-                dispatchChatItem({
-                  type: "ADD",
-                  actionId: uuid(),
-                  config: settings,
-                  chatItem: [createAppChatItem("info", "Twitchにログインしました")]
-                });
-              });
-
-              twitchChat.login()
-              .then((token) => {
-                settingsUpdater({
-                  type: "CHANGE_SAVE",
-                  data: {...settings, twitch: { ...settings.twitch, token: token }}
-                });
-              })
-              .catch((err) => {
-                dispatchChatItem({
-                  type: "ADD",
-                  actionId: uuid(),
-                  config: settings,
-                  chatItem: [createAppChatItem("error", "Twitchのログインに失敗しました")]
-                });
-              });
             }}>
               <span>テスト</span>
             </Btn2>

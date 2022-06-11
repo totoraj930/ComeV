@@ -60,13 +60,13 @@ export function initTwitchListener(
 ) {
   liveChat.api.removeAllListeners();
 
-  liveChat.api.on("start", () => {
+  liveChat.api.on("start", (channel) => {
     liveChat.isStarted = true;
     dispatchChatItem({
       config: settings,
       type: "ADD",
       actionId: uuid(),
-      chatItem: [createAppChatItem("info", `接続しました(${""})`)]
+      chatItem: [createAppChatItem("info", `接続しました(${channel})`)]
     });
     dispatch({
       type: "UPDATE",
@@ -89,8 +89,22 @@ export function initTwitchListener(
       liveChat: {...liveChat}
     });
   });
-  
-  liveChat.api.on("chat", (item) => {
 
+  liveChat.api.on("chat", (item) => {
+    console.log(item);
+  });
+
+  liveChat.api.on("metadata", (item) => {
+    const metaData: TwitchMetaData = {
+      title: item.title,
+      viewership: item.viewer_count + "",
+    };
+    liveChat.metaData = {...liveChat.metaData, ...metaData};
+
+    dispatch({
+      type: "UPDATE",
+      targetId: liveChat.id,
+      liveChat: {...liveChat}
+    });
   });
 }

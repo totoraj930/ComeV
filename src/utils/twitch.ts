@@ -12,6 +12,28 @@ export interface TwitchChatOptions {
   name: string;
 }
 
+// https://api.twitch.tv/helix/streams?user_id={id}
+// https://dev.twitch.tv/docs/api/reference#get-streams
+interface TwitchStreamResponse {
+  game_id: string;
+  game_name: string;
+  id: string; // stream id
+  is_mature: boolean; // false
+  language: string; // "ja"
+  started_at: string; // "2022-06-10T16:46:41Z"
+  tag_ids: string[];
+  thumbnail_url: string; // "https://static-cdn.jtvnw.net/previews-ttv/live_user_hogehoge-{width}x{height}.jpg"
+  title: string;
+  type: "live" | ""
+  user_id: string;
+  user_login: string; 
+  user_name: string;
+  viewer_count: number;
+}
+interface TwitchGetStreamsResponse {
+  data: TwitchStreamResponse[]
+}
+
 type EmoteUrlSize = "url_1x" | "url_2x" | "url_4x";
 type EmoteType = "bitstier" | "follower" | "subscriptions"
   | "smilies" | "prime" | "twofactor";
@@ -93,9 +115,10 @@ export interface TwitchChatItem {
 }
 
 type TwitchChatEvents = {
-  start: () => void;
+  start: (channel: string) => void;
   end: () => void;
   chat: (item: TwitchChatItem) => void;
+  metadata: (metadata: TwitchStreamResponse) => void;
   token: (token: string) => void;
   error: (err: Error | unknown) => void;
 }
@@ -112,6 +135,8 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
   #emotes: { [key: string]: TwitchEmote } = {};
   #emote_sets: string[] = [];
   #isStarted = false;
+
+  #metaTimer: NodeJS.Timeout | null = null;
   constructor(options: TwitchChatOptions) {
     super();
     this.#token = options.token;
@@ -133,6 +158,10 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
         this.getChannelEmote(this.#roomId);
         this.getGlobalBadges();
         this.getChannelBadges(this.#roomId);
+        if (this.#metaTimer) {
+          clearTimeout(this.#metaTimer);
+        }
+        this.#executeMetaUpdate();
       }
     });
     this.#tmi.on("message", (channel, userState, message, self) => {
@@ -150,26 +179,47 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
       await this.validateToken();
     } catch(err) {
       const token = await this.getToken();
+      console.log(token);
       this.#token = token;
       this.emit("token", token);
+      // tokenに合わせてクライアントも更新
+      this.#tmi = new TmiClient({
+        options: {
+          debug: true,
+          skipUpdatingEmotesets: true
+        },
+        identity: {
+          username: this.#name,
+          password: this.#token,
+        }
+      });
+      return token;
     }
     return this.#token;
   }
 
   /** 指定されたチャンネルに接続 */
   async start(channel: string) {
+    if (this.#metaTimer) {
+      clearTimeout(this.#metaTimer);
+      this.#metaTimer = null;
+    }
     if (this.#isStarted) {
       await this.stop();
     }
     await this.#tmi.connect();
+    this.#isStarted = true;
     await this.#tmi.join(channel);
     this.#channel = channel;
-    this.#isStarted = true;
-    this.emit("start");
+    this.emit("start", channel);
   }
 
   /** 切断する */
   async stop() {
+    if (this.#metaTimer) {
+      clearTimeout(this.#metaTimer);
+      this.#metaTimer = null;
+    }
     if (!this.#isStarted) return;
     await this.#tmi.disconnect();
     this.#isStarted = false;
@@ -187,7 +237,7 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
       id: userState.id || uuid(),
       auther: this.createUser(userState),
       message: message,
-      timestamp: new Date(userState["tmi-sent-ts"] || Date.now())
+      timestamp: new Date( parseInt(userState["tmi-sent-ts"] || Date.now() + "") )
     }
   }
 
@@ -273,7 +323,16 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
     parts.sort((a, b) => a.start - b.start);
     return parts.map((part): TwitchEmote | string => {
       if (part.emoteId) {
-        return this.#emotes[part.emoteId] || `:${part.name}:`;
+        let emote: TwitchEmote = this.#emotes[part.emoteId];
+        if (!emote) {
+          emote = {
+            id: part.emoteId,
+            name: part.name || part.emoteId,
+            url: `https://static-cdn.jtvnw.net/emoticons/v2/${part.emoteId}/default/light/2.0`
+          };
+          console.log(emote.url);
+        }
+        return emote;
       } else if (part.text) {
         return part.text;
       }
@@ -411,7 +470,7 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
         if (searchParams.has("access_token")) {
           resolve(searchParams.get("access_token") as string);
         } else {
-          reject("error");
+          reject("cancel");
         }
       });
       invoke("open_in_browser", { url: `https://id.twitch.tv/oauth2/authorize?${query}` });
@@ -431,6 +490,25 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
     }
   }
 
+  async #executeMetaUpdate() {
+    try {
+      const res = await this.getStreams(this.#roomId || "1");
+      if (res.data[0]) {
+        this.emit("metadata", res.data[0]);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    this.#metaTimer = setTimeout(this.#executeMetaUpdate.bind(this), 1000 * 30);
+  }
+
+  async getStreams(id: string) {
+    const req = new Request(`https://api.twitch.tv/helix/streams?user_id=${id}`);
+    const res = await fetch(req, this.getReqInit());
+    const json = (await res.json()) as TwitchGetStreamsResponse;
+    return json;
+  }
+
   getReqInit(): RequestInit {
     const headers = new Headers();
     headers.append("Authorization", `Bearer ${this.#token}`);
@@ -438,7 +516,8 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
     return {
       method: "GET",
       mode: "cors",
-      cache: "no-cache",
+      // mode: "cors",
+      // cache: "no-cache",
       headers
     }
   }

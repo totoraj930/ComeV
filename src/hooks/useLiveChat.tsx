@@ -49,9 +49,27 @@ export function useLiveChat() {
   const { dispatch: dispatchChatItem } = useContext(ChatItemContext);
   const { settings, settingsUpdater } = useSettings();
 
+  // イベントリスナー更新
   useEffect(() => {
-    // liveChatMap.ytLiveChat.interval = settings.intervalMs;
-    // initListener(liveChatMap, settings, dispatch, dispatchChatItem, !liveChatMap.isStarted);
+    const liveChatList = Object.keys(liveChatMap).map((id) => liveChatMap[id]);
+    for (const liveChat of liveChatList) {
+      if (liveChat.type === "YouTube") {
+        initYouTubeListener(
+          liveChat,
+          settings,
+          dispatch,
+          dispatchChatItem,
+          false);
+      }
+      else if (liveChat.type === "Twitch") {
+        initTwitchListener(
+          liveChat,
+          settings,
+          dispatch,
+          dispatchChatItem,
+          false);
+      }
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings]);
 
@@ -214,9 +232,27 @@ export function useLiveChat() {
               dispatchChatItem,
               true);
             try {
-              // ログインして接続
+              // ログイン処理
               const token = await liveChat.api.login();
               settingsUpdater({ type: "UPDATE_TWITCH_TOKEN", token });
+            } catch (err) {
+              console.error(err);
+              dispatchChatItem({
+                type: "ADD",
+                actionId: uuid(),
+                config: settings,
+                chatItem: [createAppChatItem(
+                  "error",
+                  err === "cancel"
+                    ? "Twitchとの連携がキャンセルされました。"
+                    : "Twitchとの連携に失敗しました。"
+                )]
+              });
+              return;
+            }
+
+            try {
+              // 接続
               const channelId = parseTwitchUrl(liveChat.url);
               await liveChat.api.start(channelId || "");
             } catch (err) {
@@ -225,8 +261,10 @@ export function useLiveChat() {
                 type: "ADD",
                 actionId: uuid(),
                 config: settings,
-                chatItem: [createAppChatItem("error", "Twitchとの連携に失敗しました。")]
+                chatItem: [createAppChatItem("error", "Twitchへの接続に失敗しました。チャンネルが存在しません。")]
               });
+              await liveChat.api.stop();
+              return;
             }
         }
         else {

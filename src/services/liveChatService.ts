@@ -323,3 +323,41 @@ export function ytMessageToString(ytMessage: MessageItem[], includeEmoji: boolea
   }
   return res;
 }
+
+const dummy = {
+  "id": "542ca8c6-7c91-4a5f-b3ab-cdedd66cb58e",
+  "auther": {
+      "id": "123456789",
+      "name": "dummy_taro",
+      "displayName": "ダミー太郎",
+      "type": "",
+      "color": null,
+      "isSubscriber": true,
+      "isModerator": false,
+      "isTurbo": false,
+      "badges": [
+          {
+              "info": "14",
+              "set_id": "subscriber",
+              "version_id": "12",
+              "url": "https://static-cdn.jtvnw.net/emoticons/v2/46/default/light/2.0",
+              "versions": []
+          },
+          {
+            "set_id": "premium",
+            "version_id": "1",
+            "url": "https://static-cdn.jtvnw.net/badges/v1/bbbe0db0-a598-423e-86d0-f9fb98ca1933/3",
+            "versions": []
+        }
+      ]
+  },
+  "message": [
+      "ダミーメッセージです ",
+      {
+        "name": "BibleThump",
+        "id": "86",
+        "url": "https://static-cdn.jtvnw.net/emoticons/v2/86/default/light/2.0"
+      }
+  ],
+  "timestamp": new Date()
+}
