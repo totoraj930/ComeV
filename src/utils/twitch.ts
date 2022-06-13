@@ -126,6 +126,11 @@ export interface TwitchCheermote {
   }
 }
 
+export interface TwitchCheermoteMessage {
+  cheermote: TwitchCheermote;
+  bits: number;
+}
+
 interface TwitchGetBadgeResponse {
   data: TwitchRawBadge[];
 }
@@ -175,6 +180,7 @@ export interface TwitchItemBase {
 export interface TwitchNormalChatItem extends TwitchItemBase {
   type: "Nromal";
   message: (TwitchEmote | string)[];
+  isHighlight?: boolean;
 }
 
 /** サブスク */
@@ -202,9 +208,8 @@ export interface TwitchSubMysteryGiftItem extends TwitchItemBase {
 /** チア(ビッツ) */
 export interface TwitchCheerItem extends TwitchItemBase {
   type: "Cheer";
-  message: string;
+  message: (TwitchCheermoteMessage | string)[];
   bits: number;
-  cheermote?: TwitchCheermote;
 }
 
 export type TwitchChatItem =
@@ -234,7 +239,7 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
   #globalBadges: { [key: string]: TwitchRawBadge} = {};
   #emotes: { [key: string]: TwitchEmote } = {};
   #emote_sets: string[] = [];
-  #cheermotes: TwitchCheermote[] = []; // チャンネルのチアエモート
+  #cheermotes: { [key: string]: TwitchCheermote[] } = {}; // チャンネルのチアエモート
   #isStarted = false;
 
   #metaTimer: NodeJS.Timeout | null = null;
@@ -245,7 +250,7 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
     this.#name = options.name;
     this.#tmi = new TmiClient({
       options: {
-        debug: true,
+        debug: false,
         skipUpdatingEmotesets: true
       },
       identity: {
@@ -279,9 +284,8 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
         type: "Cheer",
         id: userState.id || uuid(),
         author: this.createUser(userState),
-        message: message,
+        message: this.convertCheerMessage(bits, message),
         bits,
-        cheermote: this.createCheermote(bits),
         timestamp: this.getTimestamp(userState["tmi-sent-ts"])
       };
       console.log(item);
@@ -402,17 +406,41 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
     return new Date( parseInt(time || Date.now() + "") );
   }
 
-  createCheermote(bits: number): TwitchCheermote | undefined {
-    let emote;
 
-    let min_bits = 0;
-    for (const item of this.#cheermotes) {
-      if (item.min_bits >= bits && item.min_bits >= min_bits) {
-        emote = item;
+  convertCheerMessage(totalBits: number, message: string) {
+    const prefixReList: string[] = [];
+    for (const prefix in this.#cheermotes) {
+      prefixReList.push(`${prefix}[0-9]+`);
+    }
+    const re = new RegExp(prefixReList.join("|"), "gi");
+    const cheerStrList = message.match(re);
+    const splittedMsg = message.split(re);
+    let result: (TwitchCheermoteMessage | string)[] = [];
+
+    for (let i = 0; i < splittedMsg.length; i++) {
+      result.push(splittedMsg[i]);
+      const targetCheerStr = cheerStrList?.[i];
+      if (!targetCheerStr) continue;
+      const bits = parseInt(targetCheerStr.match(/[0-9]+/)?.[0] || "1");
+      const prefix = (targetCheerStr.match(/[A-z]+/)?.[0] || "Cheer").toLowerCase();
+      let resCheermote: TwitchCheermote = this.#cheermotes[prefix][0];
+      let min_bits = 0;
+      for (const cheermote of this.#cheermotes[prefix]) {
+        if (
+          min_bits < cheermote.min_bits
+          && bits >= cheermote.min_bits
+        ) {
+          resCheermote = cheermote;
+          min_bits = cheermote.min_bits
+        }
       }
+      result.push({
+        bits,
+        cheermote: resCheermote
+      });
     }
 
-    return emote;
+    return result;
   }
 
   /** チャットアイテムの生成 */
@@ -420,12 +448,15 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
 
     // メッセージの生成
     const message = this.convertMessage(rawMessage, userState.emotes);
-
+    if (userState["msg-id"]) {
+      console.log(userState["msg-id"]);
+    }
     return {
       type: "Nromal",
       id: userState.id || uuid(),
       author: this.createUser(userState),
       message: message,
+      isHighlight: userState["msg-id"] === "highlighted-message",
       timestamp: new Date( parseInt(userState["tmi-sent-ts"] || Date.now() + "") )
     }
   }
@@ -519,7 +550,6 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
             name: part.name || part.emoteId,
             url: `https://static-cdn.jtvnw.net/emoticons/v2/${part.emoteId}/default/light/2.0`
           };
-          console.log(emote.url);
         }
         return emote;
       } else if (part.text) {
@@ -557,7 +587,8 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
       return {
         set_id,
         version_id,
-        versions: rawBadge.versions
+        // versions: rawBadge.versions
+        versions: []
       }
     }
     return {
@@ -565,7 +596,8 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
       set_id,
       version_id,
       url: targetVersion.image_url_4x,
-      versions: rawBadge.versions
+      // versions: rawBadge.versions
+      versions: []
     }
   }
 
@@ -599,7 +631,7 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
     }
   }
 
-  addCheermote(rawCheermote: TwitchRawCheermote) {
+  addCheermote(prefix: string, rawCheermote: TwitchRawCheermote) {
     const cheermote: TwitchCheermote = {
       id: rawCheermote.id,
       min_bits: rawCheermote.min_bits,
@@ -613,14 +645,16 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
         light: rawCheermote.images.light.animated[4]
       },
     }
-    this.#cheermotes.push(cheermote);
+    this.#cheermotes[prefix].push(cheermote);
   }
 
 
   addCheermotes(jsonData: TwitchGetCheermotesResponse) {
-    const tiers = jsonData.data[0]?.tiers || [];
-    for (const rawCheermote of tiers) {
-      this.addCheermote(rawCheermote);
+    for (const rawCheermoteSet of jsonData.data) {
+      const prefix = rawCheermoteSet.prefix.toLowerCase();
+      this.#cheermotes[prefix] = [];
+      for (const rawCheermote of rawCheermoteSet.tiers)
+      this.addCheermote(prefix, rawCheermote);
     }
   }
   

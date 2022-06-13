@@ -16,7 +16,7 @@ import { writeFile } from '../utils/tauriInvoke';
 import { TwitchChat } from '../utils/twitch';
 import { DummySender } from './DummySender';
 import { uuid } from '../utils/uuid';
-import { createAppChatItem, createLiveChatEmpty, LiveChat } from '../services/liveChatService';
+import { ChatItem, createAppChatItem, createLiveChatEmpty, LiveChat } from '../services/liveChatService';
 import { LiveControl } from './LiveControl';
 import { LiveChatContext } from '../context/liveChat';
 import { LiveInfoView } from './LiveInfoView';
@@ -27,7 +27,8 @@ export const LiveView: React.VFC<{
   
   const { dispatch: dispatchLiveChat } = useContext(LiveChatContext);
   const { liveChatMap, liveChatUpdater } = useLiveChat();
-  const { state: chatItems, dispatch: dispatchChatItem } = useContext(ChatItemContext);
+  const { state: chatItemContext, dispatch: dispatchChatItem } = useContext(ChatItemContext);
+  const chatItems = useRef<ChatItem[]>([]);
 
   const isFirstLoad = useRef(true);
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
@@ -51,12 +52,9 @@ export const LiveView: React.VFC<{
 
 
   useEffect(() => {
-    // console.log(settings);
-  }, [settings]);
+    chatItems.current = chatItemContext.items;
+  }, [chatItemContext]);
 
-  useEffect(() => {
-    // writeFile("log.json", JSON.stringify(chatItems), fs.BaseDirectory.App);
-  }, [chatItems]);
 
   // 初回マウント時
   useEffect(() => {
@@ -73,8 +71,14 @@ export const LiveView: React.VFC<{
       }
     });
 
+    // log.jsonに書き出す
+    const logInterval = setInterval(() => {
+      writeFile("log.json", JSON.stringify(chatItems.current.slice(-50)), fs.BaseDirectory.App);
+    }, 5000);
+
 
     return () => {
+      clearInterval(logInterval);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -198,7 +202,7 @@ export const LiveView: React.VFC<{
         </button>
       </DebugPanel>
     </ChatControl>
-    <ChatView chatItems={chatItems} />
+    <ChatView chatItems={chatItemContext} />
     {isShowSettings && <SettingsView closeHandler={onCloseSettings} />}
   </Main>
   

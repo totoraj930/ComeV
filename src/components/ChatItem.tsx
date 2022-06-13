@@ -2,7 +2,7 @@ import { ChatItem as YTChatItemData, EmojiItem, ImageItem, MessageItem } from "y
 import styled from "styled-components";
 import { ChatItem, AppChatItemData } from "../services/liveChatService";
 import { useMemo } from "react";
-import { TwitchChatItem, TwitchNormalChatItem, TwitchEmote, TwitchUser } from "../utils/twitch";
+import { TwitchChatItem, TwitchNormalChatItem, TwitchEmote, TwitchUser, TwitchCheerItem, TwitchCheermote, TwitchCheermoteMessage } from "../utils/twitch";
 
 export interface ChatItemViewOptions {
   showTime?: boolean;
@@ -233,12 +233,18 @@ const TTVAuthor: React.FC<{
 }
 
 const TTVChatMessage: React.VFC<{
-  items: (TwitchEmote | string)[];
+  items: (TwitchCheermoteMessage | TwitchEmote | string)[];
 }> = ({ items }) => {
   return (<p className="message">
     {items.map((item, i) => {
       if (typeof item === "string") {
         return <span key={i}>{item}</span>
+      } else if ("bits" in item) {
+        const cheer = item.cheermote;
+        return (<span className="bits" key={i}>
+          <img src={cheer.animated_url.dark} alt="bits" />
+          <span style={{color: cheer.color}}>{item.bits}</span>
+        </span>)
       } else {
         return <img
           className="emoji"
@@ -260,11 +266,29 @@ const TTVChatItemView: React.VFC<{
     <p className="time">
       {convertTime(data.timestamp)}
     </p>
-    <NormalChat>
+    <NormalChat data-is-highlight={!!data.isHighlight}>
       <TTVAuthor author={data.author}></TTVAuthor>
       <TTVChatMessage items={data.message} />
     </NormalChat>
 
+  </Item>);
+}
+
+// TwitchCheer
+const TTVCheerItemView: React.VFC<{
+  data: TwitchCheerItem;
+}> = ({ data }) => {
+  
+  return (<Item data-type="Twitch">
+    <p className="time">
+      {convertTime(data.timestamp)}
+    </p>
+    
+    <SuperChat style={{ borderColor: "var(--c-twitch-cheer)" }}>
+      <TTVAuthor author={data.author}></TTVAuthor>
+      <p className="amout-bits">{data.bits} <span>Bits</span></p>
+      <TTVChatMessage items={data.message} />
+    </SuperChat>
   </Item>);
 }
 
@@ -308,7 +332,8 @@ export const ChatItemView: React.VFC<{
       }
       case "Cheer": {
         console.log(chatItem.data);
-        break;
+
+        return <TTVCheerItemView data={chatItem.data} />;
       }
       case "Sub": {
         break;
@@ -392,6 +417,12 @@ const SuperChat = styled.div`
   .author {
     display: flex;
     align-items: center;
+    .ttv-badge {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      margin-right: 5px;
+    }
     .name {
       display: flex;
       align-items: center;
@@ -424,6 +455,13 @@ const SuperChat = styled.div`
       background-color: var(--c-sub);
     }
   }
+  .amout-bits {
+    font-weight: bold;
+    font-size: 16px;
+    span {
+      font-size: 14px;
+    }
+  }
   .message {
     font-size: 15px;
     overflow-wrap: anywhere;
@@ -438,6 +476,18 @@ const SuperChat = styled.div`
       width: auto;
       height: auto;
       font-size: 24px;
+    }
+    .bits {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+      img {
+        width: 24px;
+        height: 24px;
+      }
+      span {
+        font-weight: bold;
+      }
     }
   }
   .sticker {
@@ -536,10 +586,28 @@ const NormalChat = styled.div`
       margin-left: 4px;
       vertical-align: middle;
     }
+    .bits {
+      display: inline-flex;
+      align-items: center;
+      img {
+        width: 24px;
+        height: 24px;
+      }
+      span {
+        font-weight: bold;
+      }
+    }
     span.emoji {
       width: auto;
       height: auto;
       font-size: 24px;
+    }
+  }
+  &[data-is-highlight=true] {
+    .message {
+      span {
+        border-bottom: 2px solid var(--c-accent-1);
+      }
     }
   }
   @media screen and (max-width: 550px) {

@@ -75,6 +75,19 @@ export const SettingsView: React.VFC<{
             <p className="description">多すぎると重くなります</p>
           </Item>
           <Item>
+            <p className="title">スクロールアニメ</p>
+            <div>
+              <Switch htmlFor="use_smooth_scroll">
+                <input type="checkbox"
+                  name="use_smooth_scroll" id="use_smooth_scroll"
+                  defaultChecked={ copiedS.useSmoothScroll }
+                  onChange={(event) => { copiedS.useSmoothScroll = event.target.checked }} />
+                <span className="slider"></span>
+              </Switch>
+            </div>
+            <p className="description">自動スクロールを滑らかにするか</p>
+          </Item>
+          <Item>
             <label htmlFor="interval_ms"
               className="title">チャット取得間隔</label>
             <div>
@@ -88,7 +101,7 @@ export const SettingsView: React.VFC<{
               />
               <span>ミリ秒</span>
             </div>
-            <p className="description">1秒 = 1000ミリ秒</p>
+            <p className="description">1秒 = 1000ミリ秒 (YouTubeにのみ適用されます)</p>
           </Item>
         </div>
       </section>

@@ -6,6 +6,45 @@ import { ChatItem } from "../services/liveChatService";
 import { ChatItemContextState } from "../context/chatItem";
 import { ChatItemView } from "./ChatItem";
 
+function scrollToBottom($elm: HTMLElement, duration: number = 100) {
+  let isCancel = false;
+  if (duration === 0) {
+    $elm.scrollTo({
+      top: $elm.scrollHeight - $elm.clientHeight
+    });
+    return {
+      cancel: () => {},
+      promise: Promise.resolve(isCancel),
+    }
+  };
+  return {
+    cancel: () => { isCancel = true },
+    promise: new Promise<boolean>((resolve) => {
+      const targetY = $elm.scrollHeight - $elm.clientHeight;
+      const startTime = Date.now();
+      const startY = $elm.scrollTop;
+      const diffY = targetY - startY;
+      const task = () => {
+        if (isCancel) {
+          resolve(isCancel);
+          return;
+        }
+        const time = Date.now();
+        const progress = Math.min(1, (time - startTime) / duration);
+        $elm.scrollTo({
+          top: diffY * progress + startY
+        });
+        if (progress < 1) {
+          requestAnimationFrame(task);
+        } else {
+          resolve(isCancel);
+        }
+      };
+      task();
+    })
+  };
+}
+
 export const ChatView: React.VFC<{
   chatItems: ChatItemContextState
 }> = ({ chatItems }) => {
@@ -13,17 +52,9 @@ export const ChatView: React.VFC<{
   const enableScroll = useRef<boolean>(true);
   const lastScrollTime = useRef<number>(Date.now());
   const $view = useRef<HTMLUListElement>(null);
+  const scrollCancel = useRef<() => void>(() => {});
   const [showScrollBtn, setShowScrollBtn] = useState<boolean>(false);
 
-  const scrollToBottom = useCallback(() => {
-    if (!$view.current) return;
-    const $v = $view.current;
-    $v.scrollTo({
-      top: $v.scrollHeight - $v.clientHeight,
-      left: 0,
-      // behavior: "smooth"
-    });
-  }, []);
 
   const chatItemViewList = useMemo(() => {
     return [];
@@ -33,38 +64,48 @@ export const ChatView: React.VFC<{
   useEffect(() => {
     if (!$view.current) return;
     if (enableScroll.current) {
-      scrollToBottom();
+      // scrollCancel.current();
+      const task = scrollToBottom($view.current, settings.useSmoothScroll?50:0);
+      task.promise.then((isCancel) => {
+        setShowScrollBtn(isCancel);
+      });
+      scrollCancel.current = task.cancel;
       lastScrollTime.current = Date.now();
     }
-  }, [chatItems, scrollToBottom]);
+  }, [chatItems]);
+
+  const onScroll = () => {
+    if (!$view.current) return;
+    const $v = $view.current;
+    // 一番下までスクロールされていたら
+    if ($v.scrollHeight - $v.clientHeight - 200 <= $v.scrollTop) {
+      enableScroll.current = true;
+      setShowScrollBtn(false);
+    } else if (Date.now() - lastScrollTime.current > 60) {
+      enableScroll.current = false;
+      setShowScrollBtn(true);
+    }
+  }
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (!$view.current) return;
-      const $v = $view.current;
-      // 一番下までスクロールされていたら
-      if ($v.scrollHeight - $v.clientHeight === $v.scrollTop) {
-        enableScroll.current = true;
-        setShowScrollBtn(false);
-      } else {
-        if (Date.now() - lastScrollTime.current > 100) {
-          enableScroll.current = false;
-          setShowScrollBtn(true);
-        }
-      }
-    }, 50);
-    return () => {
-      clearInterval(interval);
-    };
   }, []);
 
   return <View className="view">
-    <ul ref={$view}>
+    <ul ref={$view} onScroll={() => onScroll()}>
       {/* {chatItemViewList} */}
       {chatItems.views}
     </ul>
     {showScrollBtn && (
-      <button className="btn-1" onClick={scrollToBottom}>
+      <button className="btn-1" onClick={() => {
+        if (!$view.current) return;
+        scrollCancel.current();
+        const task = scrollToBottom($view.current, settings.useSmoothScroll?50:0);
+        task.promise.then((isCancel) => {
+          setShowScrollBtn(isCancel);
+        });
+        scrollCancel.current = task.cancel;
+        lastScrollTime.current = Date.now();
+      }}>
         <MdKeyboardArrowDown className="icon" />
       </button>
     )}

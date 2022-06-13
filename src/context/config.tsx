@@ -2,6 +2,7 @@ import { createContext, Dispatch } from "react";
 
 export const defaultConfig: AppConfig = {
   maxChatItemNum: 300,
+  useSmoothScroll: true,
   intervalMs: 3000,
   themeName: "dark",
   prevUrl: [""],
@@ -50,6 +51,7 @@ export type TwitchConfig = {
 
 export interface AppConfig {
   maxChatItemNum: number;
+  useSmoothScroll: boolean;
   intervalMs: number;
   themeName: string;
   prevUrl: string[];
@@ -113,6 +115,8 @@ export function parseBouyomiConfig(raw: any, def: BouyomiConfig) {
 export function parseJson(rawJson: any, def: AppConfig) {
   if (typeof rawJson !== "object") return { ...def };
   const res = { ...def, ...rawJson } as AppConfig;
+
+  res.useSmoothScroll = !!res.useSmoothScroll;
 
   if (!isFinite(res.intervalMs) || res.intervalMs < 1000) {
     res.intervalMs = def.intervalMs;
