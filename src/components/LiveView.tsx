@@ -55,7 +55,7 @@ export const LiveView: React.VFC<{
   }, [settings]);
 
   useEffect(() => {
-    writeFile("log.json", JSON.stringify(chatItems), fs.BaseDirectory.App);
+    // writeFile("log.json", JSON.stringify(chatItems), fs.BaseDirectory.App);
   }, [chatItems]);
 
   // 初回マウント時
@@ -81,7 +81,7 @@ export const LiveView: React.VFC<{
 
   return (<Wrap className={ `theme-${settings.themeName}` }>
   {/* <Titlebar size="m" title="ComeV" /> */}
-  <Main>
+  <Main data-anony-blur={settings.enableAnonyView}>
     <ChatControl>
       
       <LiveControlList>

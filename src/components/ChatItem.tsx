@@ -2,6 +2,7 @@ import { ChatItem as YTChatItemData, EmojiItem, ImageItem, MessageItem } from "y
 import styled from "styled-components";
 import { ChatItem, AppChatItemData } from "../services/liveChatService";
 import { useMemo } from "react";
+import { TwitchChatItem, TwitchNormalChatItem, TwitchEmote, TwitchUser } from "../utils/twitch";
 
 export interface ChatItemViewOptions {
   showTime?: boolean;
@@ -54,15 +55,16 @@ const convertTime = (date: Date) => {
 const YTChatItemView: React.VFC<{
   data: YTChatItemData;
 }> = ({ data }) => {
-  return <Item>
-  <p className="time">
-    {convertTime(data.timestamp)}
-  </p>
-  <NormalChat>
-    <div className="author"
+  return <Item data-type="YouTube">
+    <p className="time">
+      {convertTime(data.timestamp)}
+    </p>
+    <NormalChat>
+      <div className="author"
         data-is-member={data.isMembership}
         data-is-owner={data.isOwner}
-        data-is-moderator={data.isModerator}>
+        data-is-moderator={data.isModerator}
+      >
         <AuthorIcon imageItem={data.author.thumbnail} />
         <p className="name" title={data.author.name}>
             {data.author.name}
@@ -74,10 +76,10 @@ const YTChatItemView: React.VFC<{
                 title={data.author.badge.label} />
             )}
         </p>
-    </div>
-    <YTChatMessage items={data.message} />
-  </NormalChat>
-</Item>;
+      </div>
+      <YTChatMessage items={data.message} />
+    </NormalChat>
+  </Item>;
 }
 
 // YouTubeのスーパーチャット
@@ -85,7 +87,7 @@ const YTSuperChatItemView: React.VFC<{
   data: YTChatItemData;
 }> = ({ data }) => {
   if (!data.superchat) return <></>;
-  return <Item>
+  return <Item data-type="YouTube">
     <p className="time">
       {convertTime(data.timestamp)}
     </p>
@@ -128,7 +130,7 @@ const YTMembershipItemView: React.VFC<{
   data: YTChatItemData;
 }> = ({ data }) => {
   if (!data.membership) return <></>;
-  return <Item>
+  return <Item data-type="YouTube">
     <p className="time">
       {convertTime(data.timestamp)}
     </p>
@@ -170,7 +172,7 @@ const YTMembershipGiftView: React.VFC<{
     })`;
   }, [data]);
   if (!data.membershipGift) return <></>;
-  return <Item>
+  return <Item data-type="YouTube">
     <p className="time">
       {convertTime(data.timestamp)}
     </p>
@@ -201,6 +203,71 @@ const YTMembershipGiftView: React.VFC<{
     </SuperChat>
   </Item>;
 }
+
+const TTVAuthor: React.FC<{
+  author: TwitchUser;
+}> = ({ author, children }) => {
+  return (<>
+    <div
+      className="author"
+      data-is-member={author.isSubscriber}
+      data-is-moderator={author.isModerator}
+    >
+      {author.badges.map((badge, i) => {
+        if (!badge.url) return "";
+        return (
+          <img
+            className="ttv-badge"
+            src={badge.url}
+            alt={badge.info || ""}
+            key={i}
+          />
+        );
+      })}
+      <p className="name" title={author.name}>
+        {author.displayName || author.name}
+      </p>
+      {children}
+    </div>
+  </>);
+}
+
+const TTVChatMessage: React.VFC<{
+  items: (TwitchEmote | string)[];
+}> = ({ items }) => {
+  return (<p className="message">
+    {items.map((item, i) => {
+      if (typeof item === "string") {
+        return <span key={i}>{item}</span>
+      } else {
+        return <img
+          className="emoji"
+          src={item.animated_url || item.url}
+          alt={item.name}
+          key={i}
+        />
+      }
+    })}
+  </p>);
+}
+
+// TwitchNormal
+const TTVChatItemView: React.VFC<{
+  data: TwitchNormalChatItem;
+}> = ({ data }) => {
+
+  return (<Item data-type="Twitch">
+    <p className="time">
+      {convertTime(data.timestamp)}
+    </p>
+    <NormalChat>
+      <TTVAuthor author={data.author}></TTVAuthor>
+      <TTVChatMessage items={data.message} />
+    </NormalChat>
+
+  </Item>);
+}
+
 
 
 // システム通知
@@ -234,6 +301,25 @@ export const ChatItemView: React.VFC<{
     }
   } else if (chatItem.type === "App") {
     return <AppChatItemView data={chatItem.data} />;
+  } else if (chatItem.type === "Twitch") {
+    switch (chatItem.data.type) {
+      case "Nromal": {
+        return <TTVChatItemView data={chatItem.data} />;
+      }
+      case "Cheer": {
+        console.log(chatItem.data);
+        break;
+      }
+      case "Sub": {
+        break;
+      }
+      case "SubGift": {
+        break;
+      }
+      case "SubMysteryGift": {
+        break;
+      }
+    }
   }
   return <></>;
 }
@@ -246,7 +332,22 @@ const Item = styled.div`
   padding: 6px 10px;
   gap: 0 5px;
   border-bottom: 1px solid var(--c-border-2);
-
+  position: relative;
+  &:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    pointer-events: none;
+  }
+  &[data-type=Twitch]:before {
+    background-color: var(--c-mark-twitch);
+  }
+  &[data-type=YouTube]:before {
+    background-color: var(--c-mark-youtube);
+  }
 
   .time {
     font-size: 14px;
@@ -365,6 +466,7 @@ const SuperChat = styled.div`
 `;
 
 const NormalChat = styled.div`
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0 5px;
@@ -374,6 +476,8 @@ const NormalChat = styled.div`
     align-items: center;
     gap: 5px;
     color: var(--c-text-2);
+    width: 180px;
+    min-width: 180px;
     &[data-is-member=true] {
       color: var(--c-text-member);
     }
@@ -391,15 +495,22 @@ const NormalChat = styled.div`
       overflow: hidden;
       font-size: 10px;
       background-color: var(--c-sub);
+      flex-shrink: 0;
+    }
+    .ttv-badge {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
     }
     .name {
       position: relative;
-      width: 150px;
       font-size: 13px;
       font-weight: normal;
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
+      flex-grow: 1;
+      flex-shrink: 1;
       .badge {
         position: absolute;
         top: 50%;
@@ -433,30 +544,33 @@ const NormalChat = styled.div`
   }
   @media screen and (max-width: 550px) {
     .author {
+      width: 130px;
+      min-width: 130px;
       .icon {
         width: 20px;
         height: 20px;
       }
-      .name {
-        width: 90px;
+      .ttv-badge {
+        width: 16px;
+        height: 16px;
       }
     }
   }
   @media screen and (max-width: 450px) {
     .author {
+      width: 100px;
+      min-width: 100px;
       .icon {
         width: 16px;
         height: 16px;
-      }
-      .name {
-        width: 80px;
       }
     }
   }
   @media screen and (max-width: 400px) {
     .author {
+      width: 100px;
+      min-width: 100px;
       .name {
-        width: 60px;
         font-size: 11px;
         /* display: none; */
       }

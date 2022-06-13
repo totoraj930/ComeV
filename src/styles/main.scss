@@ -75,6 +75,9 @@ html, body {
   --c-btn-2-bg-2: #ff587c;
   --c-btn-2-c: #fff;
   --c-btn-2-c-2: #fff;
+
+  --c-mark-twitch: rgba(55, 0, 255, 0.5);
+  --c-mark-youtube: rgba(255, 22, 22, 0.5);
 }
 
 .theme-dark {
@@ -122,7 +125,8 @@ html, body {
 
 [data-anony-blur=true] {
   .message,
-  .author {
+  .author,
+  .url-input {
     filter: blur(5px);
   }
 }

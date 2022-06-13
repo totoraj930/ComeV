@@ -1,6 +1,6 @@
 
 import EventEmitter from "events";
-import { ChatUserstate, Client as TmiClient } from "tmi.js"
+import { ChatUserstate, Client as TmiClient, CommonUserstate, SubMethod, SubMethods } from "tmi.js"
 import TypedEmitter from "typed-emitter";
 import { invoke } from "./tauriInvoke";
 import { once as tauriOnce } from "@tauri-apps/api/event";
@@ -68,6 +68,64 @@ export interface TwitchEmote {
   owner_id?: string;
 }
 
+type TwitchRawCheermoteImage = {
+  animated: {
+    "1": string;
+    "1.5": string;
+    "2": string;
+    "3": string;
+    "4": string;
+  };
+  static: {
+    "1": string;
+    "1.5": string;
+    "2": string;
+    "3": string;
+    "4": string;
+  };
+}
+
+interface TwitchRawCheermote {
+  min_bits: number;
+  id: string;
+  color: string;
+  images: {
+    dark: TwitchRawCheermoteImage;
+    light: TwitchRawCheermoteImage;
+  };
+  can_cheer: boolean;
+  show_in_bits_card: boolean;
+}
+
+// https://dev.twitch.tv/docs/api/reference#get-cheermotes
+interface TwitchGetCheermotesResponse {
+  data: {
+    prefix: string;
+    tiers: TwitchRawCheermote[];
+    type: "global_first_party" | "global_third_party" | "channel_custom"
+      | "display_only" | "sponsored";
+    order: number;
+    last_updated: string;
+    is_charitable: boolean;
+  }[];
+}
+
+/** Twitchのチアエモート
+ * https://dev.twitch.tv/docs/api/reference#get-cheermotes */
+export interface TwitchCheermote {
+  id: string;
+  min_bits: number; // このエモートになる最低ビッツ
+  color: string; // hex (#000fff)
+  url: {
+    dark: string;
+    light: string;
+  }
+  animated_url: {
+    dark: string;
+    light: string;
+  }
+}
+
 interface TwitchGetBadgeResponse {
   data: TwitchRawBadge[];
 }
@@ -106,13 +164,55 @@ export interface TwitchUser {
   badges: TwitchBadge[];
 }
 
-/** チャットアイテム */
-export interface TwitchChatItem {
+export interface TwitchItemBase {
   id: string;
-  auther: TwitchUser;
-  message: (TwitchEmote | string)[];
+  type: string;
+  author: TwitchUser;
   timestamp: Date;
 }
+
+/** チャットアイテム */
+export interface TwitchNormalChatItem extends TwitchItemBase {
+  type: "Nromal";
+  message: (TwitchEmote | string)[];
+}
+
+/** サブスク */
+export interface TwitchSubItem extends TwitchItemBase {
+  type: "Sub"
+  message: string;
+  methods: SubMethods;
+}
+
+/** サブスクギフト */
+export interface TwitchSubGiftItem extends TwitchItemBase {
+  type: "SubGift";
+  methods: SubMethods;
+  streakMonths: number; // 継続月？
+  recipient: TwitchUser; // 受け取り相手
+}
+
+/** サブスクギフト(誰かに) */
+export interface TwitchSubMysteryGiftItem extends TwitchItemBase {
+  type: "SubMysteryGift";
+  methods: SubMethods;
+  num: number; // サブスク個数
+}
+
+/** チア(ビッツ) */
+export interface TwitchCheerItem extends TwitchItemBase {
+  type: "Cheer";
+  message: string;
+  bits: number;
+  cheermote?: TwitchCheermote;
+}
+
+export type TwitchChatItem =
+  | TwitchNormalChatItem
+  | TwitchSubItem
+  | TwitchCheerItem
+  | TwitchSubGiftItem
+  | TwitchSubMysteryGiftItem;
 
 type TwitchChatEvents = {
   start: (channel: string) => void;
@@ -134,6 +234,7 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
   #globalBadges: { [key: string]: TwitchRawBadge} = {};
   #emotes: { [key: string]: TwitchEmote } = {};
   #emote_sets: string[] = [];
+  #cheermotes: TwitchCheermote[] = []; // チャンネルのチアエモート
   #isStarted = false;
 
   #metaTimer: NodeJS.Timeout | null = null;
@@ -152,12 +253,14 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
         password: options.token,
       }
     });
-    this.#tmi.on("roomstate", (channel, roomState) => {
+    this.#tmi.on("roomstate", async (channel, roomState) => {
       this.#roomId = roomState["room-id"];
       if (this.#roomId) {
         this.getChannelEmote(this.#roomId);
         this.getGlobalBadges();
         this.getChannelBadges(this.#roomId);
+        await this.getChannelCheermotes(this.#roomId);
+        console.log(this.#cheermotes);
         if (this.#metaTimer) {
           clearTimeout(this.#metaTimer);
         }
@@ -168,6 +271,74 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
       const item = this.createChatItem(userState, message);
       this.emit("chat", item);
     });
+
+    // ビッツ
+    this.#tmi.on("cheer", (channel, userState, message) => {
+      const bits = parseInt(userState.bits || "1");
+      const item: TwitchCheerItem = {
+        type: "Cheer",
+        id: userState.id || uuid(),
+        author: this.createUser(userState),
+        message: message,
+        bits,
+        cheermote: this.createCheermote(bits),
+        timestamp: this.getTimestamp(userState["tmi-sent-ts"])
+      };
+      console.log(item);
+      this.emit("chat", item);
+    });
+
+    // サブスク
+    this.#tmi.on("subscription", (channel, userName, methods, message, userState) => {
+      const item: TwitchSubItem = {
+        type: "Sub",
+        id: userState.id || uuid(),
+        author: this.createUser(userState),
+        methods,
+        message,
+        timestamp: this.getTimestamp(userState["tmi-sent-ts"])
+      };
+      console.log(item);
+      this.emit("chat", item);
+    });
+
+    // サブスクギフト
+    this.#tmi.on("subgift", (channel, username, streakMonths, recipient, methods, userState) => {
+      const item: TwitchSubGiftItem = {
+        type: "SubGift",
+        id: userState.id || uuid(),
+        author: this.createUser(userState),
+        methods: methods,
+        streakMonths: streakMonths,
+        timestamp: this.getTimestamp(userState["tmi-sent-ts"]),
+        recipient: {
+          id: userState["msg-param-recipient-id"],
+          name: userState["msg-param-recipient-user-name"] || recipient,
+          displayName: userState["msg-param-recipient-display-name"] || recipient,
+          isSubscriber: false,
+          isModerator: false,
+          isTurbo: false,
+          badges: []
+        }
+      };
+      console.log(item);
+      this.emit("chat", item);
+    });
+
+    // サブスクミステリーギフト
+    this.#tmi.on("submysterygift", (channel, username, num, methods, userState) => {
+      const item: TwitchSubMysteryGiftItem = {
+        type: "SubMysteryGift",
+        id: userState.id || uuid(),
+        author: this.createUser(userState),
+        methods: methods,
+        num: num,
+        timestamp: this.getTimestamp(userState["tmi-sent-ts"])
+      };
+      console.log(item);
+      this.emit("chat", item);
+    });
+
     this.#tmi.on("emotesets", (sets, obj) => {
       this.getEmoteSets(sets.split(","));
     });
@@ -227,22 +398,40 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
     this.emit("end");
   }
 
+  getTimestamp(time?: string) {
+    return new Date( parseInt(time || Date.now() + "") );
+  }
+
+  createCheermote(bits: number): TwitchCheermote | undefined {
+    let emote;
+
+    let min_bits = 0;
+    for (const item of this.#cheermotes) {
+      if (item.min_bits >= bits && item.min_bits >= min_bits) {
+        emote = item;
+      }
+    }
+
+    return emote;
+  }
+
   /** チャットアイテムの生成 */
-  createChatItem(userState: ChatUserstate, rawMessage: string): TwitchChatItem {
+  createChatItem(userState: ChatUserstate, rawMessage: string): TwitchNormalChatItem {
 
     // メッセージの生成
     const message = this.convertMessage(rawMessage, userState.emotes);
 
     return {
+      type: "Nromal",
       id: userState.id || uuid(),
-      auther: this.createUser(userState),
+      author: this.createUser(userState),
       message: message,
       timestamp: new Date( parseInt(userState["tmi-sent-ts"] || Date.now() + "") )
     }
   }
 
   /** ユーザーの生成 */
-  createUser(userState: ChatUserstate): TwitchUser {
+  createUser(userState: CommonUserstate): TwitchUser {
     // バッジの生成
     const rawBadges = userState.badges || {};
     const badgeInfo = userState["badge-info"] || {};
@@ -404,11 +593,37 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
     };
   }
 
-  async addEmotes(jsonData: TwitchGetEmoteResponse) {
+  addEmotes(jsonData: TwitchGetEmoteResponse) {
     for (const rawEmote of jsonData.data) {
       this.addEmote(rawEmote, jsonData.template);
     }
   }
+
+  addCheermote(rawCheermote: TwitchRawCheermote) {
+    const cheermote: TwitchCheermote = {
+      id: rawCheermote.id,
+      min_bits: rawCheermote.min_bits,
+      color: rawCheermote.color,
+      url: {
+        dark: rawCheermote.images.dark.static[4],
+        light: rawCheermote.images.light.static[4],
+      },
+      animated_url: {
+        dark: rawCheermote.images.dark.animated[4],
+        light: rawCheermote.images.light.animated[4]
+      },
+    }
+    this.#cheermotes.push(cheermote);
+  }
+
+
+  addCheermotes(jsonData: TwitchGetCheermotesResponse) {
+    const tiers = jsonData.data[0]?.tiers || [];
+    for (const rawCheermote of tiers) {
+      this.addCheermote(rawCheermote);
+    }
+  }
+  
 
   /** グローバルエモートを取得して追加 */
   async getGlobalEmotes() {
@@ -438,6 +653,14 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
     const res = await fetch(req, this.getReqInit());
     const json = await res.json();
     this.addEmotes(json as TwitchGetEmoteResponse);
+  }
+
+  /** チャンネルチアエモートを取得して追加 */
+  async getChannelCheermotes(roomId: string) {
+    const req = new Request(`https://api.twitch.tv/helix/bits/cheermotes?broadcaster_id=${roomId}`);
+    const res = await fetch(req, this.getReqInit());
+    const json = await res.json();
+    this.addCheermotes(json as TwitchGetCheermotesResponse);
   }
 
   /** バッジを取得して追加 */

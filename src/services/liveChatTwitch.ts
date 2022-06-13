@@ -91,7 +91,19 @@ export function initTwitchListener(
   });
 
   liveChat.api.on("chat", (item) => {
-    console.log(item);
+    // console.log(item);
+    dispatchChatItem({
+      config: settings,
+      type: "ADD",
+      unique: false,
+      useBouyomi: settings.bouyomi.enable,
+      actionId: uuid(),
+      chatItem: [{
+        type: "Twitch",
+        id: item.id,
+        data: item
+      }]
+    });
   });
 
   liveChat.api.on("metadata", (item) => {

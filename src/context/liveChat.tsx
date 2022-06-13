@@ -69,10 +69,10 @@ function liveChatReducer(state: LiveChatContextState, action: LiveChatContextAct
 
 export const LiveChatProvider: React.FC<{}> = ({ children }) => {
   const [state, dispatch] = useReducer(liveChatReducer, initialState);
-  const [chatItems, chatItemDispatch] = useReducer(chatItemReducer, []);
+  const [chatItemContextState, chatItemDispatch] = useReducer(chatItemReducer, {items: [], views: []});
   return(
     <LiveChatContext.Provider value={{ state: state, dispatch: dispatch }}>
-      <ChatItemContext.Provider value = {{ state: chatItems, dispatch: chatItemDispatch}}>
+      <ChatItemContext.Provider value = {{ state: chatItemContextState, dispatch: chatItemDispatch}}>
         { children }
       </ChatItemContext.Provider>
     </LiveChatContext.Provider>

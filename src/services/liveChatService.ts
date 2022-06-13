@@ -1,18 +1,24 @@
 import { ChatItem as YTChatItemData, EmojiItem, ImageItem, MessageItem, MetadataItem } from "youtube-chat-tauri/dist/types/data";
 import { LiveChat as YTLiveChat } from "youtube-chat-tauri";
 import { uuid } from "../utils/uuid";
-import { TwitchChat } from "../utils/twitch";
+import { TwitchChat, TwitchNormalChatItem, TwitchCheerItem, TwitchSubGiftItem, TwitchSubItem, TwitchChatItem } from "../utils/twitch";
 import { TwitchConfig } from "../context/config";
 import { LiveChatYouTube } from "./liveChatYouTube";
 import { LiveChatTwitch } from "./liveChatTwitch";
 
-export type ChatItem = YTChatItem | AppChatItem;
+export type ChatItem = YTChatItem | AppChatItem | TTVChatItem;
 
 interface YTChatItem {
   type: "YouTube";
   id: string;
   isDummy?: boolean;
   data: YTChatItemData;
+}
+
+interface TTVChatItem {
+  type: "Twitch";
+  id: string;
+  data: TwitchChatItem;
 }
 
 export interface AppChatItemData {

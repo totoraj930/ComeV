@@ -3,15 +3,17 @@ import { MdKeyboardArrowDown } from "react-icons/md";
 import styled from "styled-components";
 import { useSettings } from "../hooks/useSettings";
 import { ChatItem } from "../services/liveChatService";
+import { ChatItemContextState } from "../context/chatItem";
 import { ChatItemView } from "./ChatItem";
 
 export const ChatView: React.VFC<{
-  chatItems: ChatItem[]
+  chatItems: ChatItemContextState
 }> = ({ chatItems }) => {
   const { settings } = useSettings();
-  const [enabledAutoScroll, setEnabledAutoScroll] = useState<boolean>(true);
+  const enableScroll = useRef<boolean>(true);
+  const lastScrollTime = useRef<number>(Date.now());
   const $view = useRef<HTMLUListElement>(null);
-  let lastScrollTime = Date.now();
+  const [showScrollBtn, setShowScrollBtn] = useState<boolean>(false);
 
   const scrollToBottom = useCallback(() => {
     if (!$view.current) return;
@@ -19,45 +21,49 @@ export const ChatView: React.VFC<{
     $v.scrollTo({
       top: $v.scrollHeight - $v.clientHeight,
       left: 0,
-      behavior: "smooth"
+      // behavior: "smooth"
     });
-  }, [$view]);
-
-  const onScroll = (event: React.UIEvent) => {
-    if (!$view.current) return;
-    const $v = $view.current;
-    // 一番下までスクロールされていたら
-    if ($v.scrollHeight - $v.clientHeight === $v.scrollTop) {
-      setEnabledAutoScroll(true);
-    } else {
-      if (Date.now() - lastScrollTime > 500) {
-        setEnabledAutoScroll(false);
-      }
-    }
-  }
+  }, []);
 
   const chatItemViewList = useMemo(() => {
-    return chatItems.map((item, i) => <li key={item.id}><ChatItemView chatItem={item} /></li>);
+    return [];
+    // return chatItems.map((item, i) => <li key={item.id}><ChatItemView chatItem={item} /></li>);
   }, [chatItems]);
   
   useEffect(() => {
     if (!$view.current) return;
-    const $v = $view.current;
-    if (enabledAutoScroll) {
-      $view.current.scrollTo({
-        top: $v.scrollHeight - $v.clientHeight,
-        left: 0,
-        behavior: "smooth"
-      });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      lastScrollTime = Date.now();
+    if (enableScroll.current) {
+      scrollToBottom();
+      lastScrollTime.current = Date.now();
     }
-  }, [chatItems, enabledAutoScroll]);
-  return <View className="view" data-anony-blur={settings.enableAnonyView}>
-    <ul ref={$view} onScroll={onScroll}>
-      {chatItemViewList}
+  }, [chatItems, scrollToBottom]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!$view.current) return;
+      const $v = $view.current;
+      // 一番下までスクロールされていたら
+      if ($v.scrollHeight - $v.clientHeight === $v.scrollTop) {
+        enableScroll.current = true;
+        setShowScrollBtn(false);
+      } else {
+        if (Date.now() - lastScrollTime.current > 100) {
+          enableScroll.current = false;
+          setShowScrollBtn(true);
+        }
+      }
+    }, 50);
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  return <View className="view">
+    <ul ref={$view}>
+      {/* {chatItemViewList} */}
+      {chatItems.views}
     </ul>
-    {!enabledAutoScroll && (
+    {showScrollBtn && (
       <button className="btn-1" onClick={scrollToBottom}>
         <MdKeyboardArrowDown className="icon" />
       </button>

@@ -45,6 +45,7 @@ export const LiveControl: React.VFC<{
 
       <UrlInputWrap>
         <UrlInput type="text"
+          className="url-input"
           name={liveChat.id} id={liveChat.id}
           readOnly={liveChat.isStarted}
           defaultValue={url} onChange={onChangeUrl}
