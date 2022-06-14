@@ -18,8 +18,20 @@ export const defaultConfig: AppConfig = {
   bouyomi: {
     enable: false,
     port: 50080,
-    format: "$(Name) $(Message)",
     includeEmoji: false,
+    youtube: {
+      normal: "$(Message)",
+      superchat: "$(Name)さんが$(Amount)スーパーチャットしました $(Message)",
+      membership: "$(Name)さんがメンバーになりました",
+      membershipGift: "$(Name)さんがメンバーシップギフトを送りました",
+    },
+    twitch: {
+      normal: "$(Message)",
+      cheer: "$(Name)さんが$(Amount)ビッツ送りました $(Message)",
+      sub: "$(Name)さんがサブスクしました",
+      subPrime: "$(Name)さんがプライムでサブスクしました",
+      subGift: "$(Name)さんがサブスクギフトを$(GiftNum)個送りました",
+    }
   },
 }
 
@@ -39,8 +51,24 @@ export type ApiServerConfig = {
 export type BouyomiConfig = {
   enable: boolean;
   port: number;
-  format: string;
   includeEmoji: boolean;
+  youtube: BouyomiYouTubeConfig;
+  twitch: BouyomiTwitchConfig;
+}
+
+export type BouyomiYouTubeConfig = {
+  normal: string;
+  superchat: string;
+  membership: string;
+  membershipGift: string;
+}
+
+export type BouyomiTwitchConfig = {
+  normal: string;
+  cheer: string;
+  sub: string;
+  subPrime: string;
+  subGift: string;
 }
 
 export type TwitchConfig = {
@@ -61,16 +89,32 @@ export interface AppConfig {
   bouyomi: BouyomiConfig;
 }
 
+function isString(data: unknown) {
+  return typeof data === "string";
+}
+function isObject(data: unknown) {
+  return typeof data === "object";
+}
+function isNumber(data: unknown) {
+  return (
+    typeof data === "number"
+    && !isNaN(data)
+  );
+}
+function isSameType(a: unknown, b: unknown) {
+  return typeof a === typeof b;
+}
+
 // settings.jsonの.twitchのパース
 export function parseTwitchConfig(raw: any, def: TwitchConfig) {
-  if (typeof raw !== "object") return { ...def };
+  if (!isObject(raw)) return { ...def };
   const res = { ...def, ...raw } as TwitchConfig;
 
-  if (typeof res.clientId !== "string") {
+  if (!isString(res.clientId)) {
     res.clientId = def.clientId;
   }
 
-  if (typeof res.token !== "string") {
+  if (!isString(res.token)) {
     res.token = def.token;
   }
   return res;
@@ -78,7 +122,7 @@ export function parseTwitchConfig(raw: any, def: TwitchConfig) {
 
 // settings.jsonの.apiServerのパース
 export function parseApiServerConfig(raw: any, def: ApiServerConfig) {
-  if (typeof raw !== "object") return { ...def };
+  if (!isObject(raw)) return { ...def };
   const res = { ...def, ...raw } as ApiServerConfig;
 
   res.enable = !!res.enable;
@@ -93,40 +137,65 @@ export function parseApiServerConfig(raw: any, def: ApiServerConfig) {
 
 // settings.jsonの.bouyomiのパース
 export function parseBouyomiConfig(raw: any, def: BouyomiConfig) {
-  if (typeof raw !== "object") return { ...def };
+  if (!isObject(raw)) return { ...def };
   const res = { ...def, ...raw } as BouyomiConfig;
 
   res.enable = !!res.enable;
   res.includeEmoji = !!res.includeEmoji;
 
   res.port = res.port - 0;
-  if (!isFinite(res.port)) {
+  if (!isNumber(res.port)) {
     res.port = def.port;
   }
 
-  if (typeof res.format !== "string") {
-    res.format = def.format;
-  }
+  res.youtube = parseBouyomiYouTubeConfig(res.youtube, def.youtube);
+  res.twitch = parseBouyomiTwitchConfig(res.twitch, def.twitch);
 
   return res;
 }
 
+export function parseBouyomiYouTubeConfig(raw: any, def: BouyomiYouTubeConfig) {
+  if (!isObject(raw)) return { ...def };
+  const res = { ...def, ...raw } as BouyomiYouTubeConfig;
+
+  const keys = Object.keys(def) as (keyof BouyomiYouTubeConfig)[];
+  for (const key of keys) {
+    if (typeof res[key] !== typeof def[key]) {
+      res[key] = def[key];
+    }
+  }
+  return res;
+}
+
+export function parseBouyomiTwitchConfig(raw: any, def: BouyomiTwitchConfig) {
+  if (!isObject(raw)) return { ...def };
+  const res = { ...def, ...raw } as BouyomiTwitchConfig;
+
+  const keys = Object.keys(def) as (keyof BouyomiTwitchConfig)[];
+  for (const key of keys) {
+    if (typeof res[key] !== typeof def[key]) {
+      res[key] = def[key];
+    }
+  }
+  return res;
+}
+
 // settings.jsonのパース
-export function parseJson(rawJson: any, def: AppConfig) {
-  if (typeof rawJson !== "object") return { ...def };
+export function parseObj(rawJson: any, def: AppConfig) {
+  if (!isObject(rawJson)) return { ...def };
   const res = { ...def, ...rawJson } as AppConfig;
 
   res.useSmoothScroll = !!res.useSmoothScroll;
 
-  if (!isFinite(res.intervalMs) || res.intervalMs < 1000) {
+  if (!isSameType(res.intervalMs, def.intervalMs) || res.intervalMs < 1000) {
     res.intervalMs = def.intervalMs;
   }
 
-  if (!isFinite(res.maxChatItemNum)) {
+  if (!isNumber(res.maxChatItemNum) || res.maxChatItemNum < 1) {
     res.maxChatItemNum = def.maxChatItemNum;
   }
 
-  if (typeof res.themeName !== "string") {
+  if (!isString(res.themeName)) {
     res.themeName = def.themeName;
   }
 
@@ -135,7 +204,7 @@ export function parseJson(rawJson: any, def: AppConfig) {
   } else {
     const urlList = [];
     for (const url of res.prevUrl) {
-      if (typeof url === "string") {
+      if (isString(url)) {
         urlList.push(url);
       }
     }
@@ -167,7 +236,7 @@ export function appConfigReducer(state: AppConfig, action: AppConfigAction): App
   let res = state;
   switch (action.type) {
     case "CHANGE": {
-      res = {...action.data}
+      res = parseObj(action.data, copyConfig(defaultConfig));
       break;
     }
   }

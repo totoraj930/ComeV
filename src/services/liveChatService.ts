@@ -8,14 +8,14 @@ import { LiveChatTwitch } from "./liveChatTwitch";
 
 export type ChatItem = YTChatItem | AppChatItem | TTVChatItem;
 
-interface YTChatItem {
+export interface YTChatItem {
   type: "YouTube";
   id: string;
   isDummy?: boolean;
   data: YTChatItemData;
 }
 
-interface TTVChatItem {
+export interface TTVChatItem {
   type: "Twitch";
   id: string;
   data: TwitchChatItem;
@@ -217,7 +217,7 @@ export function createDummyYTChatItem(
 export function createDummyYTSuperChatItem(
   message?: string | MessageItem[] | null,
   name?: string | null,
-  amout?: string
+  amount?: string
 ) {
   const res: YTChatItem = {
     type: "YouTube",
@@ -226,7 +226,7 @@ export function createDummyYTSuperChatItem(
     data: {
       ...getDummyYTChatItemData(message, name),
       superchat: {
-        amount: amout || "￥610",
+        amount: amount || "￥610",
         color: "#1DE9B6",
         colorList: {
           headerBackgroundColor: "rgba(0, 191, 165, 1)",
@@ -241,7 +241,7 @@ export function createDummyYTSuperChatItem(
   return res;
 }
 
-export function createDummyYTStickerItem(name?: string | null, amout?: string) {
+export function createDummyYTStickerItem(name?: string | null, amount?: string) {
   const res: YTChatItem = {
     type: "YouTube",
     id: uuid(),
@@ -249,7 +249,7 @@ export function createDummyYTStickerItem(name?: string | null, amout?: string) {
     data: {
       ...getDummyYTChatItemData(null, name),
       superchat: {
-        amount: amout || "￥200",
+        amount: amount || "￥200",
         color: "#00E5FF",
         sticker: {
           url: "https://lh3.googleusercontent.com/whWdCHvpK52qWkxadxxRiATHijar8KkJZCHtmwa3KeLyzf1hT3jqIGKE5FTJvvrmWWxneg1CGQ7VuQ624HKy=s148-rwa",

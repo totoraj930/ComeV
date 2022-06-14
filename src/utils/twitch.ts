@@ -126,6 +126,11 @@ export interface TwitchCheermote {
   }
 }
 
+export type TwitchMessageItem =
+  | TwitchCheermoteMessage
+  | TwitchEmote
+  | string;
+
 export interface TwitchCheermoteMessage {
   cheermote: TwitchCheermote;
   bits: number;
@@ -178,7 +183,7 @@ export interface TwitchItemBase {
 
 /** チャットアイテム */
 export interface TwitchNormalChatItem extends TwitchItemBase {
-  type: "Nromal";
+  type: "Normal";
   message: (TwitchEmote | string)[];
   isHighlight?: boolean;
 }
@@ -448,11 +453,8 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
 
     // メッセージの生成
     const message = this.convertMessage(rawMessage, userState.emotes);
-    if (userState["msg-id"]) {
-      console.log(userState["msg-id"]);
-    }
     return {
-      type: "Nromal",
+      type: "Normal",
       id: userState.id || uuid(),
       author: this.createUser(userState),
       message: message,
@@ -739,7 +741,6 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
     const headers = new Headers();
     headers.append("Authorization", `Bearer ${this.#token}`);
     const res = await fetch("https://id.twitch.tv/oauth2/validate", { headers });
-    console.log(res.status);
     if (res.status === 200) {
       return res.json();
     } else {

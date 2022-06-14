@@ -1,9 +1,9 @@
 import { invoke as invokeOrigin, path } from "@tauri-apps/api";
 import { invoke } from "../utils/tauriInvoke"
-import { useEffect, useMemo, useState } from "react";
-import { MdFolderOpen } from "react-icons/md";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MdBackspace, MdFolderOpen, MdSettingsBackupRestore } from "react-icons/md";
 import styled from "styled-components";
-import { AppConfig, copyConfig, defaultConfig } from "../context/config";
+import { AppConfig, BouyomiTwitchConfig, BouyomiYouTubeConfig, copyConfig, defaultConfig } from "../context/config";
 import { useSettings } from "../hooks/useSettings";
 import { Switch } from "./LiveView";
 
@@ -22,7 +22,11 @@ export const SettingsView: React.VFC<{
 
   const def = useMemo(() => {
     return copyConfig(defaultConfig);
-  }, [])
+  }, []);
+
+  const yt = useMemo(() => {
+    return def.bouyomi.youtube;
+  }, [def]);
 
   return <Wrap>
     <Main>
@@ -62,17 +66,19 @@ export const SettingsView: React.VFC<{
             <label htmlFor="max_chat_item_num" 
               className="title">表示上限</label>
             <div>
-              <Input1
-                type="number"
-                name="max_chat_item_num" id="max_chat_item_num"
-                min="50" max="800" step="50"
-                defaultValue={copiedS.maxChatItemNum}
-                onChange={(event) => { copiedS.maxChatItemNum = Number.parseInt(event.target.value) }}
-                placeholder={def.maxChatItemNum + ""}
-              />
-              <span>個</span>
+              <div className="unit">
+                <Input1
+                  type="number"
+                  name="max_chat_item_num" id="max_chat_item_num"
+                  min="50" max="800" step="50"
+                  defaultValue={copiedS.maxChatItemNum}
+                  onChange={(event) => { copiedS.maxChatItemNum = Number.parseInt(event.target.value) }}
+                  placeholder={def.maxChatItemNum + ""}
+                />
+                <span>個</span>
+              </div>
+              <p className="description">多すぎると重くなります</p>
             </div>
-            <p className="description">多すぎると重くなります</p>
           </Item>
           <Item>
             <p className="title">スクロールアニメ</p>
@@ -81,27 +87,30 @@ export const SettingsView: React.VFC<{
                 <input type="checkbox"
                   name="use_smooth_scroll" id="use_smooth_scroll"
                   defaultChecked={ copiedS.useSmoothScroll }
-                  onChange={(event) => { copiedS.useSmoothScroll = event.target.checked }} />
+                  onChange={(event) => { copiedS.useSmoothScroll = event.target.checked }}
+                />
                 <span className="slider"></span>
               </Switch>
+              <p className="description">自動スクロールを滑らかにするか</p>
             </div>
-            <p className="description">自動スクロールを滑らかにするか</p>
           </Item>
           <Item>
             <label htmlFor="interval_ms"
               className="title">チャット取得間隔</label>
             <div>
-              <Input1
-                type="number"
-                name="interval_ms" id="interval_ms"
-                min="1000" max="10000" step="500"
-                defaultValue={copiedS.intervalMs}
-                onChange={(event) => { copiedS.intervalMs = Number.parseInt(event.target.value) }}
-                placeholder={def.intervalMs + ""}
-              />
-              <span>ミリ秒</span>
+              <div className="unit">
+                <Input1
+                  type="number"
+                  name="interval_ms" id="interval_ms"
+                  min="1000" max="10000" step="500"
+                  defaultValue={copiedS.intervalMs}
+                  onChange={(event) => { copiedS.intervalMs = Number.parseInt(event.target.value) }}
+                  placeholder={def.intervalMs + ""}
+                />
+                <span>ミリ秒</span>
+              </div>
+              <p className="description">1秒 = 1000ミリ秒 (YouTubeにのみ適用されます)</p>
             </div>
-            <p className="description">1秒 = 1000ミリ秒 (YouTubeにのみ適用されます)</p>
           </Item>
         </div>
       </section>
@@ -120,8 +129,8 @@ export const SettingsView: React.VFC<{
                 onChange={(event) => { copiedS.apiServer.enable = event.target.checked }} />
               <span className="slider"></span>
             </Switch>
+            <p className="description">OBSなどにコメントを表示する場合はON(変更時は再起動が必要)</p>
           </div>
-          <p className="description">OBSなどにコメントを表示する場合はON(変更時は再起動が必要)</p>
         </Item>
         <Item>
           <label htmlFor="api_server__port"
@@ -133,9 +142,10 @@ export const SettingsView: React.VFC<{
               min="49152" max="65535"
               defaultValue={ copiedS.apiServer.port }
               onChange={(event) => { copiedS.apiServer.port = Number.parseInt(event.target.value) }}
-              placeholder={def.apiServer.port + ""} />
+              placeholder={def.apiServer.port + ""}
+            />
+            <p className="description">サーバーを開くポート番号(基本変えなくて大丈夫)</p>
           </div>
-          <p className="description">サーバーを開くポート番号(基本変えなくて大丈夫)</p>
         </Item>
       </section>
       {/* <hr /> */}
@@ -153,8 +163,8 @@ export const SettingsView: React.VFC<{
                 onChange={(event) => { copiedS.bouyomi.enable = event.target.checked }} />
               <span className="slider"></span>
             </Switch>
+            <p className="description">棒読みちゃんにチャットを読み上げてもらう場合はON</p>
           </div>
-          <p className="description">棒読みちゃんにチャットを読み上げてもらう場合はON</p>
         </Item>
         <Item>
           <label htmlFor="bouyomi__port"
@@ -166,23 +176,188 @@ export const SettingsView: React.VFC<{
               min="49152" max="65535"
               defaultValue={ copiedS.bouyomi.port }
               onChange={(event) => { copiedS.bouyomi.port = Number.parseInt(event.target.value) }}
-              placeholder={def.bouyomi.port + ""} />
+              placeholder={def.bouyomi.port + ""}
+            />
+            <p className="description">棒読みちゃんのHTTP連携のポート番号</p>
           </div>
-          <p className="description">棒読みちゃんのHTTP連携のポート番号</p>
         </Item>
         <Item>
-          <label htmlFor="bouyomi__format"
-            className="title">読み上げ形式</label>
+          <p className="title">読み上げ設定</p>
           <div>
-            <Input1
+            {
+              (Object.keys(def.bouyomi.youtube) as (keyof BouyomiYouTubeConfig)[])
+              .map((key, i) => {
+                const copiedVal = copiedS.bouyomi.youtube[key];
+                const defVal = def.bouyomi.youtube[key];
+                if (typeof copiedVal !== "string") return "";
+                const prefix = `bouyomi__youtube__${key}`;
+                let name = " (YouTube)";
+                switch (key) {
+                  case "normal": {
+                    name = "通常" + name;
+                    break;
+                  }
+                  case "superchat": {
+                    name = "スパチャ" + name;
+                    break;
+                  }
+                  case "membership": {
+                    name = "メンバーシップ" + name;
+                    break;
+                  }
+                  case "membershipGift": {
+                    name = "ギフト" + name;
+                    break;
+                  }
+                }
+                const setValue = (value: string) => {
+                  const $input = document.getElementById(prefix) as HTMLInputElement;
+                  $input.value = value;
+                  copiedS.bouyomi.youtube[key] = value;
+                };
+                return (<div key={i}>
+                  <label htmlFor={prefix} className="sub-title">{name}</label>
+                  <FormatWrap>
+                    <Input2
+                      type="text"
+                      name={prefix} id={prefix}
+                      defaultValue={copiedVal}
+                      onChange={(event) => { copiedS.bouyomi.youtube[key] = event.target.value }}
+                      placeholder={defVal}
+                    />
+                    <Btn2
+                      title="削除" className="warn"
+                      onClick={() => setValue("")}
+                    >
+                      <MdBackspace className="icon" />
+                    </Btn2>
+                    <Btn2
+                      title="初期設定に戻す"
+                      onClick={() => setValue(defVal)}
+                    >
+                      <MdSettingsBackupRestore className="icon" />
+                    </Btn2>
+                  </FormatWrap>
+                </div>)
+              })
+            }
+
+            {
+              (Object.keys(def.bouyomi.twitch) as (keyof BouyomiTwitchConfig)[])
+              .map((key, i) => {
+                const copiedVal = copiedS.bouyomi.twitch[key];
+                const defVal = def.bouyomi.twitch[key];
+                if (typeof defVal !== "string") return "";
+                const prefix = `bouyomi__twitch__${key}`;
+                let name = " (Twitch)";
+                switch (key) {
+                  case "normal": {
+                    name = "通常" + name;
+                    break;
+                  }
+                  case "cheer": {
+                    name = "Cheer" + name;
+                    break;
+                  }
+                  case "sub": {
+                    name = "サブスク" + name;
+                    break;
+                  }
+                  case "subPrime": {
+                    name = "Primeサブスク" + name;
+                    break;
+                  }
+                  case "subGift": {
+                    name = "サブスクギフト" + name;
+                    break;
+                  }
+                }
+                const setValue = (value: string) => {
+                  const $input = document.getElementById(prefix) as HTMLInputElement;
+                  $input.value = value;
+                  copiedS.bouyomi.twitch[key] = value;
+                };
+                return (<div key={i}>
+                  <label htmlFor={prefix} className="sub-title">{name}</label>
+                  <FormatWrap>
+                    <Input2
+                      type="text"
+                      name={prefix} id={prefix}
+                      defaultValue={copiedVal}
+                      onChange={(event) => { copiedS.bouyomi.twitch[key] = event.target.value }}
+                      placeholder={defVal}
+                    />
+                    <Btn2
+                      title="削除" className="warn"
+                      onClick={() => setValue("")}
+                    >
+                      <MdBackspace className="icon" />
+                    </Btn2>
+                    <Btn2
+                      title="初期設定に戻す"
+                      onClick={() => setValue(defVal)}
+                    >
+                      <MdSettingsBackupRestore className="icon" />
+                    </Btn2>
+                  </FormatWrap>
+                </div>)
+              })
+            }
+            
+            {/* <label htmlFor="bouyomi__format" className="sub-title">
+              通常 (Twitch)
+            </label>
+            <Input2
               type="text"
               name="bouyomi__format" id="bouyomi__format"
               defaultValue={ copiedS.bouyomi.format }
               onChange={(event) => { copiedS.bouyomi.format = event.target.value }}
               placeholder={def.bouyomi.format}
-              />
+            />
+
+            <label htmlFor="bouyomi__format" className="sub-title">
+              Cheerメッセージ (Twitch)
+            </label>
+            <Input2
+              type="text"
+              name="bouyomi__format" id="bouyomi__format"
+              defaultValue={ copiedS.bouyomi.format }
+              onChange={(event) => { copiedS.bouyomi.format = event.target.value }}
+              placeholder={def.bouyomi.format}
+            />
+
+            <label htmlFor="bouyomi__format" className="sub-title">
+              サブスク (Twitch)
+            </label>
+            <Input2
+              type="text"
+              name="bouyomi__format" id="bouyomi__format"
+              defaultValue={ copiedS.bouyomi.format }
+              onChange={(event) => { copiedS.bouyomi.format = event.target.value }}
+              placeholder={def.bouyomi.format}
+            />
+
+            <label htmlFor="bouyomi__format" className="sub-title">
+              サブスクギフト (Twitch)
+            </label>
+            <Input2
+              type="text"
+              name="bouyomi__format" id="bouyomi__format"
+              defaultValue={ copiedS.bouyomi.format }
+              onChange={(event) => { copiedS.bouyomi.format = event.target.value }}
+              placeholder={def.bouyomi.format}
+            /> */}
+
+            <p className="description">
+              $(Message): チャット本文<br />
+              $(Name): 投稿者名<br />
+              $(Amount): スパチャ金額 or ビッツ<br />
+              $(GiftNum): ギフトの個数(YouTube非対応)<br />
+              に置き換えて読み上げます<br />
+              ※ 空白にすると読み上げなくなります<br />
+              ※「￥100」「$100.00」「NT$100.00」などの表記になります(辞書登録推奨)
+            </p>
           </div>
-          <p className="description">$(Message)をチャット本文、$(Name)を投稿者名に置き換えて読み上げます</p>
         </Item>
       </section>
     </Main>
@@ -242,10 +417,10 @@ const Btn1 = styled.button`
   color: var(--c-btn-1-c);
   border-radius: 100px;
   font-size: 14px;
+  cursor: pointer;
   &:hover {
     background: var(--c-btn-1-bg-2);
     color: var(--c-btn-1-c-2);
-    cursor: pointer;
   }
 
   &.large {
@@ -266,6 +441,22 @@ const Btn1 = styled.button`
     &.warn:hover {
       color: var(--c-text-warn);
     }
+  }
+`;
+
+const Btn2 = styled.button`
+  cursor: pointer;
+  color: var(--c-text);
+  background: transparent;
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+  &:hover {
+    color: var(--c-btn-1-bg);
+  }
+  &.warn:hover {
+    color: var(--c-text-warn);
   }
 `;
 
@@ -334,31 +525,43 @@ const Main = styled.div`
 
 const Item = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   border-top: 1px solid var(--c-border-2);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  min-height: 50px;
   > .title {
     display: flex;
     align-items: center;
     min-width: 150px;
     padding: 5px;
     font-size: 14px;
+    font-weight: bold;
   }
   > div {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     padding: 5px;
-    > span {
-      margin-left: 5px;
+    flex-grow: 1;
+    flex-shrink: 1;
+    .sub-title {
+      font-size: 14px;
+    }
+    .unit {
+      display: flex;
+      align-items: center;
+      > span {
+        margin-left: 5px;
+        font-size: 13px;
+      }
+    }
+    > .description {
+      padding: 5px 0;
+      width: 100%;
+      color: var(--c-text-2);
       font-size: 13px;
     }
   }
-  > .description {
-    padding: 0 0 5px 155px;
-    width: 100%;
-    color: var(--c-text-2);
-    font-size: 13px;
-  }
+
   select {
     width: 120px;
     padding: 10px 5px;
@@ -371,6 +574,7 @@ const Item = styled.div`
   }
 
   @media screen and (max-width: 450px) {
+    flex-wrap: wrap;
     > .title {
       min-width: 100%;
     }
@@ -394,5 +598,29 @@ const Input1 = styled.input`
   }
   &[type=text] {
     width: 200px;
+  }
+`;
+
+const FormatWrap = styled.div`
+  display: flex;
+  width: 100%;
+  gap: 5px;
+  align-items: center;
+  margin-bottom: 16px;
+`;
+const Input2 = styled.input`
+  padding: 10px 5px;
+  font-size: 14px;
+  background: var(--c-input-bg);
+  color: var(--c-input-c);
+  border: 1px solid var(--c-input-bd);
+  border-radius: 4px;
+  box-shadow: inset 0 0 4px var(--c-input-s);
+  &[type=text] {
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+  &::placeholder {
+    opacity: 0.5;
   }
 `;

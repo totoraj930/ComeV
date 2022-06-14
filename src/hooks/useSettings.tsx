@@ -1,5 +1,5 @@
 import { useCallback, useContext } from "react";
-import { AppConfig, AppConfigContext, copyConfig, parseJson } from "../context/config";
+import { AppConfig, AppConfigContext, copyConfig, parseObj } from "../context/config";
 import { fs, invoke as invokeOrigin, path } from "@tauri-apps/api";
 import { invoke } from "../utils/tauriInvoke"
 import { ChatItemContext } from "../context/chatItem";
@@ -71,7 +71,7 @@ export function useSettings() {
             break;
           }
           const rawJson = JSON.parse(rawText);
-          const res = parseJson(rawJson, state);
+          const res = parseObj(rawJson, state);
           saveConfig(res).catch(() => {
             dispatchChatItem({
               config: state,

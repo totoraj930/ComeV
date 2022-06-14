@@ -61,25 +61,15 @@ export function chatItemReducer(state: ChatItemContextState, action: ChatItemAct
           });
         
         for (const item of uniqueItemList) {
-          sendChatApi("youtube", item);
-          if (action.useBouyomi) {
-            sendBouyomi(item, action.config.bouyomi);
-          }
           resViews.push(<ChatItemView chatItem={item} key={item.id} />);
         }
-        sendChatApi("youtube-list", uniqueItemList);
         resItems = stateItems.concat(uniqueItemList).slice(-action.config.maxChatItemNum);
         resViews = resViews.slice(-action.config.maxChatItemNum);
         break;
       } else {
         for (const item of action.chatItem) {
-          sendChatApi("youtube", item);
-          if (action.useBouyomi) {
-            sendBouyomi(item, action.config.bouyomi);
-          }
           resViews.push(<ChatItemView chatItem={item} key={item.id} />);
         }
-        sendChatApi("youtube-list", action.chatItem);
         resItems = stateItems.concat(action.chatItem).slice(-action.config.maxChatItemNum);
         resViews = resViews.slice(-action.config.maxChatItemNum);
         break;

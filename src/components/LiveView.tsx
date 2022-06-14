@@ -20,6 +20,7 @@ import { ChatItem, createAppChatItem, createLiveChatEmpty, LiveChat } from '../s
 import { LiveControl } from './LiveControl';
 import { LiveChatContext } from '../context/liveChat';
 import { LiveInfoView } from './LiveInfoView';
+import { DummySender2 } from './DummySender2';
 
 
 export const LiveView: React.VFC<{
@@ -46,7 +47,6 @@ export const LiveView: React.VFC<{
   }, [settingsUpdater]);
   
   const liveChatList: LiveChat[] = useMemo(() => {
-    console.log(Object.keys(liveChatMap))
     return Object.keys(liveChatMap).map((id) => liveChatMap[id]);
   }, [liveChatMap]);
 
@@ -139,13 +139,6 @@ export const LiveView: React.VFC<{
               <MdPlaylistAdd className="icon" />
               <span>接続先を追加</span>
             </Btn2>
-            
-
-            <Btn2 onClick={() => {
-              console.log(settings);
-            }}>
-              <span>テスト</span>
-            </Btn2>
           </Line>
 
           <hr />
@@ -187,6 +180,7 @@ export const LiveView: React.VFC<{
 
           {/* テスト用機能 */}
           <DummySender />
+          <DummySender2 />
         </MenuPanel>
       )}
 
@@ -312,6 +306,11 @@ export const Line = styled.div`
   padding: 5px 10px;
   gap: 6px;
   font-size: 14px;
+  > .title {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+  }
   > .body {
     display: flex;
     flex-wrap: wrap;

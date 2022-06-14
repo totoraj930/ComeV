@@ -1,8 +1,10 @@
 import { useCallback, useContext } from "react";
 import { MdChat, MdAttachMoney, MdPersonAdd, MdCardGiftcard } from "react-icons/md";
+import { SiYoutube } from "react-icons/si";
 import { ChatItemContext } from "../context/chatItem";
 import { useSettings } from "../hooks/useSettings";
 import { ChatItem, createDummyYTChatItem, createDummyYTGiftItem, createDummyYTMembershipItem, createDummyYTStickerItem, createDummyYTSuperChatItem } from "../services/liveChatService";
+import { sendBouyomiYT } from "../services/liveChatYouTube";
 import { sendBouyomi } from "../utils/bouyomi";
 import { sendChatApi } from "../utils/sendChatApi";
 import { uuid } from "../utils/uuid";
@@ -56,14 +58,19 @@ export const DummySender: React.VFC<{
       actionId: uuid(),
       chatItem: [item],
     });
-    sendBouyomi(item, settings.bouyomi);
+    if (settings.bouyomi.enable) {
+      sendBouyomiYT(item, settings.bouyomi);
+    }
     sendChatApi("youtube", item);
     sendChatApi("youtube-list", [item]);
 
   }, [dispatchChatItem, settings]);
   return <>
     <Line>
-      <p className="title">表示テスト</p>
+      <p className="title">
+        表示テスト
+        <SiYoutube className="icon" />
+      </p>
       <div className="body">
         <Btn2 onClick={() => sendDummyChat("normal")}>
           <MdChat className="icon" />

@@ -76,8 +76,8 @@ html, body {
   --c-btn-2-c: #fff;
   --c-btn-2-c-2: #fff;
 
-  --c-mark-twitch: rgba(55, 0, 255, 0.5);
-  --c-mark-youtube: rgba(255, 22, 22, 0.5);
+  --c-mark-twitch: rgba(55, 0, 255, 0.2);
+  --c-mark-youtube: rgba(255, 22, 22, 0.2);
   --c-twitch-cheer: rgb(156, 62, 232);
 }
 
@@ -122,6 +122,9 @@ html, body {
   --c-header-button-c: #fff;
   --c-header-button-c-2: #fff;
   --c-header-button-c-3: #fff;
+
+  --c-mark-twitch: rgba(55, 0, 255, 0.4);
+  --c-mark-youtube: rgba(255, 22, 22, 0.4);
 }
 
 [data-anony-blur=true] {
@@ -138,6 +141,13 @@ html, body {
 
 .mr-a {
   margin-right: auto;
+}
+
+.fw-b {
+  font-weight: bold;
+}
+.fw-n {
+  font-weight: normal;
 }
 
 @media screen and (max-width: 550px) {

@@ -2,7 +2,7 @@ import { ChatItem as YTChatItemData, EmojiItem, ImageItem, MessageItem } from "y
 import styled from "styled-components";
 import { ChatItem, AppChatItemData } from "../services/liveChatService";
 import { useMemo } from "react";
-import { TwitchChatItem, TwitchNormalChatItem, TwitchEmote, TwitchUser, TwitchCheerItem, TwitchCheermote, TwitchCheermoteMessage } from "../utils/twitch";
+import { TwitchChatItem, TwitchNormalChatItem, TwitchEmote, TwitchUser, TwitchCheerItem, TwitchCheermote, TwitchCheermoteMessage, TwitchSubItem, TwitchSubMysteryGiftItem } from "../utils/twitch";
 
 export interface ChatItemViewOptions {
   showTime?: boolean;
@@ -108,7 +108,7 @@ const YTSuperChatItemView: React.VFC<{
                     title={data.author.badge.label} />
                 )}
             </p>
-            <p className="amout">
+            <p className="amount">
               {data.superchat.amount}
             </p>
           </div>
@@ -286,8 +286,47 @@ const TTVCheerItemView: React.VFC<{
     
     <SuperChat style={{ borderColor: "var(--c-twitch-cheer)" }}>
       <TTVAuthor author={data.author}></TTVAuthor>
-      <p className="amout-bits">{data.bits} <span>Bits</span></p>
+      <p className="amount-bits">{data.bits} <span>Bits</span></p>
       <TTVChatMessage items={data.message} />
+    </SuperChat>
+  </Item>);
+}
+
+// TwitchSub
+const TTVSubItemView: React.VFC<{
+  data: TwitchSubItem;
+}> = ({ data }) => {
+  return (<Item data-type="Twitch">
+    <p className="time">
+      {convertTime(data.timestamp)}
+    </p>
+
+    <SuperChat style={{ borderColor: "var(--c-member-body-bg)" }}>
+      <TTVAuthor author={data.author}></TTVAuthor>
+
+      <p className="message fw-b">
+        {data.methods.prime && "Primeで"}
+        サブスクしました
+      </p>
+    </SuperChat>
+  </Item>);
+}
+
+// TwitchSub
+const TTVSubGiftItemView: React.VFC<{
+  data: TwitchSubMysteryGiftItem;
+}> = ({ data }) => {
+  return (<Item data-type="Twitch">
+    <p className="time">
+      {convertTime(data.timestamp)}
+    </p>
+
+    <SuperChat style={{ borderColor: "var(--c-member-body-bg)" }}>
+      <TTVAuthor author={data.author}></TTVAuthor>
+
+      <p className="message fw-b">
+        <span>{data.num}</span> 個のサブスクギフト
+      </p>
     </SuperChat>
   </Item>);
 }
@@ -327,22 +366,20 @@ export const ChatItemView: React.VFC<{
     return <AppChatItemView data={chatItem.data} />;
   } else if (chatItem.type === "Twitch") {
     switch (chatItem.data.type) {
-      case "Nromal": {
+      case "Normal": {
         return <TTVChatItemView data={chatItem.data} />;
       }
       case "Cheer": {
-        console.log(chatItem.data);
-
         return <TTVCheerItemView data={chatItem.data} />;
       }
       case "Sub": {
-        break;
+        return <TTVSubItemView data={chatItem.data} />;
       }
       case "SubGift": {
         break;
       }
       case "SubMysteryGift": {
-        break;
+        return <TTVSubGiftItemView data={chatItem.data} />;
       }
     }
   }
@@ -434,7 +471,7 @@ const SuperChat = styled.div`
         background-color: var(--c-main);
       }
     }
-    .amout {
+    .amount {
       font-size: 16px;
       font-weight: bold;
     }
@@ -455,7 +492,7 @@ const SuperChat = styled.div`
       background-color: var(--c-sub);
     }
   }
-  .amout-bits {
+  .amount-bits {
     font-weight: bold;
     font-size: 16px;
     span {
@@ -505,7 +542,7 @@ const SuperChat = styled.div`
       .name {
         font-size: 14px;
       }
-      .amout {
+      .amount {
         font-size: 15px;
       }
       .message {

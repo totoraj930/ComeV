@@ -1,11 +1,13 @@
 import { MetadataItem, YouTubeLiveId } from "youtube-chat-tauri/dist/types/data";
-import { ChatItem, createAppChatItem, LiveChatBase, LiveChatMetaData } from "./liveChatService";
+import { ChatItem, createAppChatItem, LiveChatBase, LiveChatMetaData, YTChatItem, ytMessageToString } from "./liveChatService";
 import { LiveChat as YTLiveChat } from "youtube-chat-tauri";
-import { AppConfig } from "../context/config";
+import { AppConfig, BouyomiConfig } from "../context/config";
 import { ChatItemAction } from "../context/chatItem";
 import React from "react";
 import { LiveChatContextAction } from "../context/liveChat";
 import { uuid } from "../utils/uuid";
+import { sendBouyomiText } from "../utils/bouyomi";
+import { sendChatApi } from "../utils/sendChatApi";
 
 export interface YouTubeMetaData extends LiveChatMetaData {
   like?: number;
@@ -69,6 +71,34 @@ export function parseYouTubeUrl(urlStr: string): YouTubeLiveId | null {
   return null;
 }
 
+export function generateBouyomiText(
+  item: YTChatItem,
+  config: BouyomiConfig,
+) {
+  let res = config.youtube.normal;
+  if (item.data.superchat) {
+    res = config.youtube.superchat
+      .replace(/\$\(Amount\)/g, item.data.superchat.amount);
+  }
+  else if (item.data.membership && item.data.message.length === 0) {
+    res = config.youtube.membership;
+  }
+  else if (item.data.membershipGift) {
+    res = config.youtube.membershipGift;
+  }
+  let message = ytMessageToString(item.data.message, config.includeEmoji);
+  res = res
+    .replace(/\$\(Message\)/g, message)
+    .replace(/\$\(Name\)/g, item.data.author.name);
+  return res;
+}
+
+export function sendBouyomiYT(item: YTChatItem, config: BouyomiConfig) {
+  const text = generateBouyomiText(item, config);
+  if (text.length <= 0) return;
+  sendBouyomiText(text, config);
+}
+
 export function initYouTubeListener(
   liveChat: LiveChatYouTube,
   settings: AppConfig,
@@ -81,22 +111,32 @@ export function initYouTubeListener(
 
   liveChat.api.on("chatlist", (data) => {
     // まとめてdispatch
-    const items: ChatItem[] = data.map((item) => {
-      return {
+    const items: YTChatItem[] = data.map((item) => {
+      const res: YTChatItem = {
         type: "YouTube",
         id: uuid(),
         data: item
-      }
+      };
+      sendChatApi("youtube", res);
+      return res;
     });
+    sendChatApi("youtube-list", items);
+
+    // 読み上げ
+    if (settings.bouyomi.enable && !_isFirst) {
+      for (const item of items) {
+        sendBouyomiYT(item, settings.bouyomi);
+      }
+    }
 
     dispatchChatItem({
       config: settings,
       type: "ADD",
       unique: _isFirst,
-      useBouyomi: settings.bouyomi.enable && !_isFirst,
       actionId: uuid(),
       chatItem: items
     });
+
 
     _isFirst = false;
   });
