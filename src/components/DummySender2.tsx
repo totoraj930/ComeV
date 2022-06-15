@@ -21,6 +21,7 @@ export const DummySender2: React.VFC<{
     const item: TTVChatItem = {
       type: "Twitch",
       id: uuid(),
+      isDummy: true,
       data: ttvItem
     }
     dispatchChatItem({
@@ -32,8 +33,7 @@ export const DummySender2: React.VFC<{
     if (settings.bouyomi.enable) {
       sendBouyomiTTV(ttvItem, settings.bouyomi);
     }
-    sendChatApi("youtube", item);
-    sendChatApi("youtube-list", [item]);
+    sendChatApi("twitch", item);
 
   }, [dispatchChatItem, settings]);
   return <>

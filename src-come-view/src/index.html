@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>HTML5コメビュ for ComeV</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Murecho:wght@400;700&family=Noto+Sans+SC:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Noto+Sans+KR:wght@400;700&family=Noto+Sans:wght@400;700&display=swap");
+    @import "style.scss";
+  </style>
+  <script>
+    const PORT = 50930;
+    let LIMIT = 30;
+  </script>
+</head>
+<body>
+  <div id="wrap">
+    <div id="dummy"></div>
+  </div>
+
+  <script type="module">
+    const promise = Promise.all([
+      fetch(`http://localhost:${PORT}/come-view-config.json?t=${Date.now()}`)
+      .then(response => response.json())
+      .then(config => {
+        const $style = document.createElement("style");
+        $style.innerHTML = config.distCSS ?? "";
+        document.head.append($style);
+        LIMIT = config.limit ?? LIMIT;
+      }),
+      fetch(`http://localhost:${PORT}/log.json?t=${Date.now()}`)
+      .then(response => response.json())
+      .then(items => {
+        init(
+          items.filter((item) => item.type === "YouTube" || item.type === "Twitch").slice(-50)
+        );
+      })
+    ]);
+    import { init, start } from "./index.ts";
+    promise.then(() => {
+      const es = new EventSource(`http://localhost:${PORT}/api`);
+      start(es, LIMIT);
+    });
+  </script>
+</body>
+</html>

@@ -2,6 +2,7 @@ import { ChatItemAction } from "../context/chatItem";
 import { AppConfig, BouyomiConfig } from "../context/config";
 import { LiveChatContextAction } from "../context/liveChat";
 import { sendBouyomiText } from "../utils/bouyomi";
+import { sendChatApi } from "../utils/sendChatApi";
 import { TwitchBadge, TwitchChat, TwitchChatItem, TwitchItemBase, TwitchMessageItem, TwitchUser } from "../utils/twitch";
 import { uuid } from "../utils/uuid";
 import { createAppChatItem, LiveChatBase, LiveChatMetaData, TTVChatItem } from "./liveChatService";
@@ -159,17 +160,19 @@ export function initTwitchListener(
     if (settings.bouyomi.enable) {
       sendBouyomiTTV(item, settings.bouyomi);
     }
+    const chatItem: TTVChatItem = {
+      type: "Twitch",
+      id: item.id,
+      data: item
+    };
+    sendChatApi("twitch", chatItem);
     dispatchChatItem({
       config: settings,
       type: "ADD",
       unique: false,
       useBouyomi: settings.bouyomi.enable,
       actionId: uuid(),
-      chatItem: [{
-        type: "Twitch",
-        id: item.id,
-        data: item
-      }]
+      chatItem: [chatItem]
     });
   });
 

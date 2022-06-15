@@ -1,7 +1,7 @@
 import { createContext, Dispatch } from "react";
 
 export const defaultConfig: AppConfig = {
-  maxChatItemNum: 300,
+  maxChatItemNum: 500,
   useSmoothScroll: true,
   intervalMs: 3000,
   themeName: "dark",

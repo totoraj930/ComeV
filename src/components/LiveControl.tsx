@@ -1,3 +1,4 @@
+import { invoke as invokeOrigin } from "@tauri-apps/api";
 import React, { useCallback, useState } from "react";
 import { MdPause, MdPlayArrow, MdOpenInBrowser, MdDashboard, MdSettings, MdPerson, MdDeleteForever } from "react-icons/md";
 import styled from "styled-components";
@@ -18,6 +19,26 @@ export const LiveControl: React.VFC<{
     });
   }, [liveChatUpdater, liveChat]);
 
+  const onOpenInBrowser = (useAdmin: boolean = false) => {
+    let url = "";
+    if (liveChat.type === "YouTube") {
+      const liveId = liveChat.api.liveId;
+      if (liveId) {
+        url = useAdmin
+          ? `https://studio.youtube.com/video/${liveId}/livestreaming`
+          : `https://youtube.com/watch?v=${liveId}`;
+      } else {
+        url = liveChat.url;
+      }
+    } else if (liveChat.type === "Twitch") {
+      url = liveChat.url;
+    } else if (liveChat.url.match(/^(http|https):\/\/.+/)) {
+      url = liveChat.url;
+    }
+
+    if (url.length > 0) invokeOrigin("open_in_browser", { url });
+  }
+
   return <Wrap>
     <Line>
 
@@ -35,11 +56,11 @@ export const LiveControl: React.VFC<{
         </Btn1>
       )}
 
-      <Btn2 onClick={() => {}} title="ブラウザで開く">
+      <Btn2 onClick={() => onOpenInBrowser()} title="ブラウザで開く">
         <MdOpenInBrowser className="icon" />
       </Btn2>
 
-      <Btn2 onClick={() => {}} title="管理画面をブラウザで開く">
+      <Btn2 onClick={() => onOpenInBrowser(true)} title="管理画面をブラウザで開く">
         <MdDashboard className="icon" />
       </Btn2>
 

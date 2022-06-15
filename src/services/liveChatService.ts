@@ -18,6 +18,7 @@ export interface YTChatItem {
 export interface TTVChatItem {
   type: "Twitch";
   id: string;
+  isDummy?: boolean;
   data: TwitchChatItem;
 }
 

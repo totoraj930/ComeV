@@ -1,7 +1,6 @@
-import { useCallback, useContext } from "react";
+import { useContext } from "react";
 import { AppConfig, AppConfigContext, copyConfig, parseObj } from "../context/config";
 import { fs, invoke as invokeOrigin, path } from "@tauri-apps/api";
-import { invoke } from "../utils/tauriInvoke"
 import { ChatItemContext } from "../context/chatItem";
 import { uuid } from "../utils/uuid";
 import { createAppChatItem } from "../services/liveChatService";
@@ -87,9 +86,9 @@ export function useSettings() {
             chatItem: [createAppChatItem("log", "設定ファイルを読み込みました")]
           });
           if (res.apiServer.enable) {
-            invoke("start_chat_server", { port: res.apiServer.port });
+            invokeOrigin("start_chat_server", { port: res.apiServer.port });
           } else {
-            invoke("stop_chat_server");
+            invokeOrigin("stop_chat_server");
           }
           dispatch({ type: "CHANGE", data: res });
           return res;

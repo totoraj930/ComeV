@@ -1,7 +1,5 @@
 import React, { createContext, Dispatch, ReactElement } from "react";
 import { ChatItem } from "../services/liveChatService";
-import { sendBouyomi } from "../utils/bouyomi";
-import { sendChatApi } from "../utils/sendChatApi";
 import { AppConfig} from "./config";
 import { ChatItemView } from "../components/ChatItem";
 

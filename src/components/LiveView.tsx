@@ -1,22 +1,19 @@
 
 import styled from 'styled-components';
 import { useLiveChat } from '../hooks/useLiveChat';
-import { MdPlayArrow, MdPause, MdDeleteForever, MdPerson, MdMenu, MdExpandLess, MdSettingsSuggest, MdFastForward, MdSkipNext, MdSettings, MdOpenInBrowser, MdDashboard, MdPlusOne, MdPlaylistAdd } from "react-icons/md";
+import { MdPlayArrow, MdPause, MdDeleteForever, MdMenu, MdExpandLess, MdSettingsSuggest, MdFastForward, MdSkipNext, MdSettings, MdPlaylistAdd } from "react-icons/md";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ChatView } from '../components/ChatView';
 import { fs } from "@tauri-apps/api"
-import { invoke } from "../utils/tauriInvoke"
 import { useSettings } from '../hooks/useSettings';
 import { requestBouyomi } from '../utils/bouyomi';
 import { ChatItemContext } from '../context/chatItem';
-import { SettingsView } from './SettingsView';
+import { SettingsView, SettingTab } from './SettingsView';
 import { AppConfig } from '../context/config';
 import { sendChatApi } from '../utils/sendChatApi';
-import { writeFile } from '../utils/tauriInvoke';
-import { TwitchChat } from '../utils/twitch';
 import { DummySender } from './DummySender';
 import { uuid } from '../utils/uuid';
-import { ChatItem, createAppChatItem, createLiveChatEmpty, LiveChat } from '../services/liveChatService';
+import { ChatItem, createLiveChatEmpty, LiveChat } from '../services/liveChatService';
 import { LiveControl } from './LiveControl';
 import { LiveChatContext } from '../context/liveChat';
 import { LiveInfoView } from './LiveInfoView';
@@ -36,8 +33,16 @@ export const LiveView: React.VFC<{
   const [isShowSettings, setIsShowSettings] = useState<boolean>(false);
   // const { state: config } = useContext(AppConfigContext);
   const { settings, settingsUpdater } = useSettings();
-
-  const onCloseSettings = useCallback((resSettings: AppConfig, isCancel: boolean) => {
+  const settingScrollPos = useRef<number>(0);
+  const settingTab = useRef<SettingTab>("main");
+  const onCloseSettings = useCallback((
+    resSettings: AppConfig,
+    isCancel: boolean,
+    scrollPos: number,
+    tab: SettingTab,
+  ) => {
+    settingScrollPos.current = scrollPos;
+    settingTab.current = tab;
     setIsShowSettings(false);
     if (isCancel) return;
     settingsUpdater({
@@ -71,9 +76,20 @@ export const LiveView: React.VFC<{
       }
     });
 
+    let prevLog: string = "";
+
     // log.jsonに書き出す
     const logInterval = setInterval(() => {
-      writeFile("log.json", JSON.stringify(chatItems.current.slice(-50)), fs.BaseDirectory.App);
+      const logText = JSON.stringify(chatItems.current.slice(-100));
+      // 前回と同じなら何もしない
+      if (prevLog === logText) return;
+      prevLog = logText;
+      fs.writeFile({
+        path: "log.json",
+        contents: logText,
+      }, {
+        dir: fs.BaseDirectory.App
+      });
     }, 5000);
 
 
@@ -197,7 +213,7 @@ export const LiveView: React.VFC<{
       </DebugPanel>
     </ChatControl>
     <ChatView chatItems={chatItemContext} />
-    {isShowSettings && <SettingsView closeHandler={onCloseSettings} />}
+    {isShowSettings && <SettingsView closeHandler={onCloseSettings} scrollPos={settingScrollPos.current} tab={settingTab.current} />}
   </Main>
   
 </Wrap>)

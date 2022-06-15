@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>HTML5コメビュ for ComeV</title>
+  <style>@import "https://fonts.googleapis.com/css2?family=Murecho:wght@400;700&family=Noto+Sans+SC:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Noto+Sans+KR:wght@400;700&family=Noto+Sans:wght@400;700&display=swap";
+*, :before, :after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --line-margin: 10px;
+  --font-size: 16px;
+  --icon-size: 24px;
+  --icon-radius: 50px;
+  --badge-size: 20px;
+  --emoji-size: 24px;
+  --outline: -2px -2px #000, -2px -1px #000, -2px 0px #000, -2px 1px #000, -2px 2px #000, -1px -2px #000, -1px -1px #000, -1px 0px #000, -1px 1px #000, -1px 2px #000, 0px -2px #000, 0px -1px #000, 0px 0px #000, 0px 1px #000, 0px 2px #000, 1px -2px #000, 1px -1px #000, 1px 0px #000, 1px 1px #000, 1px 2px #000, 2px -2px #000, 2px -1px #000, 2px 0px #000, 2px 1px #000, 2px 2px #000;
+  --name-c: silver;
+  --name-fw: 800;
+  --member-name-c: #a5ff15;
+  --subscriber-name-c: #a5ff15;
+  --moderator-name-c: #17d1ff;
+  --owner-name-c: #ffa551;
+  --text-c: #fff;
+  --text-fw: 800;
+  --super-icon-size: 40px;
+  --super-radius: 5px;
+  --super-name-fw: 800;
+  --super-amount-fw: 800;
+  --super-text-fw: 800;
+  --sticker-size: 70px;
+  --membership-bg: #0a8043;
+  --membership-c: #fff;
+  --membership-body-bg: #14a359;
+  --membership-body-c: #fff;
+  --cheer-bg: #0ef;
+  --cheer-c: #000;
+  --cheer-body-bg: #7bfbff;
+  --cheer-body-c: #000;
+  --subscribe-bg: #5d00c7;
+  --subscribe-c: #fff;
+  --subscribe-body-bg: #8222f0;
+  --subscribe-body-c: #fff;
+}
+
+#wrap {
+  width: 100vw;
+  height: 100vh;
+  padding: 5px;
+  overflow: hidden;
+}
+
+#dummy {
+  width: 100%;
+  height: 100vh;
+}
+
+@keyframes slideInFromR {
+  0% {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromL {
+  0% {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.youtube, .twitch {
+  margin-top: var(--line-margin);
+  font-family: Noto Sans JP, sans-serif;
+  font-size: var(--font-size);
+  animation: fadeIn .2s ease-in-out;
+  display: flex;
+}
+
+.youtube.normal, .twitch.normal {
+  align-items: center;
+  font-size: 0;
+  line-height: 1.2;
+  display: flex;
+}
+
+.youtube.normal .name, .twitch.normal .name {
+  color: var(--name-c);
+  font-size: var(--font-size);
+  font-weight: var(--name-fw);
+  text-shadow: var(--outline);
+  margin-right: 5px;
+}
+
+.youtube.normal .text, .twitch.normal .text {
+  color: var(--text-c);
+  font-size: var(--font-size);
+  font-weight: var(--text-fw);
+  text-shadow: var(--outline);
+}
+
+.youtube.normal .content *, .twitch.normal .content * {
+  vertical-align: middle;
+  display: inline;
+}
+
+.youtube.normal[data-is-member="true"] .name, .twitch.normal[data-is-member="true"] .name {
+  color: var(--member-name-c);
+}
+
+.youtube.normal[data-is-subscriber="true"] .name, .twitch.normal[data-is-subscriber="true"] .name {
+  color: var(--subscriber-name-c);
+}
+
+.youtube.normal[data-is-moderator="true"] .name, .twitch.normal[data-is-moderator="true"] .name {
+  color: var(--moderator-name-c);
+}
+
+.youtube.normal[data-is-owner="true"] .name, .twitch.normal[data-is-owner="true"] .name {
+  color: var(--owner-name-c);
+}
+
+.youtube .icon, .twitch .icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  border-radius: var(--icon-radius);
+  margin-right: 5px;
+}
+
+.youtube .badge, .twitch .badge {
+  width: var(--badge-size);
+  height: var(--badge-size);
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+.youtube .emoji, .youtube .emote, .youtube .cheermote, .twitch .emoji, .twitch .emote, .twitch .cheermote {
+  width: var(--emoji-size);
+  height: var(--emoji-size);
+  vertical-align: middle;
+  margin: 0 3px;
+}
+
+.youtube .sticker, .twitch .sticker {
+  width: var(--sticker-size);
+  min-height: var(--sticker-size);
+}
+
+.youtube .text, .twitch .text {
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.twitch.cheer, .twitch.subscribe, .twitch.gift {
+  border-radius: var(--super-radius);
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.twitch.cheer .header, .twitch.subscribe .header, .twitch.gift .header {
+  background-color: var(--cheer-bg);
+  color: var(--cheer-c);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0 5px;
+  padding: 5px;
+  display: flex;
+}
+
+.twitch.cheer .header .name, .twitch.subscribe .header .name, .twitch.gift .header .name {
+  font-weight: var(--super-name-fw);
+}
+
+.twitch.cheer .header .amount, .twitch.subscribe .header .amount, .twitch.gift .header .amount {
+  font-weight: var(--super-amount-fw);
+}
+
+.twitch.cheer .body, .twitch.subscribe .body, .twitch.gift .body {
+  background-color: var(--cheer-body-bg);
+  color: var(--cheer-body-c);
+  padding: 5px;
+}
+
+.twitch.cheer .text, .twitch.subscribe .text, .twitch.gift .text {
+  font-weight: var(--super-text-fw);
+}
+
+.twitch.subscribe .header, .twitch.gift .header {
+  background-color: var(--subscribe-bg);
+  color: var(--subscribe-c);
+}
+
+.twitch.subscribe .body, .twitch.gift .body {
+  background-color: var(--subscribe-body-bg);
+  color: var(--subscribe-body-c);
+}
+
+.youtube.superchat, .youtube.supersticker, .youtube.membership, .youtube.gift {
+  border-radius: var(--super-radius);
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.youtube.superchat .header, .youtube.supersticker .header, .youtube.membership .header, .youtube.gift .header {
+  flex-direction: row;
+  align-items: center;
+  gap: 0 5px;
+  padding: 5px;
+  display: flex;
+}
+
+.youtube.superchat .header .icon, .youtube.supersticker .header .icon, .youtube.membership .header .icon, .youtube.gift .header .icon {
+  width: var(--super-icon-size);
+  height: var(--super-icon-size);
+}
+
+.youtube.superchat .header .content, .youtube.supersticker .header .content, .youtube.membership .header .content, .youtube.gift .header .content {
+  flex: 1;
+}
+
+.youtube.superchat .header .name, .youtube.supersticker .header .name, .youtube.membership .header .name, .youtube.gift .header .name {
+  font-weight: var(--super-name-fw);
+}
+
+.youtube.superchat .header .amount, .youtube.supersticker .header .amount, .youtube.membership .header .amount, .youtube.gift .header .amount {
+  font-weight: var(--super-amount-fw);
+}
+
+.youtube.superchat .body, .youtube.supersticker .body, .youtube.membership .body, .youtube.gift .body {
+  padding: 5px;
+}
+
+.youtube.superchat .text, .youtube.supersticker .text, .youtube.membership .text, .youtube.gift .text {
+  font-weight: var(--super-text-fw);
+}
+
+.youtube.supersticker {
+  flex-direction: row;
+}
+
+.youtube.supersticker .header {
+  flex: 1;
+}
+
+.youtube.membership, .youtube.gift {
+  background-color: var(--membership-bg);
+  color: var(--membership-c);
+}
+
+.youtube.membership .header, .youtube.gift .header {
+  background-position: right 0 top 0;
+  background-repeat: no-repeat;
+  background-size: auto 100%;
+}
+
+.youtube.membership .body, .youtube.gift .body {
+  background-color: var(--membership-body-bg);
+  color: var(--membership-body-c);
+}
+
+
+
+</style>
+  <script>const PORT = 50930;
+let LIMIT = 30;
+
+</script>
+</head>
+<body>
+  <div id="wrap">
+    <div id="dummy"></div>
+  </div>
+
+  <script type="module">function $09efc96370ab8c3d$export$336acc0869dd2d4(item) {
+    if (!item.membership) return null;
+    const $wrap = $09efc96370ab8c3d$export$84d556affc332c0(item);
+    $wrap.className = "membership youtube";
+    $wrap.innerHTML = `
+    <div class="header">
+      <img class="icon" src="${item.author.thumbnail?.url}" />
+      <div class="content">
+        <p class="author">
+          <span class="name">${item.author.name}</span>
+          ${$09efc96370ab8c3d$export$63031b8197f43f02(item.author.badge?.thumbnail)?.outerHTML || ""}
+        </p>
+        ${$09efc96370ab8c3d$export$fda90fc6da6a6f88(item.membership.text)?.outerHTML || ""}
+      </div>
+    </div>
+    <div class="body" style="
+      ${item.message.length > 0 ? "" : "display: none;"}
+    ">
+      ${$09efc96370ab8c3d$export$fda90fc6da6a6f88(item.message)?.outerHTML || ""}
+    </div>
+  `;
+    return $wrap;
+}
+function $09efc96370ab8c3d$export$c2fb27236e6693da(item) {
+    if (!item.superchat) return null;
+    const $wrap = $09efc96370ab8c3d$export$84d556affc332c0(item);
+    $wrap.className = "superchat youtube";
+    if (item.superchat.sticker) $wrap.className = "supersticker youtube";
+    $wrap.innerHTML = `
+    <div class="header" style="
+      background: ${item.superchat.colorList.headerBackgroundColor || item.superchat.colorList.backgroundColor || item.superchat.color};
+      color: ${item.superchat.colorList.headerTextColor};
+    ">
+      <img class="icon" src="${item.author.thumbnail?.url}" />
+      <div class="content">
+        <p class="author">
+          <span class="name">${item.author.name}</span>
+          ${$09efc96370ab8c3d$export$63031b8197f43f02(item.author.badge?.thumbnail)?.outerHTML || ""}
+        </p>
+        <p class="amount">${item.superchat.amount}</p>
+      </div>
+    </div>
+    <div class="body" style="
+      background: ${item.superchat.colorList.bodyBackgroundColor || item.superchat.colorList.backgroundColor || item.superchat.color};
+      color: ${item.superchat.colorList.bodyTextColor};
+      ${item.message.length > 0 || item.superchat.sticker ? "" : "display: none;"}
+    ">
+      ${$09efc96370ab8c3d$export$fda90fc6da6a6f88(item.message)?.outerHTML || ""}
+      ${item.superchat.sticker ? $09efc96370ab8c3d$export$11fb8757312f5af9(item.superchat.sticker).outerHTML : ""}
+    </div>
+  `;
+    return $wrap;
+}
+function $09efc96370ab8c3d$export$c931fd96a50c2fec(item) {
+    if (!item.membershipGift) return null;
+    const $wrap = document.createElement("div");
+    $wrap.className = "gift youtube";
+    $wrap.innerHTML = `
+    <div class="header" style="background-image: url(${item.membershipGift.image?.url});">
+      <img class="icon" src="${item.author.thumbnail?.url}" />
+      <div class="content">
+        <p class="author">
+          <span class="name">${item.author.name}</span>
+          ${$09efc96370ab8c3d$export$63031b8197f43f02(item.author.badge?.thumbnail)?.outerHTML || ""}
+        </p>
+        ${$09efc96370ab8c3d$export$fda90fc6da6a6f88(item.membershipGift.message)?.outerHTML || ""}
+      </div>
+    </div>
+  `;
+    return $wrap;
+}
+function $09efc96370ab8c3d$export$84d556affc332c0(item) {
+    const $wrap = document.createElement("div");
+    $wrap.className = "normal youtube";
+    $wrap.innerHTML = `
+    <img class="icon" src="${item.author.thumbnail?.url}" />
+    <div class="content">
+      <p class="author">
+        <span class="name">${item.author.name}</span>
+        ${$09efc96370ab8c3d$export$63031b8197f43f02(item.author.badge?.thumbnail)?.outerHTML || ""}
+      </p>
+      ${$09efc96370ab8c3d$export$fda90fc6da6a6f88(item.message)?.innerHTML || ""}
+    </div>
+  `;
+    return $wrap;
+}
+function $09efc96370ab8c3d$export$11fb8757312f5af9(imgItem) {
+    const $img = document.createElement("img");
+    $img.classList.add("sticker");
+    $img.src = imgItem.url;
+    return $img;
+}
+function $09efc96370ab8c3d$export$63031b8197f43f02(imgItem) {
+    if (!imgItem) return null;
+    const $img = document.createElement("img");
+    $img.classList.add("badge");
+    $img.src = imgItem.url;
+    return $img;
+}
+function $09efc96370ab8c3d$export$fda90fc6da6a6f88(message) {
+    if (message.length <= 0) return null;
+    const $message = document.createElement("p");
+    $message.classList.add("message");
+    for (const item of message)if ("text" in item) {
+        const $item = document.createElement("span");
+        $item.innerText = item.text;
+        $item.classList.add("text");
+        $message.append($item);
+    } else {
+        const $item = document.createElement("img");
+        $item.src = item.url;
+        $item.classList.add("emoji");
+        $message.append($item);
+    }
+    return $message;
+}
+
+
+function $b98859b17ca1e06b$var$escapeHtml(html) {
+    return html.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/, "&quot;");
+}
+function $b98859b17ca1e06b$export$fc2d8f2d06d2e0a3(item) {
+    const htmlStr = `
+    <div class="normal twitch">
+      <div class="content">
+        ${$b98859b17ca1e06b$export$1e65ddfe743fbd09(item.author).outerHTML}
+        ${$b98859b17ca1e06b$export$fda90fc6da6a6f88(item.message).outerHTML}
+      </div>
+    </div>
+  `;
+    return $b98859b17ca1e06b$var$createElement(htmlStr);
+}
+function $b98859b17ca1e06b$export$2d60559c92b689c6(item) {
+    const htmlStr = `
+    <div class="cheer twitch">
+      <div class="header">
+        <div class="content">
+          ${$b98859b17ca1e06b$export$1e65ddfe743fbd09(item.author).outerHTML}
+        </div>
+        <p class="amount">${item.bits} Bits</p>
+      </div>
+      <div class="body">
+        ${$b98859b17ca1e06b$export$fda90fc6da6a6f88(item.message).outerHTML}
+      </div>
+    </div>
+  `;
+    return $b98859b17ca1e06b$var$createElement(htmlStr);
+}
+function $b98859b17ca1e06b$export$fa728ead8711024f(item) {
+    const htmlStr = `
+    <div class="subscribe twitch">
+      <div class="header">
+        <div class="content">
+          ${$b98859b17ca1e06b$export$1e65ddfe743fbd09(item.author).outerHTML}
+        </div>
+      </div>
+      <div class="body">
+        ${$b98859b17ca1e06b$export$fda90fc6da6a6f88([
+        item.methods.prime ? "Prime\u3067" : "",
+        "\u30B5\u30D6\u30B9\u30AF\u3057\u307E\u3057\u305F"
+    ]).outerHTML}
+      </div>
+    </div>
+  `;
+    return $b98859b17ca1e06b$var$createElement(htmlStr);
+}
+function $b98859b17ca1e06b$export$6dc0c979b076aa1e(item) {
+    const htmlStr = `
+    <div class="subscribe twitch">
+      <div class="header">
+        <div class="content">
+          ${$b98859b17ca1e06b$export$1e65ddfe743fbd09(item.author).outerHTML}
+        </div>
+      </div>
+      <div class="body">
+        ${$b98859b17ca1e06b$export$fda90fc6da6a6f88([
+        "\u30B5\u30D6\u30B9\u30AF\u30AE\u30D5\u30C8\u3092",
+        item.num + "",
+        "\u500B\u9001\u308A\u307E\u3057\u305F"
+    ]).outerHTML}
+      </div>
+    </div>
+  `;
+    return $b98859b17ca1e06b$var$createElement(htmlStr);
+}
+function $b98859b17ca1e06b$export$1e65ddfe743fbd09(author) {
+    const name = author.displayName || author.name || "";
+    const htmlStr = `
+    <p class="author">
+      ${author.badges.map((item)=>{
+        return `<img
+          class="badge"
+          src="${item.url}"
+          alt="badge"
+        />`;
+    }).join("\n")}
+      <span class="name">${$b98859b17ca1e06b$var$escapeHtml(name)}</span>
+    </p>
+  `;
+    return $b98859b17ca1e06b$var$createElement(htmlStr);
+}
+function $b98859b17ca1e06b$export$fda90fc6da6a6f88(message) {
+    const htmlStr = `
+    <p class="message">
+      ${message.map((item, i)=>{
+        if (typeof item === "string") return `<span class="text">${$b98859b17ca1e06b$var$escapeHtml(item)}</span>`;
+        else if ("bits" in item) return `<img
+              src="${item.cheermote.animated_url.dark}"
+              alt="bits"
+              class="cheermote"
+            />`;
+        else return `<img
+              src="${item.animated_url || item.url}"
+              alt="${item.name}"
+              class="emote"
+            />`;
+    }).join("\n")}
+    </p>
+  `;
+    return $b98859b17ca1e06b$var$createElement(htmlStr);
+}
+function $b98859b17ca1e06b$var$createElement(htmlStr) {
+    const $elm = document.createElement("div");
+    $elm.innerHTML = htmlStr;
+    const $res = $elm.lastElementChild;
+    if ($res instanceof HTMLElement) return $res;
+    else return $elm;
+}
+
+
+let $08d0039663e943f9$var$tasks = [];
+let $08d0039663e943f9$var$$list = [];
+let $08d0039663e943f9$var$limit = 30;
+function $08d0039663e943f9$export$2cd8252107eb640b(items) {
+    const $wrap = document.querySelector("#wrap");
+    for (const item of items){
+        const $elm = $08d0039663e943f9$export$789ccbf50cd1969e(item);
+        $08d0039663e943f9$export$7b203c346bf0c9($elm);
+    }
+    requestAnimationFrame(()=>$08d0039663e943f9$var$scroll($wrap, 0));
+}
+function $08d0039663e943f9$export$b3571188c770cc5a(es, _limit = 30) {
+    $08d0039663e943f9$var$limit = _limit;
+    $08d0039663e943f9$export$bc46d990991b20b3($08d0039663e943f9$var$limit);
+    es.addEventListener("youtube", (event)=>{
+        try {
+            const item = JSON.parse(event.data);
+            $08d0039663e943f9$var$addTask(item);
+        } catch  {}
+    });
+    es.addEventListener("twitch", (event)=>{
+        try {
+            const item = JSON.parse(event.data);
+            $08d0039663e943f9$var$addTask(item);
+        } catch  {}
+    });
+    es.addEventListener("app", (event)=>{});
+    es.addEventListener("clear", (event)=>{
+        $08d0039663e943f9$export$bc46d990991b20b3(0);
+    });
+    es.addEventListener("reload", (event)=>{
+        window.location.reload();
+    });
+}
+/** タスクを追加 */ function $08d0039663e943f9$var$addTask(item) {
+    $08d0039663e943f9$var$tasks.push(item);
+    // タスクが1つなら即実行
+    if ($08d0039663e943f9$var$tasks.length === 1) $08d0039663e943f9$var$executeTask();
+}
+/** タスクを実行 */ async function $08d0039663e943f9$var$executeTask() {
+    if (!$08d0039663e943f9$var$tasks[0]) return;
+    const $wrap = document.querySelector("#wrap");
+    const $elm = $08d0039663e943f9$export$789ccbf50cd1969e($08d0039663e943f9$var$tasks[0]);
+    $08d0039663e943f9$export$7b203c346bf0c9($elm);
+    const { promise: promise  } = $08d0039663e943f9$var$scroll($wrap, 50);
+    // スクロールを待つ
+    await promise;
+    // 30ms待機してから次のタスクへ
+    setTimeout(()=>{
+        $08d0039663e943f9$var$tasks = $08d0039663e943f9$var$tasks.slice(1);
+        // 範囲外を削除
+        $08d0039663e943f9$export$bc46d990991b20b3($08d0039663e943f9$var$limit);
+        // 次のタスクへ
+        $08d0039663e943f9$var$executeTask();
+    }, 30);
+}
+/**
+ * スクロールタスク
+ */ function $08d0039663e943f9$var$scroll($elm, duration) {
+    let isCancel = false;
+    const promise = new Promise((resolve)=>{
+        const bottomY = $elm.scrollHeight - $elm.clientHeight;
+        if (duration <= 0) {
+            $elm.scrollTo({
+                top: bottomY
+            });
+            return Promise.resolve();
+        }
+        const startTime = Date.now();
+        const startY = $elm.scrollTop;
+        const diff = bottomY - startY;
+        const sTask = ()=>{
+            if (isCancel) {
+                resolve(true);
+                return;
+            }
+            const progress = Math.min(1, (Date.now() - startTime) / duration);
+            $elm.scrollTo({
+                top: startY + diff * progress
+            });
+            if (progress < 1) requestAnimationFrame(sTask);
+            else resolve(false);
+        };
+        sTask();
+    });
+    return {
+        cancel: ()=>{
+            isCancel = true;
+        },
+        promise: promise
+    };
+}
+function $08d0039663e943f9$export$7b203c346bf0c9($elm) {
+    const $wrap = document.querySelector("#wrap");
+    $wrap.append($elm);
+    $08d0039663e943f9$var$$list.push($elm);
+}
+function $08d0039663e943f9$export$bc46d990991b20b3(maxNum) {
+    if ($08d0039663e943f9$var$$list.length <= maxNum) return;
+    if (maxNum === 0) {
+        for (const $target of $08d0039663e943f9$var$$list)$target.remove();
+        $08d0039663e943f9$var$$list = [];
+        return;
+    }
+    const $targetList = $08d0039663e943f9$var$$list.slice(0, -maxNum);
+    for (const $target of $targetList)$target.remove();
+    $08d0039663e943f9$var$$list = $08d0039663e943f9$var$$list.slice(-maxNum);
+}
+function $08d0039663e943f9$export$789ccbf50cd1969e(item) {
+    let $res = null;
+    if (item.type === "YouTube") {
+        const data = item.data;
+        if (data.superchat) $res = $09efc96370ab8c3d$export$c2fb27236e6693da(data);
+        else if (data.membership) $res = $09efc96370ab8c3d$export$336acc0869dd2d4(data);
+        else if (data.membershipGift) $res = $09efc96370ab8c3d$export$c931fd96a50c2fec(data);
+        else $res = $09efc96370ab8c3d$export$84d556affc332c0(data);
+        $res?.setAttribute("data-is-member", data.isMembership + "");
+        $res?.setAttribute("data-is-owner", data.isOwner + "");
+        $res?.setAttribute("data-is-moderator", data.isModerator + "");
+        $res?.setAttribute("data-is-verified", data.isVerified + "");
+    } else if (item.type === "Twitch") {
+        const data = item.data;
+        switch(data.type){
+            case "Normal":
+                $res = $b98859b17ca1e06b$export$fc2d8f2d06d2e0a3(data);
+                break;
+            case "Cheer":
+                $res = $b98859b17ca1e06b$export$2d60559c92b689c6(data);
+                break;
+            case "Sub":
+                $res = $b98859b17ca1e06b$export$fa728ead8711024f(data);
+                break;
+            case "SubMysteryGift":
+                $res = $b98859b17ca1e06b$export$6dc0c979b076aa1e(data);
+                break;
+            default:
+        }
+        $res?.setAttribute("data-is-subscriber", data.author.isSubscriber + "");
+        $res?.setAttribute("data-is-moderator", data.author.isModerator + "");
+    }
+    return $res || document.createElement("div");
+}
+
+
+const $14a68340b4cc61fe$var$promise = Promise.all([
+    fetch(`http://localhost:${PORT}/come-view-config.json?t=${Date.now()}`).then((response)=>response.json()).then((config)=>{
+        const $style = document.createElement("style");
+        $style.innerHTML = config.distCSS ?? "";
+        document.head.append($style);
+        LIMIT = config.limit ?? LIMIT;
+    }),
+    fetch(`http://localhost:${PORT}/log.json?t=${Date.now()}`).then((response)=>response.json()).then((items)=>{
+        (0, $08d0039663e943f9$export$2cd8252107eb640b)(items.filter((item)=>item.type === "YouTube" || item.type === "Twitch").slice(-50));
+    })
+]);
+$14a68340b4cc61fe$var$promise.then(()=>{
+    const es = new EventSource(`http://localhost:${PORT}/api`);
+    (0, $08d0039663e943f9$export$b3571188c770cc5a)(es, LIMIT);
+});
+
+
+</script>
+</body>
+</html>

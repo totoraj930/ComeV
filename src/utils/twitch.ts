@@ -1,8 +1,8 @@
 
 import EventEmitter from "events";
-import { ChatUserstate, Client as TmiClient, CommonUserstate, SubMethod, SubMethods } from "tmi.js"
+import { ChatUserstate, Client as TmiClient, CommonUserstate, SubMethods } from "tmi.js"
 import TypedEmitter from "typed-emitter";
-import { invoke } from "./tauriInvoke";
+import { invoke as invokeOrigin } from "@tauri-apps/api";
 import { once as tauriOnce } from "@tauri-apps/api/event";
 import { uuid } from "./uuid";
 
@@ -732,7 +732,7 @@ export class TwitchChat extends (EventEmitter as new () => TypedEmitter<TwitchCh
           reject("cancel");
         }
       });
-      invoke("open_in_browser", { url: `https://id.twitch.tv/oauth2/authorize?${query}` });
+      invokeOrigin("open_in_browser", { url: `https://id.twitch.tv/oauth2/authorize?${query}` });
     });
   }
 
