@@ -4,21 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width">
   <title>HTML5コメビュ for ComeV</title>
-  <style>@import "https://fonts.googleapis.com/css2?family=Murecho:wght@400;700&family=Noto+Sans+SC:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Noto+Sans+KR:wght@400;700&family=Noto+Sans:wght@400;700&display=swap";
-*, :before, :after {
+  <style>*, :before, :after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 :root {
-  --line-margin: 10px;
-  --font-size: 16px;
-  --icon-size: 24px;
-  --icon-radius: 50px;
-  --badge-size: 20px;
-  --emoji-size: 24px;
-  --outline: -2px -2px #000, -2px -1px #000, -2px 0px #000, -2px 1px #000, -2px 2px #000, -1px -2px #000, -1px -1px #000, -1px 0px #000, -1px 1px #000, -1px 2px #000, 0px -2px #000, 0px -1px #000, 0px 0px #000, 0px 1px #000, 0px 2px #000, 1px -2px #000, 1px -1px #000, 1px 0px #000, 1px 1px #000, 1px 2px #000, 2px -2px #000, 2px -1px #000, 2px 0px #000, 2px 1px #000, 2px 2px #000;
+  --font-name: "Noto Sans JP";
+  --size: 30px;
+  --line-margin: 15px;
+  --outline-c: #000;
+  --hide-duration: 300ms;
   --name-c: silver;
   --name-fw: 800;
   --member-name-c: #a5ff15;
@@ -27,12 +24,9 @@
   --owner-name-c: #ffa551;
   --text-c: #fff;
   --text-fw: 800;
-  --super-icon-size: 40px;
-  --super-radius: 5px;
   --super-name-fw: 800;
   --super-amount-fw: 800;
   --super-text-fw: 800;
-  --sticker-size: 70px;
   --membership-bg: #0a8043;
   --membership-c: #fff;
   --membership-body-bg: #14a359;
@@ -93,10 +87,20 @@
   }
 }
 
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
 .youtube, .twitch {
+  font-family: var(--font-name);
   margin-top: var(--line-margin);
-  font-family: Noto Sans JP, sans-serif;
-  font-size: var(--font-size);
+  font-size: calc(var(--size) * 1);
   animation: fadeIn .2s ease-in-out;
   display: flex;
 }
@@ -110,7 +114,7 @@
 
 .youtube.normal .name, .twitch.normal .name {
   color: var(--name-c);
-  font-size: var(--font-size);
+  font-size: calc(var(--size) * 1);
   font-weight: var(--name-fw);
   text-shadow: var(--outline);
   margin-right: 5px;
@@ -118,7 +122,7 @@
 
 .youtube.normal .text, .twitch.normal .text {
   color: var(--text-c);
-  font-size: var(--font-size);
+  font-size: calc(var(--size) * 1);
   font-weight: var(--text-fw);
   text-shadow: var(--outline);
 }
@@ -145,29 +149,32 @@
 }
 
 .youtube .icon, .twitch .icon {
-  width: var(--icon-size);
-  height: var(--icon-size);
-  border-radius: var(--icon-radius);
-  margin-right: 5px;
+  width: calc(var(--size) * 1.5);
+  height: calc(var(--size) * 1.5);
+  border-radius: calc(var(--size) * 1.5);
+  margin-right: calc(var(--size) * .25);
 }
 
 .youtube .badge, .twitch .badge {
-  width: var(--badge-size);
-  height: var(--badge-size);
+  width: calc(var(--size) * 1.25);
+  height: calc(var(--size) * 1.25);
+  margin-right: calc(var(--size) * .2);
   vertical-align: middle;
-  margin-right: 5px;
+  margin-top: calc(var(--size) * .2);
+  margin-bottom: calc(var(--size) * .2);
+  display: inline-block;
 }
 
 .youtube .emoji, .youtube .emote, .youtube .cheermote, .twitch .emoji, .twitch .emote, .twitch .cheermote {
-  width: var(--emoji-size);
-  height: var(--emoji-size);
+  width: calc(var(--size) * 1.3);
+  height: calc(var(--size) * 1.3);
+  margin: 0 calc(var(--size) * .2);
   vertical-align: middle;
-  margin: 0 3px;
 }
 
 .youtube .sticker, .twitch .sticker {
-  width: var(--sticker-size);
-  min-height: var(--sticker-size);
+  width: calc(var(--size) * 3.4);
+  min-height: calc(var(--size) * 3.4);
 }
 
 .youtube .text, .twitch .text {
@@ -176,18 +183,18 @@
 }
 
 .twitch.cheer, .twitch.subscribe, .twitch.gift {
-  border-radius: var(--super-radius);
+  border-radius: calc(var(--size) * .4);
   flex-direction: column;
   overflow: hidden;
 }
 
 .twitch.cheer .header, .twitch.subscribe .header, .twitch.gift .header {
+  align-items: flex-start;
+  gap: 0 cal;
+  padding: 0 calc(var(--size) * .3);
   background-color: var(--cheer-bg);
   color: var(--cheer-c);
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0 5px;
-  padding: 5px;
   display: flex;
 }
 
@@ -200,9 +207,9 @@
 }
 
 .twitch.cheer .body, .twitch.subscribe .body, .twitch.gift .body {
+  padding: calc(var(--size) * .1) calc(var(--size) * .3);
   background-color: var(--cheer-body-bg);
   color: var(--cheer-body-c);
-  padding: 5px;
 }
 
 .twitch.cheer .text, .twitch.subscribe .text, .twitch.gift .text {
@@ -220,22 +227,22 @@
 }
 
 .youtube.superchat, .youtube.supersticker, .youtube.membership, .youtube.gift {
-  border-radius: var(--super-radius);
+  border-radius: calc(var(--size) * .3);
   flex-direction: column;
   overflow: hidden;
 }
 
 .youtube.superchat .header, .youtube.supersticker .header, .youtube.membership .header, .youtube.gift .header {
-  flex-direction: row;
   align-items: center;
-  gap: 0 5px;
-  padding: 5px;
+  gap: 0 calc(var(--size) * .4);
+  padding: 0 calc(var(--size) * .3);
+  flex-direction: row;
   display: flex;
 }
 
 .youtube.superchat .header .icon, .youtube.supersticker .header .icon, .youtube.membership .header .icon, .youtube.gift .header .icon {
-  width: var(--super-icon-size);
-  height: var(--super-icon-size);
+  width: calc(var(--size) * 2);
+  height: calc(var(--size) * 2);
 }
 
 .youtube.superchat .header .content, .youtube.supersticker .header .content, .youtube.membership .header .content, .youtube.gift .header .content {
@@ -251,7 +258,7 @@
 }
 
 .youtube.superchat .body, .youtube.supersticker .body, .youtube.membership .body, .youtube.gift .body {
-  padding: 5px;
+  padding: calc(var(--size) * .1) calc(var(--size) * .3);
 }
 
 .youtube.superchat .text, .youtube.supersticker .text, .youtube.membership .text, .youtube.gift .text {
@@ -280,6 +287,12 @@
 .youtube.membership .body, .youtube.gift .body {
   background-color: var(--membership-body-bg);
   color: var(--membership-body-c);
+}
+
+.hide {
+  animation-name: fadeOut;
+  animation-duration: var(--hide-duration);
+  animation-fill-mode: forwards;
 }
 
 
@@ -490,8 +503,7 @@ function $b98859b17ca1e06b$export$1e65ddfe743fbd09(author) {
           src="${item.url}"
           alt="badge"
         />`;
-    }).join("\n")}
-      <span class="name">${$b98859b17ca1e06b$var$escapeHtml(name)}</span>
+    }).join("")}<span class="name">${$b98859b17ca1e06b$var$escapeHtml(name)}</span>
     </p>
   `;
     return $b98859b17ca1e06b$var$createElement(htmlStr);
@@ -537,7 +549,7 @@ function $08d0039663e943f9$export$2cd8252107eb640b(items) {
     requestAnimationFrame(()=>$08d0039663e943f9$var$scroll($wrap, 0));
 }
 function $08d0039663e943f9$export$b3571188c770cc5a(es, _limit = 30) {
-    $08d0039663e943f9$var$limit = _limit;
+    $08d0039663e943f9$var$limit = _limit + 1;
     $08d0039663e943f9$export$bc46d990991b20b3($08d0039663e943f9$var$limit);
     es.addEventListener("youtube", (event)=>{
         try {
@@ -632,6 +644,7 @@ function $08d0039663e943f9$export$bc46d990991b20b3(maxNum) {
     const $targetList = $08d0039663e943f9$var$$list.slice(0, -maxNum);
     for (const $target of $targetList)$target.remove();
     $08d0039663e943f9$var$$list = $08d0039663e943f9$var$$list.slice(-maxNum);
+    if ($08d0039663e943f9$var$$list.length >= maxNum) $08d0039663e943f9$var$$list[0].classList.add("hide");
 }
 function $08d0039663e943f9$export$789ccbf50cd1969e(item) {
     let $res = null;
@@ -672,9 +685,14 @@ function $08d0039663e943f9$export$789ccbf50cd1969e(item) {
 const $14a68340b4cc61fe$var$promise = Promise.all([
     fetch(`http://localhost:${PORT}/come-view-config.json?t=${Date.now()}`).then((response)=>response.json()).then((config)=>{
         const $style = document.createElement("style");
+        $style.type = "text/css";
         $style.innerHTML = config.distCSS ?? "";
         document.head.append($style);
         LIMIT = config.limit ?? LIMIT;
+        const $dummyHead = document.createElement("head");
+        $dummyHead.innerHTML = config.customTag ?? "";
+        const $elms = Object.values($dummyHead.children);
+        for (const $elm of $elms)document.head.append($elm);
     }),
     fetch(`http://localhost:${PORT}/log.json?t=${Date.now()}`).then((response)=>response.json()).then((items)=>{
         (0, $08d0039663e943f9$export$2cd8252107eb640b)(items.filter((item)=>item.type === "YouTube" || item.type === "Twitch").slice(-50));

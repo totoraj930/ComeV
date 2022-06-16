@@ -1,8 +1,8 @@
 import { fs, path, invoke as invokeOrigin } from "@tauri-apps/api";
 import { useEffect, useRef, useState } from "react";
-import { MdFolderOpen, MdContentCopy, MdOpenInBrowser, MdSettingsSuggest } from "react-icons/md";
+import { MdFolderOpen, MdContentCopy, MdOpenInBrowser, MdSettingsSuggest, MdSettingsBackupRestore } from "react-icons/md";
 import styled from "styled-components";
-import { AppConfig, copyConfig } from "../context/config";
+import { AppConfig, copyConfig, defaultConfig } from "../context/config";
 import { useSettings } from "../hooks/useSettings";
 import { sendChatApi } from "../utils/sendChatApi";
 import { Switch } from "./LiveView";
@@ -32,7 +32,7 @@ function getDefConfig(): ComeViewConfig {
     display: {
       icon: {
         displayName: "アイコン",
-        value: true
+        value: false
       },
       badgeYT: {
         displayName: "バッジ(YouTube)",
@@ -44,7 +44,7 @@ function getDefConfig(): ComeViewConfig {
       },
       name: {
         displayName: "投稿者名(通常)",
-        value: true
+        value: false
       },
       superName: {
         displayName: "投稿者名(スパチャ系)",
@@ -52,7 +52,7 @@ function getDefConfig(): ComeViewConfig {
       },
     },
     outline: 4,
-    limit: 30,
+    limit: 10,
     fontName: "Noto Sans JP",
     customCSS: `/* 独自にCSSをいじる場合はここに書いてください */`,
     customTag: `<!-- Google Fontsを読み込む場合はここに書いてください(<link>) -->
@@ -125,14 +125,16 @@ async function loadConfig(): Promise<ComeViewConfig> {
     rawText = await fs.readTextFile(FILE_PATH, { dir: BASE_DIR });
     break;
   }
-  const rawJson = JSON.parse(rawText);
+  let rawJson = {};
+  try {
+    rawJson = JSON.parse(rawText);
+  } catch {}
   const res = parseObj(rawJson, getDefConfig());
   await saveConfig(res);
   return res;
 }
 
 function saveConfig(obj: Object) {
-  console.log("save", obj);
   return fs.writeFile({
     path: FILE_PATH,
     contents: JSON.stringify(obj, null, "    ")
@@ -158,7 +160,7 @@ export const ComeViewSetting: React.VFC<{
 }> = ({ copiedS }) => {
 
   const [config, setConfig] = useState<ComeViewConfig | null>(null);
-  const viewURL = `http://localhost:${copiedS.apiServer.port}/view`;
+  const viewURL = `http://localhost:${copiedS.apiServer.port}/come_view`;
 
   const configRef = useRef<ComeViewConfig>();
   useEffect(() => {
@@ -205,7 +207,6 @@ export const ComeViewSetting: React.VFC<{
     css.push(`:root { --font-name: ${config.fontName}; }`);
 
     if (config.outline > 0) {
-      console.log(config.outline);
       css.push(`
         :root { 
           --outline: ${
@@ -371,6 +372,18 @@ export const ComeViewSetting: React.VFC<{
           <Item>
             <label htmlFor="custom_tag" className="title">
               カスタムheadタグ
+              <Btn2
+                onClick={() => {
+                  config.customTag = getDefConfig().customTag;
+                  setConfig({...config});
+                  const $elm = document.getElementById("custom_tag");
+                  if ($elm) ($elm as HTMLInputElement).value = config.customTag;
+                }}
+                className="warn"
+              >
+                <MdSettingsBackupRestore className="icon" />
+                初期化
+              </Btn2>
             </label>
             <div>
               <Textarea1

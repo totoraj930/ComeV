@@ -547,9 +547,11 @@ export const Item = styled.div`
   min-height: 50px;
   > .title {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     min-width: 150px;
     padding: 5px;
+    gap: 5px;
     font-size: 14px;
     font-weight: bold;
   }

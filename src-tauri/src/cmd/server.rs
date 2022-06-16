@@ -39,6 +39,11 @@ async fn twitch_token(app_handle: Data<tauri::AppHandle>, req: HttpRequest) -> i
   HttpResponse::Ok().content_type("text/html").body("Ok")
 }
 
+async fn come_view(req: HttpRequest) -> Result<NamedFile, actix_web::Error> {
+  let path: PathBuf = "../src-come-view/build/index.html".parse().unwrap();
+  Ok(NamedFile::open(path)?)
+}
+
 #[actix_web::main]
 pub async fn run(rx_stop: mpsc::Receiver<()>, port: u16, path: &'static str, tx: mpsc::Sender<Data<Broadcaster>>, app_handle: tauri::AppHandle) {
   let data = Broadcaster::create();
@@ -61,6 +66,7 @@ pub async fn run(rx_stop: mpsc::Receiver<()>, port: u16, path: &'static str, tx:
       .route("/twitch_redirect", web::get().to(twitch_redirect))
       .route("/twitch_token", web::get().to(twitch_token))
       .route("/api", web::get().to(new_client))
+      .route("/come_view", web::get().to(come_view))
       .service(fs::Files::new("/", path).show_files_listing())
   })
   .bind(("127.0.0.1", port)).unwrap().run();
