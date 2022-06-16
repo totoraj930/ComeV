@@ -117,7 +117,7 @@ function parseObj(rawJson: any, def: ComeViewConfig): ComeViewConfig {
 const BASE_DIR = fs.BaseDirectory.App;
 const FILE_PATH = "come-view-config.json";
 
-async function loadConfig(): Promise<ComeViewConfig> {
+export async function loadConfig(): Promise<ComeViewConfig> {
   const files = await fs.readDir("./", { dir: BASE_DIR });
   let rawText = "{}";
   for (const file of files) {

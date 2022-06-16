@@ -4,6 +4,7 @@ import { fs, invoke as invokeOrigin, path } from "@tauri-apps/api";
 import { ChatItemContext } from "../context/chatItem";
 import { uuid } from "../utils/uuid";
 import { createAppChatItem } from "../services/liveChatService";
+import { loadConfig as loadComeViewConfig } from '../components/ComeViewSetting';
 export type SettingsManagerAction =
   | LoadSettingsAction
   | SaveSettingsAction
@@ -78,6 +79,7 @@ export function useSettings() {
         try {
           await initConfigDir();
           await Promise.allSettled(initAssetFiles());
+          await loadComeViewConfig();
           const files = await fs.readDir("./", { dir: BASE_DIR });
           let rawText = "{}";
           for (const file of files) {
