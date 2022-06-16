@@ -12,6 +12,7 @@ use actix_web::{
   App, HttpResponse, HttpRequest, HttpServer, Responder,
 };
 use tauri::Manager;
+use tauri::api;
 
 use crate::cmd::broadcast::{Broadcaster};
 
@@ -29,7 +30,8 @@ async fn index(req: HttpRequest) -> Result<NamedFile, std::io::Error> {
 // }
 
 async fn twitch_redirect(req: HttpRequest, app_handle: Data<tauri::AppHandle>) -> Result<NamedFile, actix_web::Error> {
-  let path: PathBuf = "./files/twitch_redirect.html".parse().unwrap();
+  let dir = api::path::app_dir(&app_handle.config()).unwrap();
+  let path = dir.join("twitch_redirect.html");
   Ok(NamedFile::open(path)?)
 }
 
@@ -39,8 +41,9 @@ async fn twitch_token(app_handle: Data<tauri::AppHandle>, req: HttpRequest) -> i
   HttpResponse::Ok().content_type("text/html").body("Ok")
 }
 
-async fn come_view(req: HttpRequest) -> Result<NamedFile, actix_web::Error> {
-  let path: PathBuf = "../src-come-view/build/index.html".parse().unwrap();
+async fn come_view(app_handle: Data<tauri::AppHandle>, req: HttpRequest) -> Result<NamedFile, actix_web::Error> {
+  let dir = api::path::app_dir(&app_handle.config()).unwrap();
+  let path = dir.join("come_view.html");
   Ok(NamedFile::open(path)?)
 }
 

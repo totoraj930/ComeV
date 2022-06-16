@@ -682,7 +682,7 @@ function $08d0039663e943f9$export$789ccbf50cd1969e(item) {
 }
 
 
-const $14a68340b4cc61fe$var$promise = Promise.all([
+const $a3a846539445abab$var$promise = Promise.all([
     fetch(`http://localhost:${PORT}/come-view-config.json?t=${Date.now()}`).then((response)=>response.json()).then((config)=>{
         const $style = document.createElement("style");
         $style.type = "text/css";
@@ -698,7 +698,7 @@ const $14a68340b4cc61fe$var$promise = Promise.all([
         (0, $08d0039663e943f9$export$2cd8252107eb640b)(items.filter((item)=>item.type === "YouTube" || item.type === "Twitch").slice(-50));
     })
 ]);
-$14a68340b4cc61fe$var$promise.then(()=>{
+$a3a846539445abab$var$promise.then(()=>{
     const es = new EventSource(`http://localhost:${PORT}/api`);
     (0, $08d0039663e943f9$export$b3571188c770cc5a)(es, LIMIT);
 });

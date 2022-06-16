@@ -6,11 +6,11 @@
   "license": "MIT",
   "private": true,
   "source": [
-    "src/index.html"
+    "src/come_view.html"
   ],
   "scripts": {
     "dev": "parcel serve --no-cache",
-    "build": "parcel build src/index.html --no-source-maps --no-cache --no-optimize --dist-dir build --public-url ./"
+    "build": "parcel build src/come_view.html --no-source-maps --no-cache --no-optimize --dist-dir ../public --public-url ./"
   },
   "devDependencies": {
     "@parcel/transformer-sass": "2.6.0",

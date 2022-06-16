@@ -4,7 +4,6 @@ import { fs, invoke as invokeOrigin, path } from "@tauri-apps/api";
 import { ChatItemContext } from "../context/chatItem";
 import { uuid } from "../utils/uuid";
 import { createAppChatItem } from "../services/liveChatService";
-
 export type SettingsManagerAction =
   | LoadSettingsAction
   | SaveSettingsAction
@@ -53,6 +52,22 @@ export async function initConfigDir() {
   }
 }
 
+export function initAssetFiles() {
+  const files = [
+    "twitch_redirect.html",
+    "come_view.html"
+  ];
+  const promise = files.map(async (path) => {
+    const res = await fetch(`${process.env.PUBLIC_URL ?? "/"}${path}`);
+    const text = await res.text();
+    await fs.writeFile({
+      path,
+      contents: text
+    }, { dir: BASE_DIR });
+  });
+  return promise;
+}
+
 export function useSettings() {
   const { state, dispatch } = useContext(AppConfigContext);
   const { dispatch: dispatchChatItem } = useContext(ChatItemContext);
@@ -62,6 +77,7 @@ export function useSettings() {
       case "LOAD": {
         try {
           await initConfigDir();
+          await Promise.allSettled(initAssetFiles());
           const files = await fs.readDir("./", { dir: BASE_DIR });
           let rawText = "{}";
           for (const file of files) {
