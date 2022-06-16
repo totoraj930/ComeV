@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width">
   <title>HTML5コメビュ for ComeV</title>
   <style>
-    @import url("https://fonts.googleapis.com/css2?family=Murecho:wght@400;700&family=Noto+Sans+SC:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Noto+Sans+KR:wght@400;700&family=Noto+Sans:wght@400;700&display=swap");
     @import "style.scss";
   </style>
   <script>
@@ -24,9 +23,17 @@
       .then(response => response.json())
       .then(config => {
         const $style = document.createElement("style");
+        $style.type = "text/css";
         $style.innerHTML = config.distCSS ?? "";
         document.head.append($style);
         LIMIT = config.limit ?? LIMIT;
+
+        const $dummyHead = document.createElement("head");
+        $dummyHead.innerHTML = config.customTag ?? "";
+        const $elms = Object.values($dummyHead.children);
+        for (const $elm of $elms) {
+          document.head.append($elm);
+        }
       }),
       fetch(`http://localhost:${PORT}/log.json?t=${Date.now()}`)
       .then(response => response.json())

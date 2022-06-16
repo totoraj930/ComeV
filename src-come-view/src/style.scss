@@ -5,14 +5,11 @@
 }
 
 :root {
-  --line-margin: 10px;
-  --font-size: 16px;
-  --icon-size: 24px;
-  --icon-radius: 50px;
-  --badge-size: 20px;
-  --emoji-size: 24px;
-
-  --outline: -2px -2px #000000,-2px -1px #000000,-2px 0px #000000,-2px 1px #000000,-2px 2px #000000,-1px -2px #000000,-1px -1px #000000,-1px 0px #000000,-1px 1px #000000,-1px 2px #000000,0px -2px #000000,0px -1px #000000,0px 0px #000000,0px 1px #000000,0px 2px #000000,1px -2px #000000,1px -1px #000000,1px 0px #000000,1px 1px #000000,1px 2px #000000,2px -2px #000000,2px -1px #000000,2px 0px #000000,2px 1px #000000,2px 2px #000000;
+  --font-name: "Noto Sans JP";
+  --size: 30px;
+  --line-margin: 15px;
+  --outline-c: #000;
+  --hide-duration: 300ms;
 
   --name-c: #c0c0c0;
   --name-fw: 800;
@@ -25,14 +22,11 @@
   --text-c: #fff;
   --text-fw: 800;
   
-  --super-icon-size: 40px;
-  --super-radius: 5px;
   
   --super-name-fw: 800;
   --super-amount-fw: 800;
   --super-text-fw: 800;
   
-  --sticker-size: 70px;
   
   --membership-bg: #0a8043;
   --membership-c: #fff;
@@ -90,14 +84,22 @@
     opacity: 1;
   }
 }
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
 
 .youtube,
 .twitch {
-  font-family: "Noto Sans JP", sans-serif;
+  font-family: var(--font-name);
 
   margin-top: var(--line-margin);
   display: flex;
-  font-size: var(--font-size);
+  font-size: calc(var(--size) * 1);
 
   animation: fadeIn 200ms ease-in-out;
   &.normal {
@@ -108,13 +110,13 @@
     .name {
       margin-right: 5px;
       color: var(--name-c);
-      font-size: var(--font-size);
+      font-size: calc(var(--size) * 1);
       font-weight: var(--name-fw);
       text-shadow: var(--outline);
     }
     .text {
       color: var(--text-c);
-      font-size: var(--font-size);
+      font-size: calc(var(--size) * 1);
       font-weight: var(--text-fw);
       text-shadow: var(--outline);
     }
@@ -150,28 +152,31 @@
   }
 
   .icon {
-    width: var(--icon-size);
-    height: var(--icon-size);
-    border-radius: var(--icon-radius);
-    margin-right: 5px;
+    width: calc(var(--size) * 1.5);
+    height: calc(var(--size) * 1.5);
+    border-radius: calc(var(--size) * 1.5);
+    margin-right: calc(var(--size) * 0.25);
   }
   .badge {
-    width: var(--badge-size);
-    height: var(--badge-size);
-    margin-right: 5px;
+    width: calc(var(--size) * 1.25);
+    height: calc(var(--size) * 1.25);
+    margin-right: calc(var(--size) * 0.2);
     vertical-align: middle;
+    display: inline-block;
+    margin-top: calc(var(--size) * 0.2);
+    margin-bottom: calc(var(--size) * 0.2);
   }
   .emoji,
   .emote,
   .cheermote {
-    width: var(--emoji-size);
-    height: var(--emoji-size);
-    margin: 0 3px;
+    width: calc(var(--size) * 1.3);
+    height: calc(var(--size) * 1.3);
+    margin: 0 calc(var(--size) * 0.2);
     vertical-align: middle;
   }
   .sticker {
-    width: var(--sticker-size);
-    min-height: var(--sticker-size);
+    width: calc(var(--size) * 3.4);
+    min-height: calc(var(--size) * 3.4);
   }
   .text {
     word-wrap: break-word;
@@ -185,14 +190,16 @@
   &.subscribe,
   &.gift {
     flex-direction: column;
-    border-radius: var(--super-radius);
+    border-radius: calc(var(--size) * 0.4);
     overflow: hidden;
     .header {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 0 5px;
-      padding: 5px;
+      gap: 0 cal;
+      padding:
+        0
+        calc(var(--size) * 0.3);
       background-color: var(--cheer-bg);
       color: var(--cheer-c);
       .name {
@@ -203,7 +210,9 @@
       }
     }
     .body {
-      padding: 5px;
+      padding:
+        calc(var(--size) * 0.1)
+        calc(var(--size) * 0.3);
       background-color: var(--cheer-body-bg);
       color: var(--cheer-body-c);
     }
@@ -232,17 +241,19 @@
   &.membership,
   &.gift {
     flex-direction: column;
-    border-radius: var(--super-radius);
+    border-radius: calc(var(--size) * 0.3);
     overflow: hidden;
     .header {
       display: flex;
       flex-direction: row;
       align-items: center;
-      gap: 0 5px;
-      padding: 5px;
+      gap: 0 calc(var(--size) * 0.4);
+      padding:
+        0
+        calc(var(--size) * 0.3);
       .icon {
-        width: var(--super-icon-size);
-        height: var(--super-icon-size);
+        width: calc(var(--size) * 2);
+        height: calc(var(--size) * 2);
       }
       .content {
         flex: 1;
@@ -255,7 +266,9 @@
       }
     }
     .body {
-      padding: 5px;
+      padding:
+        calc(var(--size) * 0.1)
+        calc(var(--size) * 0.3);
     }
     .text {
       font-weight: var(--super-text-fw);
@@ -283,4 +296,10 @@
       color: var(--membership-body-c);
     }
   }
+}
+
+.hide {
+  animation-name: fadeOut;
+  animation-duration: var(--hide-duration);
+  animation-fill-mode: forwards;
 }

@@ -97,8 +97,7 @@ export function createAuthorElm(author: TwitchUser) {
           src="${item.url}"
           alt="badge"
         />`;
-      }).join("\n")}
-      <span class="name">${escapeHtml(name)}</span>
+      }).join("")}<span class="name">${escapeHtml(name)}</span>
     </p>
   `;
   return createElement(htmlStr);

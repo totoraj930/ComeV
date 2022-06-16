@@ -17,8 +17,12 @@ interface ComeViewConfig {
     badgeYT: ConfigField<boolean>;
     badgeTTV: ConfigField<boolean>;
     name: ConfigField<boolean>;
+    superName: ConfigField<boolean>;
   };
+  fontName: string;
   customCSS: string;
+  customTag: string;
+  outline: number;
   limit: number;
   distCSS: string;
 }
@@ -39,12 +43,24 @@ function getDefConfig(): ComeViewConfig {
         value: true
       },
       name: {
-        displayName: "投稿者名",
+        displayName: "投稿者名(通常)",
+        value: true
+      },
+      superName: {
+        displayName: "投稿者名(スパチャ系)",
         value: true
       },
     },
+    outline: 4,
     limit: 30,
+    fontName: "Noto Sans JP",
     customCSS: `/* 独自にCSSをいじる場合はここに書いてください */`,
+    customTag: `<!-- Google Fontsを読み込む場合はここに書いてください(<link>) -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+`,
     distCSS: "",
   }
 }
@@ -59,12 +75,19 @@ function isNumber(val: unknown) {
   return typeof val === "number"
     && !isNaN(val);
 }
+function numMinMax(num: number, min: number = 0, max?: number) {
+  return Math.max(min, Math.min(num, max ?? num));
+}
 
 function parseObj(rawJson: any, def: ComeViewConfig): ComeViewConfig {
   const res = {...def, ...rawJson} as ComeViewConfig;
   (Object.keys(def.display) as (keyof ComeViewConfig["display"])[])
   .forEach((key, i) => {
-    const val = res.display[key]?.value;
+    if (!res.display[key]) {
+      res.display[key] = def.display[key];
+      return;
+    }
+    const val = res.display[key].value;
     res.display[key].displayName = def.display[key].displayName;
     if (!isBoolean(val)) {
       res.display[key] = def.display[key]
@@ -74,8 +97,18 @@ function parseObj(rawJson: any, def: ComeViewConfig): ComeViewConfig {
   if (!isString(res.customCSS)) {
     res.customCSS = def.customCSS;
   }
+  if (!isString(res.customTag)) {
+    res.customTag = def.customTag;
+  }
   if (!isNumber(res.limit)) {
     res.limit = def.limit;
+  } else {
+    res.limit = numMinMax(res.limit, 1, 100);
+  }
+  if (!isNumber(res.outline)) {
+    res.outline = def.outline;
+  } else {
+    res.outline = numMinMax(res.outline, 0, 10);
   }
 
   return res;
@@ -106,6 +139,19 @@ function saveConfig(obj: Object) {
   }, { dir: BASE_DIR });
 }
 
+function generateOutlineShadow(
+  size: number = 1,
+  color: string = "#000"
+) {
+  const shadowList = [];
+  for (let x = -size; x <= size; x++) {
+    for (let y = -size; y <= size; y++) {
+      shadowList.push(`${x}px ${y}px 0 ${color}`);
+    }
+  }
+  return shadowList;
+}
+
 
 export const ComeViewSetting: React.VFC<{
   copiedS: AppConfig
@@ -120,7 +166,10 @@ export const ComeViewSetting: React.VFC<{
     .then((c) => setConfig(c));
     return () => {
       if (configRef.current) {
-        saveConfig(configRef.current);
+        saveConfig(configRef.current)
+        .then(() => {
+          sendChatApi("reload", {});
+        });
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -140,8 +189,33 @@ export const ComeViewSetting: React.VFC<{
       css.push(`.youtube .badge { ${dn} }`);
     }
     if (!d.name.value) {
-      css.push(`.name { ${dn} }`);
+      css.push(`.normal .name { ${dn} }`);
     }
+    if (!d.superName.value) {
+      css.push(`
+        .superchat .name,
+        .cheer .name,
+        .membership .name,
+        .subscribe .name,
+        .gift .name {
+          ${dn}
+        }
+      `);
+    }
+    css.push(`:root { --font-name: ${config.fontName}; }`);
+
+    if (config.outline > 0) {
+      console.log(config.outline);
+      css.push(`
+        :root { 
+          --outline: ${
+            generateOutlineShadow(config.outline, "var(--outline-c)").join(",")
+          }; 
+        }`);
+    } else {
+      css.push(`:root { --outline: none; }`);
+    }
+
     config.distCSS = css.join("\n") + config.customCSS;
 
     configRef.current = config;
@@ -210,16 +284,56 @@ export const ComeViewSetting: React.VFC<{
           })}
 
           <Item>
+            <label htmlFor="outline" className="title">
+              文字の縁取り
+            </label>
+            <div>
+              <Input1
+                id="outline"
+                type="number"
+                min="0"
+                max="10"
+                defaultValue={config.outline}
+                onChange={(event) => {
+                  config.outline = parseInt(event.target.value);
+                  setConfig({...config});
+                }}
+              />
+            </div>
+          </Item>
+
+          <Item>
+            <label htmlFor="font_name" className="title">
+              フォント
+            </label>
+            <div>
+              <Input1
+                id="font_name"
+                type="text"
+                defaultValue={config.fontName}
+                onChange={(event) => {
+                  config.fontName = event.target.value;
+                  setConfig({...config});
+                }}
+              />
+            </div>
+          </Item>
+
+          <Item>
             <label htmlFor="limit" className="title">
               表示上限
             </label>
             <div>
               <Input1
+                id="limit"
                 type="number"
                 min="1"
                 max="100"
                 defaultValue={config.limit}
-                onChange={(event) => config.limit = parseInt(event.target.value)}
+                onChange={(event) => {
+                  config.limit = parseInt(event.target.value);
+                  setConfig({...config});
+                }}
               />
             </div>
           </Item>
@@ -248,6 +362,23 @@ export const ComeViewSetting: React.VFC<{
                 defaultValue={config.customCSS}
                 onChange={(event) => {
                   config.customCSS = event.target.value;
+                  setConfig({...config});
+                }}
+              />
+            </div>
+          </Item>
+
+          <Item>
+            <label htmlFor="custom_tag" className="title">
+              カスタムheadタグ
+            </label>
+            <div>
+              <Textarea1
+                name="custom_tag"
+                id="custom_tag"
+                defaultValue={config.customTag}
+                onChange={(event) => {
+                  config.customTag = event.target.value;
                   setConfig({...config});
                 }}
               />

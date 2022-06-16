@@ -16,7 +16,7 @@ export function init(items: ChatItem[]) {
 }
 
 export function start(es: EventSource, _limit: number = 30) {
-  limit = _limit;
+  limit = _limit + 1;
   removeChatItem(limit);
 
   es.addEventListener("youtube", (event) => {
@@ -137,6 +137,9 @@ export function removeChatItem(maxNum: number) {
     $target.remove();
   }
   $list = $list.slice(-maxNum);
+  if ($list.length >= maxNum) {
+    $list[0].classList.add("hide");
+  }
 }
 
 

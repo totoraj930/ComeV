@@ -117,10 +117,10 @@ export function initYouTubeListener(
         id: uuid(),
         data: item
       };
-      sendChatApi("youtube", res);
+      if (!_isFirst) sendChatApi("youtube", res);
       return res;
     });
-    sendChatApi("youtube-list", items);
+    if (!_isFirst) sendChatApi("youtube-list", items);
 
     // 読み上げ
     if (settings.bouyomi.enable && !_isFirst) {
