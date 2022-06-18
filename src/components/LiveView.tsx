@@ -1,7 +1,7 @@
 
 import styled from 'styled-components';
 import { useLiveChat } from '../hooks/useLiveChat';
-import { MdPlayArrow, MdPause, MdDeleteForever, MdMenu, MdExpandLess, MdSettingsSuggest, MdFastForward, MdSkipNext, MdSettings, MdPlaylistAdd } from "react-icons/md";
+import { MdPlayArrow, MdPause, MdDeleteForever, MdMenu, MdExpandLess, MdSettingsSuggest, MdFastForward, MdSkipNext, MdSettings, MdPlaylistAdd, MdAutorenew } from "react-icons/md";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ChatView } from '../components/ChatView';
 import { fs } from "@tauri-apps/api"
@@ -13,11 +13,12 @@ import { AppConfig } from '../context/config';
 import { sendChatApi } from '../utils/sendChatApi';
 import { DummySender } from './DummySender';
 import { uuid } from '../utils/uuid';
-import { ChatItem, createLiveChatEmpty, LiveChat } from '../services/liveChatService';
+import { ChatItem, createAppChatItem, createLiveChatEmpty, LiveChat } from '../services/liveChatService';
 import { LiveControl } from './LiveControl';
 import { LiveChatContext } from '../context/liveChat';
 import { LiveInfoView } from './LiveInfoView';
 import { DummySender2 } from './DummySender2';
+import { tryUpdate } from '../utils/update';
 
 
 export const LiveView: React.VFC<{
@@ -25,7 +26,7 @@ export const LiveView: React.VFC<{
   
   const { dispatch: dispatchLiveChat } = useContext(LiveChatContext);
   const { liveChatMap, liveChatUpdater } = useLiveChat();
-  const { state: chatItemContext } = useContext(ChatItemContext);
+  const { state: chatItemContext, dispatch: dispatchChatItem } = useContext(ChatItemContext);
   const chatItems = useRef<ChatItem[]>([]);
 
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
@@ -49,6 +50,26 @@ export const LiveView: React.VFC<{
       data: {...resSettings}
     });
   }, [settingsUpdater]);
+
+  const onClickUpdate = useCallback(() => {
+    tryUpdate()
+    .then((msg) => {
+      dispatchChatItem({
+        type: "ADD",
+        config: settings,
+        actionId: uuid(),
+        chatItem: [createAppChatItem("info", msg ?? "更新が完了しました")],
+      });
+    })
+    .catch((err) => {
+      dispatchChatItem({
+        type: "ADD",
+        config: settings,
+        actionId: uuid(),
+        chatItem: [createAppChatItem("error", err ?? "更新が完了しました")],
+      });
+    });
+  }, [dispatchChatItem, settings]);
   
   const liveChatList: LiveChat[] = useMemo(() => {
     return Object.keys(liveChatMap).map((id) => liveChatMap[id]);
@@ -135,6 +156,11 @@ export const LiveView: React.VFC<{
             <Btn2 onClick={() => settingsUpdater({ type: "LOAD" })}>
               <MdSettingsSuggest className="icon" />
               <span>設定リロード</span>
+            </Btn2>
+
+            <Btn2 onClick={() => onClickUpdate()}>
+              <MdAutorenew className="icon" />
+              <span>更新をチェック</span>
             </Btn2>
 
             <Btn2 onClick={() => {

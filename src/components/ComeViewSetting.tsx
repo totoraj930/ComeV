@@ -231,13 +231,11 @@ function generateDistCSS(config: ComeViewConfig) {
   }
 
   const colorVal: string[] = [];
-  console.log(config.color);
   for (const [key, item] of Object.entries(config.color)) {
     colorVal.push(`${key}: ${item.value};`);
   }
 
   css.push(`:root { ${colorVal.join("")} }`);
-  console.log(colorVal);
 
   css.push(`:root { --font-name: ${config.fontName}; }`);
 

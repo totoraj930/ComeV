@@ -1,7 +1,7 @@
 {
   "package": {
     "productName": "ComeV",
-    "version": "0.1.1"
+    "version": "0.1.0"
   },
   "build": {
     "distDir": "../build",
@@ -46,7 +46,7 @@
       "endpoints": [
         "https://totoraj930.github.io/ComeV/update.json"
       ],
-      "dialog": true,
+      "dialog": false,
       "pubkey": "../admin/key/myapp.key.pub"
     },
     "allowlist": {
