@@ -18,7 +18,9 @@ import { LiveControl } from './LiveControl';
 import { LiveChatContext } from '../context/liveChat';
 import { LiveInfoView } from './LiveInfoView';
 import { DummySender2 } from './DummySender2';
-import { tryUpdate } from '../utils/update';
+import { startUpdate, tryUpdate } from '../utils/update';
+import { getVersion } from '@tauri-apps/api/app';
+import { confirm } from '@tauri-apps/api/dialog';
 
 
 export const LiveView: React.VFC<{
@@ -52,22 +54,61 @@ export const LiveView: React.VFC<{
   }, [settingsUpdater]);
 
   const onClickUpdate = useCallback(() => {
+    dispatchChatItem({
+      type: "ADD",
+      config: settings,
+      actionId: uuid(),
+      chatItem: [createAppChatItem("log", "更新チェックを開始しました")],
+    });
     tryUpdate()
-    .then((msg) => {
-      dispatchChatItem({
-        type: "ADD",
-        config: settings,
-        actionId: uuid(),
-        chatItem: [createAppChatItem("info", msg ?? "更新が完了しました")],
-      });
-    })
-    .catch((err) => {
-      dispatchChatItem({
-        type: "ADD",
-        config: settings,
-        actionId: uuid(),
-        chatItem: [createAppChatItem("error", err ?? "更新が完了しました")],
-      });
+    .then((res) => {
+      switch (res.type) {
+        case "error": {
+          dispatchChatItem({
+            type: "ADD",
+            config: settings,
+            actionId: uuid(),
+            chatItem: [createAppChatItem("error", res.message)],
+          });
+          break;
+        }
+        case "noUpdate": {
+          dispatchChatItem({
+            type: "ADD",
+            config: settings,
+            actionId: uuid(),
+            chatItem: [createAppChatItem("error", res.message)],
+          });
+          break;
+        }
+        case "shouldUpdate": {
+          (async () => {
+            const msg = [
+              "新しいバージョンが見つかりました",
+              `${await getVersion()} -> ${res.manifest?.version ?? "v?.?.?"}`,
+              "アップデートしますか？"
+            ];
+            const useUpdate = await confirm(msg.join("\n"));
+            if (useUpdate) {
+              dispatchChatItem({
+                type: "ADD",
+                config: settings,
+                actionId: uuid(),
+                chatItem: [createAppChatItem("info", "アップデートを開始しました")],
+              });
+              startUpdate();
+            } else {
+              dispatchChatItem({
+                type: "ADD",
+                config: settings,
+                actionId: uuid(),
+                chatItem: [createAppChatItem("info", "アップデートをキャンセルしました")],
+              });
+            }
+          })();
+          break;
+        }
+      }
     });
   }, [dispatchChatItem, settings]);
   
