@@ -19,6 +19,14 @@ interface ComeViewConfig {
     name: ConfigField<boolean>;
     superName: ConfigField<boolean>;
   };
+  color: {
+    "--name-c": ConfigField<string>;
+    "--owner-name-c": ConfigField<string>;
+    "--moderator-name-c": ConfigField<string>;
+    "--member-name-c": ConfigField<string>;
+    "--subscriber-name-c": ConfigField<string>;
+    "--text-c": ConfigField<string>;
+  };
   fontName: string;
   customCSS: string;
   customTag: string;
@@ -50,6 +58,32 @@ function getDefConfig(): ComeViewConfig {
         displayName: "投稿者名(スパチャ系)",
         value: true
       },
+    },
+    color: {
+      "--name-c": {
+        displayName: "通常",
+        value: "#c0c0c0"
+      },
+      "--owner-name-c": {
+        displayName: "オーナー",
+        value: "#ffa551"
+      },
+      "--moderator-name-c": {
+        displayName: "モデレーター",
+        value: "#17d1ff"
+      },
+      "--member-name-c": {
+        displayName: "メンバー",
+        value: "#a5ff15"
+      },
+      "--subscriber-name-c": {
+        displayName: "サブスクライバー",
+        value: "#a5ff15"
+      },
+      "--text-c": {
+        displayName: "テキスト",
+        value: "#ffffff"
+      }
     },
     outline: 4,
     limit: 10,
@@ -90,7 +124,20 @@ function parseObj(rawJson: any, def: ComeViewConfig): ComeViewConfig {
     const val = res.display[key].value;
     res.display[key].displayName = def.display[key].displayName;
     if (!isBoolean(val)) {
-      res.display[key] = def.display[key]
+      res.display[key] = def.display[key];
+    }
+  });
+
+  (Object.keys(def.color) as (keyof ComeViewConfig["color"])[])
+  .forEach((key, i) => {
+    if (!res.color[key]) {
+      res.color[key] = def.color[key];
+      return;
+    }
+    const val = res.color[key].value;
+    res.color[key].displayName = def.color[key].displayName;
+    if (!isString(val)) {
+      res.color[key] = def.color[key];
     }
   });
 
@@ -110,6 +157,8 @@ function parseObj(rawJson: any, def: ComeViewConfig): ComeViewConfig {
   } else {
     res.outline = numMinMax(res.outline, 0, 10);
   }
+
+  res.distCSS = generateDistCSS(res);
 
   return res;
 }
@@ -154,6 +203,59 @@ function generateOutlineShadow(
   return shadowList;
 }
 
+function generateDistCSS(config: ComeViewConfig) {
+  const d = config.display;
+  const css: string[] = [];
+  const dn = "display: none!important;";
+  if (!d.icon.value) {
+    css.push(`.icon { ${dn} }`);
+  }
+  if (!d.badgeTTV.value) {
+    css.push(`.twitch .badge { ${dn} }`);
+  }
+  if (!d.badgeYT.value) {
+    css.push(`.youtube .badge { ${dn} }`);
+  }
+  if (!d.name.value) {
+    css.push(`.normal .name { ${dn} }`);
+  }
+  if (!d.superName.value) {
+    css.push(`
+      .superchat .name,
+      .cheer .name,
+      .membership .name,
+      .subscribe .name,
+      .gift .name {
+        ${dn}
+      }
+    `);
+  }
+
+  const colorVal: string[] = [];
+  console.log(config.color);
+  for (const [key, item] of Object.entries(config.color)) {
+    colorVal.push(`${key}: ${item.value};`);
+  }
+
+  css.push(`:root { ${colorVal.join("")} }`);
+  console.log(colorVal);
+
+  css.push(`:root { --font-name: ${config.fontName}; }`);
+
+  if (config.outline > 0) {
+    css.push(`
+      :root { 
+        --outline: ${
+          generateOutlineShadow(config.outline, "var(--outline-c)").join(",")
+        }; 
+      }`);
+  } else {
+    css.push(`:root { --outline: none; }`);
+  }
+
+  return css.join("\n") + config.customCSS;
+}
+
 
 export const ComeViewSetting: React.VFC<{
   copiedS: AppConfig
@@ -178,46 +280,8 @@ export const ComeViewSetting: React.VFC<{
   }, []);
   useEffect(() => {
     if (!config) return;
-    const d = config.display;
-    const css: string[] = [];
-    const dn = "display: none!important;";
-    if (!d.icon.value) {
-      css.push(`.icon { ${dn} }`);
-    }
-    if (!d.badgeTTV.value) {
-      css.push(`.twitch .badge { ${dn} }`);
-    }
-    if (!d.badgeYT.value) {
-      css.push(`.youtube .badge { ${dn} }`);
-    }
-    if (!d.name.value) {
-      css.push(`.normal .name { ${dn} }`);
-    }
-    if (!d.superName.value) {
-      css.push(`
-        .superchat .name,
-        .cheer .name,
-        .membership .name,
-        .subscribe .name,
-        .gift .name {
-          ${dn}
-        }
-      `);
-    }
-    css.push(`:root { --font-name: ${config.fontName}; }`);
 
-    if (config.outline > 0) {
-      css.push(`
-        :root { 
-          --outline: ${
-            generateOutlineShadow(config.outline, "var(--outline-c)").join(",")
-          }; 
-        }`);
-    } else {
-      css.push(`:root { --outline: none; }`);
-    }
-
-    config.distCSS = css.join("\n") + config.customCSS;
+    config.distCSS = generateDistCSS(config);
 
     configRef.current = config;
   }, [config]);
@@ -262,27 +326,59 @@ export const ComeViewSetting: React.VFC<{
             </div>
           </Item>
 
-          {(Object.keys(config.display) as (keyof ComeViewConfig["display"])[]).map((key, i) => {
-            const item = config.display[key];
-            const prefix = "display__" + key;
-            return (<Item key={i}>
-              <p className="title">
-                {item.displayName}
-              </p>
-              <div>
-                <Switch htmlFor={prefix}>
-                  <input type="checkbox"
-                    name={prefix} id={prefix}
-                    defaultChecked={ item.value }
+          <Item>
+            <p className="title">表示設定</p>
+            <SmallItemWrap>
+              {(Object.keys(config.display) as (keyof ComeViewConfig["display"])[]).map((key, i) => {
+                const item = config.display[key];
+                const prefix = "display__" + key;
+                return (<SmallItem key={i}>
+                  <label htmlFor={prefix}>
+                    {item.displayName}
+                  </label>
+                  <Switch htmlFor={prefix}>
+                    <input type="checkbox"
+                      name={prefix} id={prefix}
+                      defaultChecked={ item.value }
+                      onChange={(event) => {
+                        item.value = event.target.checked;
+                        setConfig({...config});
+                      }} />
+                    <span className="slider"></span>
+                  </Switch>
+                </SmallItem>)
+              })}
+            </SmallItemWrap>
+          </Item>
+
+          
+
+          <Item>
+            <p className="title">表示色</p>
+            <SmallItemWrap>
+              {(Object.keys(config.color) as (keyof ComeViewConfig["color"])[]).map((key, i) => {
+                const item = config.color[key];
+                const prefix = "color__" + key;
+                return (<SmallItem key={i}>
+                  <label htmlFor={prefix}>
+                    {item.displayName}
+                  </label>
+                  <input
+                    id={prefix}
+                    name={prefix}
+                    type="color"
+                    defaultValue={ item.value }
                     onChange={(event) => {
-                      item.value = event.target.checked;
+                      item.value = event.target.value;
                       setConfig({...config});
-                    }} />
-                  <span className="slider"></span>
-                </Switch>
-              </div>
-            </Item>)
-          })}
+                    }}
+                  />
+                </SmallItem>)
+              })}
+            </SmallItemWrap>
+          </Item>
+
+          
 
           <Item>
             <label htmlFor="outline" className="title">
@@ -424,4 +520,28 @@ const ReloadBtnWrap = styled.div`
   position: fixed;
   bottom: 70px;
   left: 10px;
+`;
+
+const SmallItemWrap = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 5px;
+`;
+const SmallItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  border: 1px solid var(--c-border-2);
+  padding: 3px;
+  > label {
+    font-size: 12px;
+    cursor: pointer;
+  }
+  input[type=color] {
+    width: 100%;
+    background-color: transparent;
+    padding: 0;
+    cursor: pointer;
+  }
 `;

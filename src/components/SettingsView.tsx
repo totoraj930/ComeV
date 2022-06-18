@@ -556,12 +556,9 @@ export const Item = styled.div`
     font-weight: bold;
   }
   > div {
-    display: flex;
-    flex-direction: column;
     padding: 5px;
     flex-grow: 1;
     flex-shrink: 1;
-    align-items: flex-start;
     .sub-title {
       font-size: 14px;
     }
