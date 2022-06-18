@@ -8,7 +8,7 @@ use actix_web::{
   dev::Service as _,
   http::header::{self, HeaderValue},
   middleware,
-  web::{self, Data}, Route,
+  web::{self, Data},
   App, HttpResponse, HttpRequest, HttpServer, Responder,
 };
 use tauri::Manager;
@@ -30,8 +30,8 @@ async fn index(req: HttpRequest) -> Result<NamedFile, std::io::Error> {
 // }
 
 async fn twitch_redirect(req: HttpRequest, app_handle: Data<tauri::AppHandle>) -> Result<NamedFile, actix_web::Error> {
-  let dir = api::path::app_dir(&app_handle.config()).unwrap();
-  let path = dir.join("twitch_redirect.html");
+  let dir = api::path::resource_dir(&app_handle.package_info(), &app_handle.env()).unwrap();
+  let path = dir.join("assets/twitch_redirect.html");
   Ok(NamedFile::open(path)?)
 }
 
@@ -42,8 +42,8 @@ async fn twitch_token(app_handle: Data<tauri::AppHandle>, req: HttpRequest) -> i
 }
 
 async fn come_view(app_handle: Data<tauri::AppHandle>, req: HttpRequest) -> Result<NamedFile, actix_web::Error> {
-  let dir = api::path::app_dir(&app_handle.config()).unwrap();
-  let path = dir.join("come_view.html");
+  let dir = api::path::resource_dir(&app_handle.package_info(), &app_handle.env()).unwrap();
+  let path = dir.join("assets/come_view.html");
   Ok(NamedFile::open(path)?)
 }
 

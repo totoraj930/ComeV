@@ -14,7 +14,7 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "ComeV",
+      "identifier": "net.totoraj.comev",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -22,12 +22,12 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "resources": [],
+      "resources": ["./assets"],
       "externalBin": [],
-      "copyright": "",
+      "copyright": "© 2022 Reona Oshima(totoraj) All Rights Reserved",
       "category": "DeveloperTool",
-      "shortDescription": "",
-      "longDescription": "",
+      "shortDescription": "コメントビューア",
+      "longDescription": "YouTube LiveとTwitchのコメントを表示するやつ",
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
@@ -44,10 +44,10 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "https://totoraj930.github.io/ComeV/update.json"
+        "https://github.com/totoraj930/ComeV/releases/download/updater/update.json"
       ],
       "dialog": false,
-      "pubkey": "../admin/key/myapp.key.pub"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDIzMkQ1QTkxMkFBRERCRUIKUldUcjI2MHFrVm90STNCczBQZWY5emFEaStUck1kcGVtVGVMeHZYNFpGQWZ4NkI0STErU3NBRlYK"
     },
     "allowlist": {
       "all": true,
