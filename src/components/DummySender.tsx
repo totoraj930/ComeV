@@ -5,7 +5,6 @@ import { ChatItemContext } from "../context/chatItem";
 import { useSettings } from "../hooks/useSettings";
 import { ChatItem, createDummyYTChatItem, createDummyYTGiftItem, createDummyYTMembershipItem, createDummyYTStickerItem, createDummyYTSuperChatItem } from "../services/liveChatService";
 import { sendBouyomiYT } from "../services/liveChatYouTube";
-import { sendBouyomi } from "../utils/bouyomi";
 import { sendChatApi } from "../utils/sendChatApi";
 import { uuid } from "../utils/uuid";
 import { Btn2, Line } from "./LiveView";

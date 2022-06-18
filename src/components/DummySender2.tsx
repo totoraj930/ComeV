@@ -5,7 +5,6 @@ import { ChatItemContext } from "../context/chatItem";
 import { useSettings } from "../hooks/useSettings";
 import { TTVChatItem } from "../services/liveChatService";
 import { generateDummy, sendBouyomiTTV } from "../services/liveChatTwitch";
-import { sendBouyomiYT } from "../services/liveChatYouTube";
 import { sendChatApi } from "../utils/sendChatApi";
 import { TwitchChatItem } from "../utils/twitch";
 import { uuid } from "../utils/uuid";

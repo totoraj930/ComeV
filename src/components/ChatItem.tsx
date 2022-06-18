@@ -2,7 +2,7 @@ import { ChatItem as YTChatItemData, EmojiItem, ImageItem, MessageItem } from "y
 import styled from "styled-components";
 import { ChatItem, AppChatItemData } from "../services/liveChatService";
 import { useMemo } from "react";
-import { TwitchChatItem, TwitchNormalChatItem, TwitchEmote, TwitchUser, TwitchCheerItem, TwitchCheermote, TwitchCheermoteMessage, TwitchSubItem, TwitchSubMysteryGiftItem } from "../utils/twitch";
+import { TwitchNormalChatItem, TwitchEmote, TwitchUser, TwitchCheerItem, TwitchCheermoteMessage, TwitchSubItem, TwitchSubMysteryGiftItem } from "../utils/twitch";
 
 export interface ChatItemViewOptions {
   showTime?: boolean;

@@ -1,6 +1,6 @@
 import { invoke as invokeOrigin, path } from "@tauri-apps/api";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { MdBackspace, MdContentCopy, MdFolderOpen, MdSettings, MdSettingsBackupRestore } from "react-icons/md";
+import { MdBackspace, MdFolderOpen, MdSettings, MdSettingsBackupRestore } from "react-icons/md";
 import styled from "styled-components";
 import { AppConfig, BouyomiTwitchConfig, BouyomiYouTubeConfig, copyConfig, defaultConfig } from "../context/config";
 import { useSettings } from "../hooks/useSettings";

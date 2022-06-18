@@ -1,10 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import styled from "styled-components";
 import { useSettings } from "../hooks/useSettings";
-import { ChatItem } from "../services/liveChatService";
 import { ChatItemContextState } from "../context/chatItem";
-import { ChatItemView } from "./ChatItem";
 
 function scrollToBottom($elm: HTMLElement, duration: number = 100) {
   let isCancel = false;

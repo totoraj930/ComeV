@@ -1,5 +1,5 @@
-import { MetadataItem, YouTubeLiveId } from "youtube-chat-tauri/dist/types/data";
-import { ChatItem, createAppChatItem, LiveChatBase, LiveChatMetaData, YTChatItem, ytMessageToString } from "./liveChatService";
+import { YouTubeLiveId } from "youtube-chat-tauri/dist/types/data";
+import { createAppChatItem, LiveChatBase, LiveChatMetaData, YTChatItem, ytMessageToString } from "./liveChatService";
 import { LiveChat as YTLiveChat } from "youtube-chat-tauri";
 import { AppConfig, BouyomiConfig } from "../context/config";
 import { ChatItemAction } from "../context/chatItem";

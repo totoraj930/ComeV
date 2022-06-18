@@ -1,7 +1,7 @@
-import { ChatItem as YTChatItemData, EmojiItem, ImageItem, MessageItem, MetadataItem } from "youtube-chat-tauri/dist/types/data";
+import { ChatItem as YTChatItemData, EmojiItem, ImageItem, MessageItem } from "youtube-chat-tauri/dist/types/data";
 import { LiveChat as YTLiveChat } from "youtube-chat-tauri";
 import { uuid } from "../utils/uuid";
-import { TwitchChat, TwitchNormalChatItem, TwitchCheerItem, TwitchSubGiftItem, TwitchSubItem, TwitchChatItem } from "../utils/twitch";
+import { TwitchChat, TwitchChatItem } from "../utils/twitch";
 import { TwitchConfig } from "../context/config";
 import { LiveChatYouTube } from "./liveChatYouTube";
 import { LiveChatTwitch } from "./liveChatTwitch";

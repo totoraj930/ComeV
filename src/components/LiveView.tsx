@@ -25,10 +25,9 @@ export const LiveView: React.VFC<{
   
   const { dispatch: dispatchLiveChat } = useContext(LiveChatContext);
   const { liveChatMap, liveChatUpdater } = useLiveChat();
-  const { state: chatItemContext, dispatch: dispatchChatItem } = useContext(ChatItemContext);
+  const { state: chatItemContext } = useContext(ChatItemContext);
   const chatItems = useRef<ChatItem[]>([]);
 
-  const isFirstLoad = useRef(true);
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
   const [isShowSettings, setIsShowSettings] = useState<boolean>(false);
   // const { state: config } = useContext(AppConfigContext);
@@ -365,51 +364,6 @@ const InfoBarRight = styled.div`
   flex-direction: row;
 `;
 
-const LiveInfo = styled.div`
-  display: flex;
-  flex: 1;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0 10px;
-  .title {
-    position: relative;
-    flex: 1;
-    span.dummy {
-      position: relative;
-      color: transparent;
-      pointer-events: none;
-    }
-    span {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      font-size: 13px;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-  }
-  .viewer {
-    display: flex;
-    align-items: center;
-    font-size: 15px;
-    font-weight: bold;
-    .icon {
-      width: 20px;
-      height: 20px;
-      margin-right: 1px;
-    }
-  }
-
-  @media screen and (max-width: 450px) {
-    gap: 0 8px;
-    .viewer {
-      font-size: 13px;
-    }
-  }
-`;
 
 const MenuPanel = styled.div`
   background: var(--c-menu-bg);

@@ -1,4 +1,4 @@
-import React, { createContext, Dispatch, ReactElement } from "react";
+import { createContext, Dispatch, ReactElement } from "react";
 import { ChatItem } from "../services/liveChatService";
 import { AppConfig} from "./config";
 import { ChatItemView } from "../components/ChatItem";

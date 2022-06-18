@@ -2,8 +2,7 @@ import { fs, path, invoke as invokeOrigin } from "@tauri-apps/api";
 import { useEffect, useRef, useState } from "react";
 import { MdFolderOpen, MdContentCopy, MdOpenInBrowser, MdSettingsSuggest, MdSettingsBackupRestore } from "react-icons/md";
 import styled from "styled-components";
-import { AppConfig, copyConfig, defaultConfig } from "../context/config";
-import { useSettings } from "../hooks/useSettings";
+import { AppConfig } from "../context/config";
 import { sendChatApi } from "../utils/sendChatApi";
 import { Switch } from "./LiveView";
 import { Btn1, Btn2, FormatWrap, Input1, Input2, Item } from "./SettingsView";
@@ -514,12 +513,6 @@ const Textarea1 = styled.textarea`
 const HeaderBtns = styled.div`
   display: flex;
   gap: 5px;
-`;
-
-const ReloadBtnWrap = styled.div`
-  position: fixed;
-  bottom: 70px;
-  left: 10px;
 `;
 
 const SmallItemWrap = styled.div`
