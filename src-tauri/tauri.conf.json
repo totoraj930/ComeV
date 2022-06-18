@@ -33,7 +33,11 @@
         "digestAlgorithm": "sha256",
         "timestampUrl": "",
         "wix": {
-          "language": ["jp-JP"]
+          "language": {
+            "jp-JP": {
+              "localePath": "./wix-locale/WixUI_ja-jp.wxl"
+            }
+          }
         }
       }
     },
