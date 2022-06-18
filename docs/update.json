@@ -1,10 +1,10 @@
 {
-  "version": "v0.1.0",
-  "notes": "Test version 1",
-  "pub_date": "2022-06-19T00:05+09:00",
+  "version": "0.1.0",
+  "notes": "Test version 0.1.0",
+  "pub_date": "2022-06-18T15:57:15.293Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUME83clYwZGFndElaNDFmR3ZXSHJNQUxZZE1vSUYwcHQ3ZW1qNHRVa1NzZzJqV3B0RU9rZks3VUV4WHNhS0lEMVlPc1VoejNNWXIxajdRRjVGamFEMWw4TmM3eHV1TUFBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNjU1NTY2Nzc3CWZpbGU6RDpcdG90b3JhajkzMFxIb2JieVxDb21lVlxjb21lLXZcc3JjLXRhdXJpXHRhcmdldFxyZWxlYXNlXGJ1bmRsZS9tc2kvQ29tZVZfMC4xLjBfeDY0X2pwLUpQLm1zaS56aXAKRVF5VWZWb044dHI2dWRIaUx4QWN4YVRubnZvOUE5c25TZHVMS2llaVdyTElZcjFubW5vb0Qxb1BjSmY2VnlDMTFsVjhSbEZneG9rMFdKRk1FejQzQ2c9PQo=",
       "url": "https://github.com/totoraj930/ComeV/releases/download/0.1.0/ComeV_0.1.0_x64_jp-JP.msi.zip"
     }
   }

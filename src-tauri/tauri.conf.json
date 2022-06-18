@@ -46,7 +46,8 @@
       "endpoints": [
         "https://totoraj930.github.io/ComeV/update.json"
       ],
-      "dialog": true
+      "dialog": true,
+      "pubkey": "../admin/key/myapp.key.pub"
     },
     "allowlist": {
       "all": true,
