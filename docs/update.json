@@ -1,0 +1,11 @@
+{
+  "version": "v0.1.0",
+  "notes": "Test version 1",
+  "pub_date": "2022-06-19T00:05+09:00",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "",
+      "url": "https://github.com/totoraj930/ComeV/releases/download/0.1.0/ComeV_0.1.0_x64_jp-JP.msi.zip"
+    }
+  }
+}

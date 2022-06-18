@@ -42,7 +42,11 @@
       }
     },
     "updater": {
-      "active": false
+      "active": true,
+      "endpoints": [
+        "https://totoraj930.github.io/ComeV/update.json"
+      ],
+      "dialog": true
     },
     "allowlist": {
       "all": true,
