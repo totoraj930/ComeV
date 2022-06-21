@@ -32,6 +32,7 @@ export function createLiveChatYouTube(
     url: urlStr,
     type: "YouTube",
     isStarted: false,
+    isLoading: false,
     metaData: {}
   }
 }
@@ -167,6 +168,7 @@ export function initYouTubeListener(
   });
   liveChat.api.on("start", (liveId) => {
     liveChat.isStarted = true;
+    liveChat.isLoading = false;
     dispatchChatItem({
       config: settings,
       type: "ADD",
@@ -182,6 +184,7 @@ export function initYouTubeListener(
   });
   liveChat.api.on("end", () => {
     liveChat.isStarted = false;
+    liveChat.isLoading = false;
     dispatchChatItem({
       config: settings,
       type: "ADD",

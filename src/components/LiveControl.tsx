@@ -43,14 +43,21 @@ export const LiveControl: React.VFC<{
     <Line>
 
       { !liveChat.isStarted && (
-        <Btn1 onClick={() => liveChatUpdater({ type: "START_CHAT", targetId: liveChat.id })}>
+        <Btn1
+          onClick={() => liveChatUpdater({ type: "START_CHAT", targetId: liveChat.id })}
+          disabled={liveChat.isLoading}
+        >
           <MdPlayArrow className="icon" />
           <span className="hide-400">接続</span>
         </Btn1>
       )}
 
       { liveChat.isStarted && (
-        <Btn1 className="warn" onClick={() => liveChatUpdater({ type: "STOP_CHAT", targetId: liveChat.id })}>
+        <Btn1
+          onClick={() => liveChatUpdater({ type: "STOP_CHAT", targetId: liveChat.id })}
+          disabled={liveChat.isLoading}
+          className="warn"
+        >
           <MdPause className="icon" />
           <span className="hide-400">切断</span>
         </Btn1>
@@ -169,6 +176,10 @@ const Btn1 = styled.button`
       color: var(--c-btn-2-c-2);
       cursor: pointer;
     }
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: progress;
   }
 `;
 

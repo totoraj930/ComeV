@@ -1,7 +1,7 @@
 
 import { useContext, useEffect } from "react";
 import { LiveChatContext } from "../context/liveChat";
-import { createAppChatItem } from "../services/liveChatService";
+import { createAppChatItem, LiveChat } from "../services/liveChatService";
 import { uuid } from "../utils/uuid"
 import { ChatItemContext } from "../context/chatItem";
 import { useSettings } from "./useSettings";
@@ -70,6 +70,14 @@ export function useLiveChat() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings]);
 
+  const update = (liveChat: LiveChat) => {
+    dispatch({
+      type: "UPDATE",
+      targetId: liveChat.id,
+      liveChat: liveChat,
+    });
+  };
+
   /** LiveChatの操作 */
   const liveChatUpdater = async (action: LiveChatAction) => {
     if (!liveChatMap) return;
@@ -88,7 +96,9 @@ export function useLiveChat() {
     if (liveChat.type === "YouTube") {
       switch (action.type) {
         case "CHANGE_URL": {
-          liveChat.api.stop();
+          if (liveChat.isStarted) {
+            liveChat.api.stop();
+          }
           liveChat.api.removeAllListeners();
           break;
         }
@@ -109,7 +119,9 @@ export function useLiveChat() {
     else if (liveChat.type === "Twitch") {
       switch (action.type) {
         case "CHANGE_URL": {
-          liveChat.api.stop();
+          if (liveChat.isStarted) {
+            liveChat.api.stop();
+          }
           liveChat.api.removeAllListeners();
           break;
         }
@@ -203,7 +215,11 @@ export function useLiveChat() {
             dispatch,
             dispatchChatItem,
             true);
-          liveChat.api.start();
+          liveChat.isLoading = true;
+          update(liveChat);
+          await liveChat.api.start();
+          liveChat.isLoading = false;
+          update(liveChat);
         }
         else if (isTwitchUrl(liveChat.url)) {
           // Twitchに接続する処理 --------------------------------------
@@ -212,57 +228,65 @@ export function useLiveChat() {
             liveChat.url,
             settings);
 
-            if (!liveChatTwitch) {
-              dispatchChatItem({
-                type: "ADD",
-                actionId: uuid(),
-                config: settings,
-                chatItem: [createAppChatItem("error", "対応していないTwitchのURLです。")]
-              });
-              return;
-            }
-            liveChat = liveChatTwitch;
-            initTwitchListener(
-              liveChat,
-              settings,
-              dispatch,
-              dispatchChatItem,
-              true);
-            try {
-              // ログイン処理
-              const token = await liveChat.api.login();
-              settingsUpdater({ type: "UPDATE_TWITCH_TOKEN", token });
-            } catch (err) {
-              console.error(err);
-              dispatchChatItem({
-                type: "ADD",
-                actionId: uuid(),
-                config: settings,
-                chatItem: [createAppChatItem(
-                  "error",
-                  err === "cancel"
-                    ? "Twitchとの連携がキャンセルされました。"
-                    : "Twitchとの連携に失敗しました。"
-                )]
-              });
-              return;
-            }
+          if (!liveChatTwitch) {
+            dispatchChatItem({
+              type: "ADD",
+              actionId: uuid(),
+              config: settings,
+              chatItem: [createAppChatItem("error", "対応していないTwitchのURLです。")]
+            });
+            return;
+          }
+          liveChat = liveChatTwitch;
+          liveChat.isLoading = true;
+          update(liveChat);
+          initTwitchListener(
+            liveChat,
+            settings,
+            dispatch,
+            dispatchChatItem,
+            true);
+          try {
+            // ログイン処理
+            const token = await liveChat.api.login();
+            settingsUpdater({ type: "UPDATE_TWITCH_TOKEN", token });
+          } catch (err) {
+            console.error(err);
+            dispatchChatItem({
+              type: "ADD",
+              actionId: uuid(),
+              config: settings,
+              chatItem: [createAppChatItem(
+                "error",
+                err === "cancel"
+                  ? "Twitchとの連携がキャンセルされました。"
+                  : "Twitchとの連携に失敗しました。"
+              )]
+            });
+            liveChat.isLoading = false;
+            update(liveChat);
+            return;
+          }
 
-            try {
-              // 接続
-              const channelId = parseTwitchUrl(liveChat.url);
-              await liveChat.api.start(channelId || "");
-            } catch (err) {
-              console.error(err);
-              dispatchChatItem({
-                type: "ADD",
-                actionId: uuid(),
-                config: settings,
-                chatItem: [createAppChatItem("error", "Twitchへの接続に失敗しました。チャンネルが存在しません。")]
-              });
-              await liveChat.api.stop();
-              return;
-            }
+          try {
+            // 接続
+            const channelId = parseTwitchUrl(liveChat.url);
+            await liveChat.api.start(channelId || "");
+            liveChat.isLoading = false;
+            update(liveChat);
+          } catch (err) {
+            console.error(err);
+            dispatchChatItem({
+              type: "ADD",
+              actionId: uuid(),
+              config: settings,
+              chatItem: [createAppChatItem("error", "Twitchへの接続に失敗しました。チャンネルが存在しません。")]
+            });
+            await liveChat.api.stop();
+            liveChat.isLoading = false;
+            update(liveChat);
+            return;
+          }
         }
         else {
           dispatchChatItem({
@@ -276,11 +300,7 @@ export function useLiveChat() {
         break;
       }
     }
-    dispatch({
-      type: "UPDATE",
-      targetId: liveChat.id,
-      liveChat,
-    });
+    update(liveChat);
   };
 
   return {

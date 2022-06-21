@@ -34,6 +34,7 @@ export function createLiveChatTwitch(
     url: urlStr,
     type: "Twitch",
     isStarted: false,
+    isLoading: false,
     metaData: {}
   };
 }

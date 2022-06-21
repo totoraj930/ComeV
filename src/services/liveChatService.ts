@@ -52,6 +52,7 @@ export interface LiveChatBase {
   id: string;
   url: string;
   isStarted: boolean;
+  isLoading: boolean;
   type: string;
   metaData: LiveChatMetaData;
 }
@@ -65,6 +66,7 @@ export function createLiveChatEmpty(id: string, url: string): LiveChatEmpty {
     id,
     url,
     isStarted: false,
+    isLoading: false,
     type: "Empty",
     metaData: {}
   };
@@ -96,6 +98,7 @@ export const liveChatService = {
       },
       api: ytLiveChat,
       isStarted: false,
+      isLoading: false,
     };
   },
   createLiveChatTwitch: (id: string, url: string, config: TwitchConfig): LiveChatTwitch => {
@@ -108,7 +111,8 @@ export const liveChatService = {
         description: ""
       },
       api: new TwitchChat({ token: config.token, clientId: config.clientId, name: ""}),
-      isStarted: false
+      isStarted: false,
+      isLoading: false,
     };
   }
 }
