@@ -1,3 +1,9 @@
+/**
+ * actix/examples
+ * Apache License 2.0
+ * https://github.com/actix/examples/
+ * https://github.com/actix/examples/blob/c5f2a8fcc78b68d6eb8b308dbf17bc606c2d7a98/server-sent-events/src/broadcast.rs
+ */
 use std::{
   pin::Pin,
   task::{Context, Poll},
