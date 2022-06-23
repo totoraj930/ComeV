@@ -124,6 +124,7 @@ export function initTwitchListener(
   dispatchChatItem: React.Dispatch<ChatItemAction>,
   isFirst: boolean
 ) {
+  console.log("initTwitch");
   liveChat.api.removeAllListeners();
 
   liveChat.api.on("start", (channel) => {
@@ -137,7 +138,7 @@ export function initTwitchListener(
     dispatch({
       type: "UPDATE",
       targetId: liveChat.id,
-      liveChat: {...liveChat}
+      liveChat: liveChat
     });
   });
 
@@ -152,7 +153,7 @@ export function initTwitchListener(
     dispatch({
       type: "UPDATE",
       targetId: liveChat.id,
-      liveChat: {...liveChat}
+      liveChat: liveChat
     });
   });
 
@@ -187,7 +188,7 @@ export function initTwitchListener(
     dispatch({
       type: "UPDATE",
       targetId: liveChat.id,
-      liveChat: {...liveChat}
+      liveChat: liveChat
     });
   });
 }

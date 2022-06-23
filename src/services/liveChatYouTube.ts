@@ -154,7 +154,7 @@ export function initYouTubeListener(
     dispatch({
       type: "UPDATE",
       targetId: liveChat.id,
-      liveChat: {...liveChat}
+      liveChat: liveChat
     });
   });
   liveChat.api.on("error", (data) => {
@@ -178,7 +178,7 @@ export function initYouTubeListener(
     dispatch({
       type: "UPDATE",
       targetId: liveChat.id,
-      liveChat: {...liveChat}
+      liveChat: liveChat
     });
     _isFirst = true;
   });
@@ -194,7 +194,7 @@ export function initYouTubeListener(
     dispatch({
       type: "UPDATE",
       targetId: liveChat.id,
-      liveChat: {...liveChat}
+      liveChat: liveChat
     });
     _isFirst = true;
   });
