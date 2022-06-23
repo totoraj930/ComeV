@@ -11,11 +11,12 @@ export const LiveInfoView: React.VFC<{
     <Wrap>
       { liveChatList.map((liveChat) => {
         if (!liveChat.isStarted) return "";
-        return (<Viewership key={liveChat.id} title="視聴者数">
+        return (<Viewership key={liveChat.id}>
           { liveChat.type === "YouTube" && <SiYoutube className="icon" /> }
           { liveChat.type === "Twitch" && <SiTwitch className="icon" /> }
           { liveChat.type === "Empty" && <MdPerson className="icon" /> }
           <span>{liveChat.metaData.viewership || " "}</span>
+          { liveChat.metaData.title && <span className="live-title">{ liveChat.metaData.title }</span>}
         </Viewership>);
       }) }
     </Wrap>
@@ -37,5 +38,21 @@ const Viewership = styled.p `
   .icon {
     min-width: 20px;
     min-height: 20px;
+  }
+  .live-title {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    padding: 5px;
+    width: 100%;
+    z-index: 30;
+    background-color: var(--c-text);
+    color: var(--c-main);
+    opacity: 0;
+    transition: opacity 300ms;
+    pointer-events: none;
+  }
+  &:hover .live-title {
+    opacity: 0.9;
   }
 `
