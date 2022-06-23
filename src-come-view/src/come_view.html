@@ -10,6 +10,7 @@
   <script>
     const PORT = 50930;
     let LIMIT = 30;
+    let USE_SMOOTH_SCROLL = true;
   </script>
 </head>
 <body>
@@ -27,6 +28,7 @@
         $style.innerHTML = config.distCSS ?? "";
         document.head.append($style);
         LIMIT = config.limit ?? LIMIT;
+        USE_SMOOTH_SCROLL = config.useSmoothScroll ?? USE_SMOOTH_SCROLL;
 
         const $dummyHead = document.createElement("head");
         $dummyHead.innerHTML = config.customTag ?? "";
@@ -46,7 +48,7 @@
     import { init, start } from "./index.ts";
     promise.then(() => {
       const es = new EventSource(`http://localhost:${PORT}/api`);
-      start(es, LIMIT);
+      start(es, LIMIT, USE_SMOOTH_SCROLL);
     });
   </script>
 </body>

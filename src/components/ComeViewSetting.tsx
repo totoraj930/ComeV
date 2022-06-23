@@ -27,6 +27,7 @@ interface ComeViewConfig {
     "--text-c": ConfigField<string>;
     "--outline-c": ConfigField<string>;
   };
+  useSmoothScroll: boolean;
   fontName: string;
   customCSS: string;
   customTag: string;
@@ -89,6 +90,7 @@ function getDefConfig(): ComeViewConfig {
         value: "#000000"
       },
     },
+    useSmoothScroll: true,
     outline: 4,
     limit: 10,
     fontName: "Noto Sans JP",
@@ -145,6 +147,9 @@ function parseObj(rawJson: any, def: ComeViewConfig): ComeViewConfig {
     }
   });
 
+  if (!isBoolean(res.useSmoothScroll)) {
+    res.useSmoothScroll = def.useSmoothScroll;
+  }
   if (!isString(res.customCSS)) {
     res.customCSS = def.customCSS;
   }
@@ -325,6 +330,27 @@ export const ComeViewSetting: React.VFC<{
                   <MdContentCopy className="icon" />
                 </Btn2>
               </FormatWrap>
+            </div>
+          </Item>
+
+          <Item>
+            <p className="title">スクロールアニメ</p>
+            <div>
+              <Switch htmlFor="use_smooth_scroll">
+                <input type="checkbox"
+                  name="use_smooth_scroll" id="use_smooth_scroll"
+                  defaultChecked={ config.useSmoothScroll }
+                  onChange={(event) => {
+                    config.useSmoothScroll = event.target.checked;
+                    setConfig({...config});
+                  }}
+                />
+                <span className="slider"></span>
+              </Switch>
+              <p className="description">
+                自動スクロールを滑らかにするか<br />
+                有効だとコメントが秒間10個以上の場合に遅延が発生します
+              </p>
             </div>
           </Item>
 

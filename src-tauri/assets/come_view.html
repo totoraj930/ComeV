@@ -300,6 +300,7 @@
 </style>
   <script>const PORT = 50930;
 let LIMIT = 30;
+let USE_SMOOTH_SCROLL = true;
 
 </script>
 </head>
@@ -541,6 +542,7 @@ function $b98859b17ca1e06b$var$createElement(htmlStr) {
 let $08d0039663e943f9$var$tasks = [];
 let $08d0039663e943f9$var$$list = [];
 let $08d0039663e943f9$var$limit = 30;
+let $08d0039663e943f9$var$useSmoothScroll = true;
 function $08d0039663e943f9$export$2cd8252107eb640b(items) {
     const $wrap = document.querySelector("#wrap");
     for (const item of items){
@@ -549,8 +551,9 @@ function $08d0039663e943f9$export$2cd8252107eb640b(items) {
     }
     requestAnimationFrame(()=>$08d0039663e943f9$var$scroll($wrap, 0));
 }
-function $08d0039663e943f9$export$b3571188c770cc5a(es, _limit = 30) {
+function $08d0039663e943f9$export$b3571188c770cc5a(es, _limit = 30, _useSmoothScroll = true) {
     $08d0039663e943f9$var$limit = _limit + 1;
+    $08d0039663e943f9$var$useSmoothScroll = _useSmoothScroll;
     $08d0039663e943f9$export$bc46d990991b20b3($08d0039663e943f9$var$limit);
     es.addEventListener("youtube", (event)=>{
         try {
@@ -582,7 +585,8 @@ function $08d0039663e943f9$export$b3571188c770cc5a(es, _limit = 30) {
     const $wrap = document.querySelector("#wrap");
     const $elm = $08d0039663e943f9$export$789ccbf50cd1969e($08d0039663e943f9$var$tasks[0]);
     $08d0039663e943f9$export$7b203c346bf0c9($elm);
-    const { promise: promise  } = $08d0039663e943f9$var$scroll($wrap, 50);
+    const scrollDuration = $08d0039663e943f9$var$useSmoothScroll ? 50 : 0;
+    const { promise: promise  } = $08d0039663e943f9$var$scroll($wrap, scrollDuration);
     // スクロールを待つ
     await promise;
     // 30ms待機してから次のタスクへ
@@ -604,7 +608,8 @@ function $08d0039663e943f9$export$b3571188c770cc5a(es, _limit = 30) {
             $elm.scrollTo({
                 top: bottomY
             });
-            return Promise.resolve();
+            resolve(false);
+            return;
         }
         const startTime = Date.now();
         const startY = $elm.scrollTop;
@@ -690,6 +695,7 @@ const $a3a846539445abab$var$promise = Promise.all([
         $style.innerHTML = config.distCSS ?? "";
         document.head.append($style);
         LIMIT = config.limit ?? LIMIT;
+        USE_SMOOTH_SCROLL = config.useSmoothScroll ?? USE_SMOOTH_SCROLL;
         const $dummyHead = document.createElement("head");
         $dummyHead.innerHTML = config.customTag ?? "";
         const $elms = Object.values($dummyHead.children);
@@ -701,7 +707,7 @@ const $a3a846539445abab$var$promise = Promise.all([
 ]);
 $a3a846539445abab$var$promise.then(()=>{
     const es = new EventSource(`http://localhost:${PORT}/api`);
-    (0, $08d0039663e943f9$export$b3571188c770cc5a)(es, LIMIT);
+    (0, $08d0039663e943f9$export$b3571188c770cc5a)(es, LIMIT, USE_SMOOTH_SCROLL);
 });
 
 

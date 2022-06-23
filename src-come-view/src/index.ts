@@ -4,6 +4,7 @@ import * as ttv from "./ttvUtils";
 let tasks: ChatItem[] = [];
 let $list: HTMLElement[] = [];
 let limit = 30;
+let useSmoothScroll = true;
 
 /** 初回のElement追加とスクロール */
 export function init(items: ChatItem[]) {
@@ -15,8 +16,9 @@ export function init(items: ChatItem[]) {
   requestAnimationFrame(() => scroll($wrap, 0));
 }
 
-export function start(es: EventSource, _limit: number = 30) {
+export function start(es: EventSource, _limit: number = 30, _useSmoothScroll: boolean = true) {
   limit = _limit + 1;
+  useSmoothScroll = _useSmoothScroll;
   removeChatItem(limit);
 
   es.addEventListener("youtube", (event) => {
@@ -62,7 +64,8 @@ async function executeTask() {
   const $wrap = document.querySelector("#wrap") as HTMLDivElement;
   const $elm = createElm(tasks[0]);
   showChatItem($elm);
-  const { promise } = scroll($wrap, 50);
+  const scrollDuration = useSmoothScroll ? 50 : 0;
+  const { promise } = scroll($wrap, scrollDuration);
   // スクロールを待つ
   await promise;
 
@@ -86,7 +89,8 @@ function scroll($elm: HTMLElement, duration: number) {
     const bottomY = $elm.scrollHeight - $elm.clientHeight;
     if (duration <= 0) {
       $elm.scrollTo({ top: bottomY });
-      return Promise.resolve();
+      resolve(false);
+      return;
     }
     const startTime = Date.now();
     const startY = $elm.scrollTop;
