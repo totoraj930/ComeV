@@ -1,7 +1,4 @@
-use std::fmt::Error;
-use std::path::PathBuf;
 use std::sync::{mpsc, Mutex};
-use std::thread;
 use actix_files as fs;
 use actix_files::NamedFile;
 use actix_web::{
@@ -14,12 +11,12 @@ use actix_web::{
 use tauri::Manager;
 use tauri::api;
 
-use crate::cmd::broadcast::{Broadcaster};
+use crate::cmd::broadcast::Broadcaster;
 
-async fn index(req: HttpRequest) -> Result<NamedFile, std::io::Error> {
-  let path: PathBuf = req.match_info().query("filename").parse().unwrap();
-  Ok(NamedFile::open(path)?)
-}
+// async fn index(req: HttpRequest) -> Result<NamedFile, std::io::Error> {
+//   let path: PathBuf = req.match_info().query("filename").parse().unwrap();
+//   Ok(NamedFile::open(path)?)
+// }
 
 // async fn twitch_login(req: HttpRequest) -> Result<HttpResponse, actix_web::Error> {
 //   let query_str = req.query_string();
@@ -29,7 +26,7 @@ async fn index(req: HttpRequest) -> Result<NamedFile, std::io::Error> {
 //   Ok(res.finish())
 // }
 
-async fn twitch_redirect(req: HttpRequest, app_handle: Data<tauri::AppHandle>) -> Result<NamedFile, actix_web::Error> {
+async fn twitch_redirect(app_handle: Data<tauri::AppHandle>) -> Result<NamedFile, actix_web::Error> {
   let dir = api::path::resource_dir(&app_handle.package_info(), &app_handle.env()).unwrap();
   let path = dir.join("assets/twitch_redirect.html");
   Ok(NamedFile::open(path)?)
@@ -37,11 +34,11 @@ async fn twitch_redirect(req: HttpRequest, app_handle: Data<tauri::AppHandle>) -
 
 async fn twitch_token(app_handle: Data<tauri::AppHandle>, req: HttpRequest) -> impl Responder {
   let query_str = req.query_string();
-  app_handle.emit_all("twitch_token", query_str);
+  app_handle.emit_all("twitch_token", query_str).expect("failed emit twitch_token.");
   HttpResponse::Ok().content_type("text/html").body("Ok")
 }
 
-async fn come_view(app_handle: Data<tauri::AppHandle>, req: HttpRequest) -> Result<NamedFile, actix_web::Error> {
+async fn come_view(app_handle: Data<tauri::AppHandle>) -> Result<NamedFile, actix_web::Error> {
   let dir = api::path::resource_dir(&app_handle.package_info(), &app_handle.env()).unwrap();
   let path = dir.join("assets/come_view.html");
   Ok(NamedFile::open(path)?)
@@ -50,7 +47,7 @@ async fn come_view(app_handle: Data<tauri::AppHandle>, req: HttpRequest) -> Resu
 #[actix_web::main]
 pub async fn run(rx_stop: mpsc::Receiver<()>, port: u16, path: &'static str, tx: mpsc::Sender<Data<Broadcaster>>, app_handle: tauri::AppHandle) {
   let data = Broadcaster::create();
-  tx.send(data.clone());
+  tx.send(data.clone()).expect("failed send Broadcaster.");
   let server = HttpServer::new( move || {
     let tauri_app = app_handle.clone();
     App::new()
@@ -76,11 +73,12 @@ pub async fn run(rx_stop: mpsc::Receiver<()>, port: u16, path: &'static str, tx:
   let handle = server.handle();
   println!("Start Server {}", &port);
 
-  thread::spawn(move || {
+  tokio::spawn(async move {
     rx_stop.recv().unwrap();
     println!("Stop Server");
-    handle.stop(false);
+    handle.stop(false).await;
   });
+
   server.await.unwrap();
 }
 

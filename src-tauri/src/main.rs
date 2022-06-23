@@ -4,7 +4,7 @@
 )]
 
 use std::process::Command;
-use std::{sync::{Mutex, mpsc}, thread, borrow::{BorrowMut, Cow}};
+use std::{sync::{Mutex, mpsc}, thread};
 
 use actix_web::web::Data;
 use cmd::{server::ChatServer, broadcast::Broadcaster};
