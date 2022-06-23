@@ -25,6 +25,7 @@ interface ComeViewConfig {
     "--member-name-c": ConfigField<string>;
     "--subscriber-name-c": ConfigField<string>;
     "--text-c": ConfigField<string>;
+    "--outline-c": ConfigField<string>;
   };
   fontName: string;
   customCSS: string;
@@ -82,7 +83,11 @@ function getDefConfig(): ComeViewConfig {
       "--text-c": {
         displayName: "テキスト",
         value: "#ffffff"
-      }
+      },
+      "--outline-c": {
+        displayName: "縁取り",
+        value: "#000000"
+      },
     },
     outline: 4,
     limit: 10,
