@@ -7,6 +7,7 @@ export const defaultConfig: AppConfig = {
   themeName: "dark",
   prevUrl: [""],
   enableAnonyView: false,
+  updateCheck: false,
   twitch: {
     clientId: "u7y21ic3v3nsrl9jmxsij78eciy3fl",
     token: "",
@@ -83,6 +84,7 @@ export interface AppConfig {
   intervalMs: number;
   themeName: string;
   prevUrl: string[];
+  updateCheck: boolean;
   enableAnonyView: boolean;
   twitch: TwitchConfig;
   apiServer: ApiServerConfig;
@@ -186,6 +188,7 @@ export function parseObj(rawJson: any, def: AppConfig) {
   const res = { ...def, ...rawJson } as AppConfig;
 
   res.useSmoothScroll = !!res.useSmoothScroll;
+  res.updateCheck = !!res.updateCheck;
 
   if (!isSameType(res.intervalMs, def.intervalMs) || res.intervalMs < 1000) {
     res.intervalMs = def.intervalMs;

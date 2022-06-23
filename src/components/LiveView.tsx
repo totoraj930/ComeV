@@ -53,7 +53,7 @@ export const LiveView: React.VFC<{
     });
   }, [settingsUpdater]);
 
-  const onClickUpdate = useCallback(() => {
+  const onClickUpdateCheck = useCallback(() => {
     dispatchChatItem({
       type: "ADD",
       config: settings,
@@ -77,7 +77,7 @@ export const LiveView: React.VFC<{
             type: "ADD",
             config: settings,
             actionId: uuid(),
-            chatItem: [createAppChatItem("error", res.message)],
+            chatItem: [createAppChatItem("log", res.message)],
           });
           break;
         }
@@ -134,6 +134,9 @@ export const LiveView: React.VFC<{
           type: "ADD",
           liveChat: createLiveChatEmpty(uuid(), url)
         });
+      }
+      if (_settings.updateCheck) {
+        onClickUpdateCheck();
       }
     });
 
@@ -199,7 +202,7 @@ export const LiveView: React.VFC<{
               <span>設定リロード</span>
             </Btn2>
 
-            <Btn2 onClick={() => onClickUpdate()}>
+            <Btn2 onClick={() => onClickUpdateCheck()}>
               <MdAutorenew className="icon" />
               <span>更新をチェック</span>
             </Btn2>

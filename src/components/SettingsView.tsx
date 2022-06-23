@@ -1,4 +1,4 @@
-import { invoke as invokeOrigin, path } from "@tauri-apps/api";
+import { invoke as invokeOrigin, path, app } from "@tauri-apps/api";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { MdBackspace, MdFolderOpen, MdSettings, MdSettingsBackupRestore } from "react-icons/md";
 import styled from "styled-components";
@@ -19,10 +19,13 @@ export const SettingsView: React.VFC<{
 
   const [ copiedS, setCopiedS ] = useState<AppConfig>(copyConfig(settings));
 
-  const [ activeTab, setActiveTab ] = useState<SettingTab>(tab)
+  const [ activeTab, setActiveTab ] = useState<SettingTab>(tab);
+
+  const [ appVersion, setAppVersion ] = useState<string>("?.?.?");
 
   const scrollY = useRef<number>(0);
   const $main = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     setCopiedS(copyConfig(settings));
@@ -37,6 +40,7 @@ export const SettingsView: React.VFC<{
     $main.current.scrollTo({
       top: scrollPos
     });
+    app.getVersion().then(setAppVersion);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -131,6 +135,23 @@ export const SettingsView: React.VFC<{
                     <span className="slider"></span>
                   </Switch>
                   <p className="description">自動スクロールを滑らかにするか</p>
+                </div>
+              </Item>
+              <Item>
+                <p className="title">アップデート確認</p>
+                <div>
+                  <Switch htmlFor="update_check">
+                    <input type="checkbox"
+                      name="update_check" id="update_check"
+                      defaultChecked={ copiedS.updateCheck }
+                      onChange={(event) => { copiedS.updateCheck = event.target.checked }}
+                    />
+                    <span className="slider"></span>
+                  </Switch>
+                  <p className="description">
+                    起動時に新しいバージョンがないかチェックします<br />
+                    現在のバージョン (v{ appVersion })
+                  </p>
                 </div>
               </Item>
               <Item>
