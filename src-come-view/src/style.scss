@@ -170,7 +170,7 @@
   .emote,
   .cheermote {
     width: calc(var(--size) * 1.3);
-    height: calc(var(--size) * 1.3);
+    height: auto;
     margin: 0 calc(var(--size) * 0.2);
     vertical-align: middle;
   }

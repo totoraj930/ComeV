@@ -167,7 +167,7 @@
 
 .youtube .emoji, .youtube .emote, .youtube .cheermote, .twitch .emoji, .twitch .emote, .twitch .cheermote {
   width: calc(var(--size) * 1.3);
-  height: calc(var(--size) * 1.3);
+  height: auto;
   margin: 0 calc(var(--size) * .2);
   vertical-align: middle;
 }
@@ -498,6 +498,7 @@ function $b98859b17ca1e06b$export$1e65ddfe743fbd09(author) {
     const htmlStr = `
     <p class="author">
       ${author.badges.map((item)=>{
+        if (!item.url) return "";
         return `<img
           class="badge"
           src="${item.url}"

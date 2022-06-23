@@ -505,7 +505,7 @@ const SuperChat = styled.div`
     .emoji {
       display: inline-block;
       width: 24px;
-      height: 24px;
+      height: auto;
       margin-left: 4px;
       vertical-align: middle;
     }
@@ -619,7 +619,7 @@ const NormalChat = styled.div`
     .emoji {
       display: inline-block;
       width: 24px;
-      height: 24px;
+      height: auto;
       margin-left: 4px;
       vertical-align: middle;
     }

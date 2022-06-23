@@ -92,6 +92,7 @@ export function createAuthorElm(author: TwitchUser) {
   const htmlStr = `
     <p class="author">
       ${author.badges.map((item) => {
+        if (!item.url) return "";
         return `<img
           class="badge"
           src="${item.url}"
