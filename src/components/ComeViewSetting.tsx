@@ -27,6 +27,11 @@ interface ComeViewConfig {
     "--text-c": ConfigField<string>;
     "--outline-c": ConfigField<string>;
   };
+  animeIn: {
+    fade: ConfigField<boolean>;
+    slideL: ConfigField<boolean>;
+    slideR: ConfigField<boolean>;
+  };
   useSmoothScroll: boolean;
   fontName: string;
   customCSS: string;
@@ -90,6 +95,20 @@ function getDefConfig(): ComeViewConfig {
         value: "#000000"
       },
     },
+    animeIn: {
+      fade: {
+        displayName: "フェード",
+        value: true,
+      },
+      slideL: {
+        displayName: "左へスライド",
+        value: false,
+      },
+      slideR: {
+        displayName: "右へスライド",
+        value: false,
+      }
+    },
     useSmoothScroll: true,
     outline: 4,
     limit: 10,
@@ -144,6 +163,19 @@ function parseObj(rawJson: any, def: ComeViewConfig): ComeViewConfig {
     res.color[key].displayName = def.color[key].displayName;
     if (!isString(val)) {
       res.color[key] = def.color[key];
+    }
+  });
+
+  (Object.keys(def.animeIn) as (keyof ComeViewConfig["animeIn"])[])
+  .forEach((key, i) => {
+    if (!res.animeIn[key]) {
+      res.animeIn[key] = def.animeIn[key];
+      return;
+    }
+    const val = res.animeIn[key].value;
+    res.animeIn[key].displayName = def.animeIn[key].displayName;
+    if (!isBoolean(val)) {
+      res.animeIn[key] = def.animeIn[key];
     }
   });
 
@@ -260,6 +292,19 @@ function generateDistCSS(config: ComeViewConfig) {
     css.push(`:root { --outline: none; }`);
   }
 
+  const animeInNameVal: string[] = [];
+  const animeIn = config.animeIn;
+  if (animeIn.fade.value) animeInNameVal.push("fadeIn");
+  if (animeIn.slideL.value) animeInNameVal.push("slideInFromR");
+  if (animeIn.slideR.value) animeInNameVal.push("slideInFromL");
+  if (animeInNameVal.length > 0) {
+    css.push(
+      `:root { --in-animation-name: ${animeInNameVal.join(",")}; }`
+    );
+  } else {
+    css.push(`:root { --in-animation-name: none; }`);
+  }
+
   return css.join("\n") + config.customCSS;
 }
 
@@ -330,27 +375,6 @@ export const ComeViewSetting: React.VFC<{
                   <MdContentCopy className="icon" />
                 </Btn2>
               </FormatWrap>
-            </div>
-          </Item>
-
-          <Item>
-            <p className="title">スクロールアニメ</p>
-            <div>
-              <Switch htmlFor="use_smooth_scroll">
-                <input type="checkbox"
-                  name="use_smooth_scroll" id="use_smooth_scroll"
-                  defaultChecked={ config.useSmoothScroll }
-                  onChange={(event) => {
-                    config.useSmoothScroll = event.target.checked;
-                    setConfig({...config});
-                  }}
-                />
-                <span className="slider"></span>
-              </Switch>
-              <p className="description">
-                自動スクロールを滑らかにするか<br />
-                有効だとコメントが秒間10個以上の場合に遅延が発生します
-              </p>
             </div>
           </Item>
 
@@ -475,6 +499,55 @@ export const ComeViewSetting: React.VFC<{
               </Btn1>
             </div>
           </Item>
+
+
+          <Item>
+            <p className="title">スクロールアニメ</p>
+            <div>
+              <Switch htmlFor="use_smooth_scroll">
+                <input type="checkbox"
+                  name="use_smooth_scroll" id="use_smooth_scroll"
+                  defaultChecked={ config.useSmoothScroll }
+                  onChange={(event) => {
+                    config.useSmoothScroll = event.target.checked;
+                    setConfig({...config});
+                  }}
+                />
+                <span className="slider"></span>
+              </Switch>
+              <p className="description">
+                自動スクロールを滑らかにするか<br />
+                有効だとコメントが秒間10個以上の場合に遅延が発生します
+              </p>
+            </div>
+          </Item>
+
+          
+          <Item>
+            <p className="title">登場アニメ</p>
+            <SmallItemWrap>
+              {(Object.keys(config.animeIn) as (keyof ComeViewConfig["animeIn"])[]).map((key, i) => {
+                const item = config.animeIn[key];
+                const prefix = "animeIn__" + key;
+                return (<SmallItem key={i}>
+                  <label htmlFor={prefix}>
+                    {item.displayName}
+                  </label>
+                  <Switch htmlFor={prefix}>
+                    <input type="checkbox"
+                      name={prefix} id={prefix}
+                      defaultChecked={ item.value }
+                      onChange={(event) => {
+                        item.value = event.target.checked;
+                        setConfig({...config});
+                      }} />
+                    <span className="slider"></span>
+                  </Switch>
+                </SmallItem>)
+              })}
+            </SmallItemWrap>
+          </Item>
+
 
           <Item>
             <label htmlFor="custom_css" className="title">

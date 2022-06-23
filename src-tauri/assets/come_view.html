@@ -15,7 +15,6 @@
   --size: 30px;
   --line-margin: 15px;
   --outline-c: #000;
-  --hide-duration: 300ms;
   --name-c: silver;
   --name-fw: 800;
   --member-name-c: #a5ff15;
@@ -39,6 +38,10 @@
   --subscribe-c: #fff;
   --subscribe-body-bg: #8222f0;
   --subscribe-body-c: #fff;
+  --in-animation-name: fadeIn;
+  --in-animation-duration: 200ms;
+  --out-animation-name: fadeOut;
+  --out-animation-duration: 300ms;
 }
 
 #wrap {
@@ -101,7 +104,9 @@
   font-family: var(--font-name);
   margin-top: var(--line-margin);
   font-size: calc(var(--size) * 1);
-  animation: fadeIn .2s ease-in-out;
+  animation-name: var(--in-animation-name);
+  animation-duration: var(--in-animation-duration);
+  animation-timing-function: ease-in-out;
   display: flex;
 }
 
@@ -290,8 +295,8 @@
 }
 
 .hide {
-  animation-name: fadeOut;
-  animation-duration: var(--hide-duration);
+  animation-name: var(--out-animation-name);
+  animation-duration: var(--out-animation-duration);
   animation-fill-mode: forwards;
 }
 
