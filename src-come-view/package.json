@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "dev": "parcel serve --no-cache",
-    "build": "parcel build src/come_view.html --no-source-maps --no-cache --no-optimize --dist-dir ../public --public-url ./"
+    "build": "parcel build src/come_view.html --no-source-maps --no-cache --no-optimize --dist-dir ../src-tauri/assets/ --public-url ./"
   },
   "devDependencies": {
     "@parcel/transformer-sass": "2.6.0",
