@@ -6,10 +6,11 @@
 .pnp.js
 
 # 一旦外しとく
-*.png
-*.svg
-*.ico
-*.icns
+# *.png
+# *.svg
+# *.ico
+# *.icns
+favicon.ico
 
 # testing
 /coverage

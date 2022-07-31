@@ -1,0 +1,11 @@
+<svg width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="Gradient1" x1="1" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#3ee9ff" />
+      <stop offset="100%" stop-color="#ae00ff" />
+    </linearGradient>
+  </defs>
+  <g style="display:inline">
+    <path fill="url(#Gradient1)" stroke="url(#Gradient1)" style="display:inline;vector-effect:non-scaling-stroke;fill-opacity:1;stroke-width:1;stroke-dasharray:none;stroke-opacity:1;-inkscape-stroke:hairline" d="M60 4a56 56 0 0 0-35.328 12.672l8.53 8.53A44 44 0 0 1 60 16a44 44 0 0 1 26.844 9.156l8.549-8.549A56 56 0 0 0 60 4zm43.393 20.607L98 30l-3.156 3.156-8.582 8.582L82 46 60 68 38 46l-4.184-4.184-8.615-8.615L22 30l-5.328-5.328A56 56 0 0 0 4 60a56 56 0 0 0 12.672 35.328l8.53-8.53A44 44 0 0 1 16 60a44 44 0 0 1 3.438-16.563l9.496 9.497A32 32 0 0 0 28 60a32 32 0 0 0 32 32 32 32 0 0 0 32-32 32 32 0 0 0-.844-7.156l9.438-9.438A44 44 0 0 1 104 60a44 44 0 0 1-9.201 26.799l8.53 8.53A56 56 0 0 0 116 60a56 56 0 0 0-12.607-35.393zM60 28a32 32 0 0 0-18.184 5.816L60 52l18.262-18.262A32 32 0 0 0 60 28zM33.201 94.799l-8.53 8.53A56 56 0 0 0 60 116a56 56 0 0 0 35.328-12.672l-8.53-8.53A44 44 0 0 1 60 104a44 44 0 0 1-26.799-9.201z"/>
+  </g>
+</svg>
