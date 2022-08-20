@@ -274,7 +274,6 @@ dependencies = [
  "actix-web",
  "futures-util",
  "parking_lot 0.12.0",
- "raw-window-handle",
  "serde",
  "serde_json",
  "tauri",
@@ -282,7 +281,6 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "webbrowser",
- "window-shadows",
  "windows 0.36.1",
 ]
 
@@ -3921,18 +3919,6 @@ name = "winapi-x86_64-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
-
-[[package]]
-name = "window-shadows"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c7f2deb07cdfe525631c603dba7b2ee39482d9129766d9e38c868d93dcae7b2"
-dependencies = [
- "cocoa",
- "objc",
- "raw-window-handle",
- "windows-sys 0.34.0",
-]
 
 [[package]]
 name = "windows"

@@ -13,11 +13,6 @@ use webbrowser;
 pub mod cmd;
 
 #[tauri::command]
-fn show_system_menu(window: tauri::Window) -> Result<(), String> {
-  return crate::cmd::menu::show_system_menu(window);
-}
-
-#[tauri::command]
 fn start_chat_server(app_handle: tauri::AppHandle, chat_server: State<Mutex<ChatServer>>, port: u16) -> Result<(), String> {
   let mut chat_server = chat_server.lock().unwrap();
   chat_server.stop();
@@ -87,11 +82,7 @@ fn main() {
   let chat_server = Mutex::new(ChatServer::new());
   tauri::Builder::default()
     .manage(chat_server)
-    // .on_page_load(|window, _payload| {
-    //   window_shadows::set_shadow(&window, true).expect("Not Support");
-    // })
     .invoke_handler(tauri::generate_handler![
-      show_system_menu,
       start_chat_server,
       stop_chat_server,
       send_chat,
