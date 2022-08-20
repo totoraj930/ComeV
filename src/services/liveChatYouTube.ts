@@ -133,7 +133,7 @@ export function initYouTubeListener(
     dispatchChatItem({
       config: settings,
       type: "ADD",
-      unique: _isFirst,
+      unique: true,
       actionId: uuid(),
       chatItem: items
     });
