@@ -14,7 +14,7 @@
     "react-scripts": "5.0.0",
     "styled-components": "^5.3.5",
     "tmi.js": "^1.8.5",
-    "typed-emitter": "^2.1.0",
+    "typed-emitter": "1.4.0",
     "typescript": "^4.8.0-dev.20220513",
     "web-vitals": "^2.1.0",
     "youtube-chat-tauri": "git+https://github.com/totoraj930/youtube-chat.git#e329ef1ea52c96cf042d51b47083a9149de63936"
