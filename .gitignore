@@ -21,6 +21,9 @@ favicon.ico
 # デバッグに使ったりするやつ
 /admin
 
+# ESlint
+.eslintcache
+
 # misc
 .DS_Store
 .env.local

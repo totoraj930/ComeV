@@ -1,22 +1,24 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { MdKeyboardArrowDown } from "react-icons/md";
-import styled from "styled-components";
-import { useSettings } from "../hooks/useSettings";
-import { ChatItemContextState } from "../context/chatItem";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { MdKeyboardArrowDown } from 'react-icons/md';
+import styled from 'styled-components';
+import { useSettings } from '../hooks/useSettings';
+import { ChatItemContextState } from '../context/chatItem';
 
-function scrollToBottom($elm: HTMLElement, duration: number = 100) {
+function scrollToBottom($elm: HTMLElement, duration = 100) {
   let isCancel = false;
   if (duration === 0) {
     $elm.scrollTo({
-      top: $elm.scrollHeight - $elm.clientHeight
+      top: $elm.scrollHeight - $elm.clientHeight,
     });
     return {
       cancel: () => {},
       promise: Promise.resolve(isCancel),
-    }
-  };
+    };
+  }
   return {
-    cancel: () => { isCancel = true },
+    cancel: () => {
+      isCancel = true;
+    },
     promise: new Promise<boolean>((resolve) => {
       const targetY = $elm.scrollHeight - $elm.clientHeight;
       const startTime = Date.now();
@@ -30,7 +32,7 @@ function scrollToBottom($elm: HTMLElement, duration: number = 100) {
         const time = Date.now();
         const progress = Math.min(1, (time - startTime) / duration);
         $elm.scrollTo({
-          top: diffY * progress + startY
+          top: diffY * progress + startY,
         });
         if (progress < 1) {
           requestAnimationFrame(task);
@@ -39,12 +41,12 @@ function scrollToBottom($elm: HTMLElement, duration: number = 100) {
         }
       };
       task();
-    })
+    }),
   };
 }
 
-export const ChatView: React.VFC<{
-  chatItems: ChatItemContextState
+export const ChatView: React.FC<{
+  chatItems: ChatItemContextState;
 }> = ({ chatItems }) => {
   const { settings } = useSettings();
   const enableScroll = useRef<boolean>(true);
@@ -53,17 +55,19 @@ export const ChatView: React.VFC<{
   const scrollCancel = useRef<() => void>(() => {});
   const [showScrollBtn, setShowScrollBtn] = useState<boolean>(false);
 
-
   const chatItemViewList = useMemo(() => {
     return [];
     // return chatItems.map((item, i) => <li key={item.id}><ChatItemView chatItem={item} /></li>);
   }, [chatItems]);
-  
+
   useEffect(() => {
     if (!$view.current) return;
     if (enableScroll.current) {
       // scrollCancel.current();
-      const task = scrollToBottom($view.current, settings.useSmoothScroll?50:0);
+      const task = scrollToBottom(
+        $view.current,
+        settings.useSmoothScroll ? 50 : 0
+      );
       task.promise.then((isCancel) => {
         setShowScrollBtn(isCancel);
       });
@@ -83,33 +87,39 @@ export const ChatView: React.VFC<{
       enableScroll.current = false;
       setShowScrollBtn(true);
     }
-  }
+  };
 
-  useEffect(() => {
-  }, []);
+  useEffect(() => {}, []);
 
-  return <View className="view">
-    <ul ref={$view} onScroll={() => onScroll()}>
-      {/* {chatItemViewList} */}
-      {chatItems.views}
-    </ul>
-    {showScrollBtn && (
-      <button className="btn-1" onClick={() => {
-        if (!$view.current) return;
-        scrollCancel.current();
-        const task = scrollToBottom($view.current, settings.useSmoothScroll?50:0);
-        task.promise.then((isCancel) => {
-          setShowScrollBtn(isCancel);
-        });
-        scrollCancel.current = task.cancel;
-        lastScrollTime.current = Date.now();
-      }}>
-        <MdKeyboardArrowDown className="icon" />
-      </button>
-    )}
-  </View>;
-}
-
+  return (
+    <View className="view">
+      <ul ref={$view} onScroll={() => onScroll()}>
+        {/* {chatItemViewList} */}
+        {chatItems.views}
+      </ul>
+      {showScrollBtn && (
+        <button
+          className="btn-1"
+          onClick={() => {
+            if (!$view.current) return;
+            scrollCancel.current();
+            const task = scrollToBottom(
+              $view.current,
+              settings.useSmoothScroll ? 50 : 0
+            );
+            task.promise.then((isCancel) => {
+              setShowScrollBtn(isCancel);
+            });
+            scrollCancel.current = task.cancel;
+            lastScrollTime.current = Date.now();
+          }}
+        >
+          <MdKeyboardArrowDown className="icon" />
+        </button>
+      )}
+    </View>
+  );
+};
 
 const View = styled.div`
   /* display: flex;
@@ -134,8 +144,8 @@ const View = styled.div`
       height: 24px;
     }
     &:hover {
-    background: var(--c-btn-1-bg-2);
-    color: var(--c-btn-1-c-2);
+      background: var(--c-btn-1-bg-2);
+      color: var(--c-btn-1-c-2);
     }
   }
   ul {

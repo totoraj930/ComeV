@@ -1,10 +1,28 @@
-
 import styled from 'styled-components';
 import { useLiveChat } from '../hooks/useLiveChat';
-import { MdPlayArrow, MdPause, MdDeleteForever, MdMenu, MdExpandLess, MdSettingsSuggest, MdFastForward, MdSkipNext, MdSettings, MdPlaylistAdd, MdAutorenew } from "react-icons/md";
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  MdPlayArrow,
+  MdPause,
+  MdDeleteForever,
+  MdMenu,
+  MdExpandLess,
+  MdSettingsSuggest,
+  MdFastForward,
+  MdSkipNext,
+  MdSettings,
+  MdPlaylistAdd,
+  MdAutorenew,
+} from 'react-icons/md';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { ChatView } from '../components/ChatView';
-import { fs } from "@tauri-apps/api"
+import { fs } from '@tauri-apps/api';
 import { useSettings } from '../hooks/useSettings';
 import { requestBouyomi } from '../utils/bouyomi';
 import { ChatItemContext } from '../context/chatItem';
@@ -13,7 +31,12 @@ import { AppConfig } from '../context/config';
 import { sendChatApi } from '../utils/sendChatApi';
 import { DummySender } from './DummySender';
 import { uuid } from '../utils/uuid';
-import { ChatItem, createAppChatItem, createLiveChatEmpty, LiveChat } from '../services/liveChatService';
+import {
+  ChatItem,
+  createAppChatItem,
+  createLiveChatEmpty,
+  LiveChat,
+} from '../services/liveChatService';
 import { LiveControl } from './LiveControl';
 import { LiveChatContext } from '../context/liveChat';
 import { LiveInfoView } from './LiveInfoView';
@@ -22,13 +45,11 @@ import { startUpdate, tryUpdate } from '../utils/update';
 import { getVersion } from '@tauri-apps/api/app';
 import { confirm } from '@tauri-apps/api/dialog';
 
-
-export const LiveView: React.VFC<{
-}> = () => {
-  
+export const LiveView: React.FC = () => {
   const { dispatch: dispatchLiveChat } = useContext(LiveChatContext);
   const { liveChatMap, liveChatUpdater } = useLiveChat();
-  const { state: chatItemContext, dispatch: dispatchChatItem } = useContext(ChatItemContext);
+  const { state: chatItemContext, dispatch: dispatchChatItem } =
+    useContext(ChatItemContext);
   const chatItems = useRef<ChatItem[]>([]);
 
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
@@ -36,73 +57,79 @@ export const LiveView: React.VFC<{
   // const { state: config } = useContext(AppConfigContext);
   const { settings, settingsUpdater } = useSettings();
   const settingScrollPos = useRef<number>(0);
-  const settingTab = useRef<SettingTab>("main");
-  const onCloseSettings = useCallback((
-    resSettings: AppConfig,
-    isCancel: boolean,
-    scrollPos: number,
-    tab: SettingTab,
-  ) => {
-    settingScrollPos.current = scrollPos;
-    settingTab.current = tab;
-    setIsShowSettings(false);
-    if (isCancel) return;
-    settingsUpdater({
-      type: "CHANGE_SAVE",
-      data: {...resSettings}
-    });
-  }, [settingsUpdater]);
+  const settingTab = useRef<SettingTab>('main');
+  const onCloseSettings = useCallback(
+    (
+      resSettings: AppConfig,
+      isCancel: boolean,
+      scrollPos: number,
+      tab: SettingTab
+    ) => {
+      settingScrollPos.current = scrollPos;
+      settingTab.current = tab;
+      setIsShowSettings(false);
+      if (isCancel) return;
+      settingsUpdater({
+        type: 'CHANGE_SAVE',
+        data: { ...resSettings },
+      });
+    },
+    [settingsUpdater]
+  );
 
   const onClickUpdateCheck = useCallback(() => {
     dispatchChatItem({
-      type: "ADD",
+      type: 'ADD',
       config: settings,
       actionId: uuid(),
-      chatItem: [createAppChatItem("log", "更新チェックを開始しました")],
+      chatItem: [createAppChatItem('log', '更新チェックを開始しました')],
     });
-    tryUpdate()
-    .then((res) => {
+    tryUpdate().then((res) => {
       switch (res.type) {
-        case "error": {
+        case 'error': {
           dispatchChatItem({
-            type: "ADD",
+            type: 'ADD',
             config: settings,
             actionId: uuid(),
-            chatItem: [createAppChatItem("error", res.message)],
+            chatItem: [createAppChatItem('error', res.message)],
           });
           break;
         }
-        case "noUpdate": {
+        case 'noUpdate': {
           dispatchChatItem({
-            type: "ADD",
+            type: 'ADD',
             config: settings,
             actionId: uuid(),
-            chatItem: [createAppChatItem("log", res.message)],
+            chatItem: [createAppChatItem('log', res.message)],
           });
           break;
         }
-        case "shouldUpdate": {
+        case 'shouldUpdate': {
           (async () => {
             const msg = [
-              "新しいバージョンが見つかりました",
-              `${await getVersion()} -> ${res.manifest?.version ?? "v?.?.?"}`,
-              "アップデートしますか？"
+              '新しいバージョンが見つかりました',
+              `${await getVersion()} -> ${res.manifest?.version ?? 'v?.?.?'}`,
+              'アップデートしますか？',
             ];
-            const useUpdate = await confirm(msg.join("\n"));
+            const useUpdate = await confirm(msg.join('\n'));
             if (useUpdate) {
               dispatchChatItem({
-                type: "ADD",
+                type: 'ADD',
                 config: settings,
                 actionId: uuid(),
-                chatItem: [createAppChatItem("info", "アップデートを開始しました")],
+                chatItem: [
+                  createAppChatItem('info', 'アップデートを開始しました'),
+                ],
               });
               startUpdate();
             } else {
               dispatchChatItem({
-                type: "ADD",
+                type: 'ADD',
                 config: settings,
                 actionId: uuid(),
-                chatItem: [createAppChatItem("info", "アップデートをキャンセルしました")],
+                chatItem: [
+                  createAppChatItem('info', 'アップデートをキャンセルしました'),
+                ],
               });
             }
           })();
@@ -111,28 +138,26 @@ export const LiveView: React.VFC<{
       }
     });
   }, [dispatchChatItem, settings]);
-  
+
   const liveChatList: LiveChat[] = useMemo(() => {
     return Object.keys(liveChatMap).map((id) => liveChatMap[id]);
   }, [liveChatMap]);
-
 
   useEffect(() => {
     chatItems.current = chatItemContext.items;
   }, [chatItemContext]);
 
-
   // 初回マウント時
   useEffect(() => {
     // 設定読み込み
     settingsUpdater({
-      type: "LOAD"
+      type: 'LOAD',
     }).then((_settings) => {
       for (const url of _settings.prevUrl) {
         if (Object.keys(liveChatMap).length) return;
         dispatchLiveChat({
-          type: "ADD",
-          liveChat: createLiveChatEmpty(uuid(), url)
+          type: 'ADD',
+          liveChat: createLiveChatEmpty(uuid(), url),
         });
       }
       if (_settings.updateCheck) {
@@ -140,7 +165,7 @@ export const LiveView: React.VFC<{
       }
     });
 
-    let prevLog: string = "";
+    let prevLog = '';
 
     // log.jsonに書き出す
     const logInterval = setInterval(() => {
@@ -148,147 +173,162 @@ export const LiveView: React.VFC<{
       // 前回と同じなら何もしない
       if (prevLog === logText) return;
       prevLog = logText;
-      fs.writeFile({
-        path: "log.json",
-        contents: logText,
-      }, {
-        dir: fs.BaseDirectory.App
-      });
+      fs.writeFile(
+        {
+          path: 'log.json',
+          contents: logText,
+        },
+        {
+          dir: fs.BaseDirectory.App,
+        }
+      );
     }, 5000);
-
 
     return () => {
       clearInterval(logInterval);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    };
   }, []);
 
-  return (<Wrap className={ `theme-${settings.themeName}` }>
-  {/* <Titlebar size="m" title="ComeV" /> */}
-  <Main data-anony-blur={settings.enableAnonyView}>
-    <ChatControl>
-      
-      <LiveControlList>
-        { liveChatList.map((liveChat) => {
-          return <LiveControl liveChat={liveChat} key={liveChat.id} />
-        }) }
-      </LiveControlList>
-      <InfoBar>
-        <InfoBarLeft>
-          <Btn2 onClick={() => setIsShowSettings(true)} title="設定">
-            <MdSettings className="icon" />
-            <span className="hide-400">設定</span>
-          </Btn2>
-          <LiveInfoView liveChatList={liveChatList} />
-        </InfoBarLeft>
-        <InfoBarRight>
-          <Btn2 onClick={() => setIsShowMenu(!isShowMenu)}
-            title={isShowMenu ? "閉じる" : "メニュー"}>
-            { isShowMenu && <span className="hide-400">閉じる</span> }
-            { isShowMenu && <MdExpandLess className="icon" /> }
+  return (
+    <Wrap className={`theme-${settings.themeName}`}>
+      {/* <Titlebar size="m" title="ComeV" /> */}
+      <Main data-anony-blur={settings.enableAnonyView}>
+        <ChatControl>
+          <LiveControlList>
+            {liveChatList.map((liveChat) => {
+              return <LiveControl liveChat={liveChat} key={liveChat.id} />;
+            })}
+          </LiveControlList>
+          <InfoBar>
+            <InfoBarLeft>
+              <Btn2 onClick={() => setIsShowSettings(true)} title="設定">
+                <MdSettings className="icon" />
+                <span className="hide-400">設定</span>
+              </Btn2>
+              <LiveInfoView liveChatList={liveChatList} />
+            </InfoBarLeft>
+            <InfoBarRight>
+              <Btn2
+                onClick={() => setIsShowMenu(!isShowMenu)}
+                title={isShowMenu ? '閉じる' : 'メニュー'}
+              >
+                {isShowMenu && <span className="hide-400">閉じる</span>}
+                {isShowMenu && <MdExpandLess className="icon" />}
 
-            { !isShowMenu && <span className="hide-400">メニュー</span> }
-            { !isShowMenu && <MdMenu className="icon" /> }
-          </Btn2>
-        </InfoBarRight>
-      </InfoBar>
-      
-      {isShowMenu && (
-        <MenuPanel>
-          <Line>
-            <p className="title">基本機能</p>
-            <Btn2 onClick={() => settingsUpdater({ type: "LOAD" })}>
-              <MdSettingsSuggest className="icon" />
-              <span>設定リロード</span>
-            </Btn2>
+                {!isShowMenu && <span className="hide-400">メニュー</span>}
+                {!isShowMenu && <MdMenu className="icon" />}
+              </Btn2>
+            </InfoBarRight>
+          </InfoBar>
 
-            <Btn2 onClick={() => onClickUpdateCheck()}>
-              <MdAutorenew className="icon" />
-              <span>更新をチェック</span>
-            </Btn2>
+          {isShowMenu && (
+            <MenuPanel>
+              <Line>
+                <p className="title">基本機能</p>
+                <Btn2 onClick={() => settingsUpdater({ type: 'LOAD' })}>
+                  <MdSettingsSuggest className="icon" />
+                  <span>設定リロード</span>
+                </Btn2>
 
-            <Btn2 onClick={() => {
-              liveChatUpdater({ type: "CLEAR" });
-              sendChatApi("clear", {});
-            }} className="warn">
-              <MdDeleteForever className="icon" />
-              <span>クリア</span>
-            </Btn2>
+                <Btn2 onClick={() => onClickUpdateCheck()}>
+                  <MdAutorenew className="icon" />
+                  <span>更新をチェック</span>
+                </Btn2>
 
-            <Btn2 onClick={() => {
-              dispatchLiveChat({
-                type: "ADD",
-                liveChat: createLiveChatEmpty(uuid(), "")
-              });
-            }} className="warn">
-              <MdPlaylistAdd className="icon" />
-              <span>接続先を追加</span>
-            </Btn2>
-          </Line>
+                <Btn2
+                  onClick={() => {
+                    liveChatUpdater({ type: 'CLEAR' });
+                    sendChatApi('clear', {});
+                  }}
+                  className="warn"
+                >
+                  <MdDeleteForever className="icon" />
+                  <span>クリア</span>
+                </Btn2>
 
-          <hr />
+                <Btn2
+                  onClick={() => {
+                    dispatchLiveChat({
+                      type: 'ADD',
+                      liveChat: createLiveChatEmpty(uuid(), ''),
+                    });
+                  }}
+                  className="warn"
+                >
+                  <MdPlaylistAdd className="icon" />
+                  <span>接続先を追加</span>
+                </Btn2>
+              </Line>
 
-          {/* 棒読みちゃん */}
-          <Line>
-            <p className="title">棒読み連携</p>
+              <hr />
 
-            <Switch htmlFor="s">
-              <input type="checkbox" name="s" id="s"
-                checked={settings.bouyomi.enable}
-                onChange={() => {
-                  settingsUpdater({
-                    type: "CHANGE_SAVE",
-                    data: {
-                      ...settings,
-                      bouyomi: {
-                        ...settings.bouyomi,
-                        enable: !settings.bouyomi.enable
-                      }
-                    }
-                  });
-                }} />
-              <span className="slider"></span>
-            </Switch>
+              {/* 棒読みちゃん */}
+              <Line>
+                <p className="title">棒読み連携</p>
 
-            <Btn2 onClick={() => requestBouyomi("skip", settings.bouyomi)}>
-              <MdFastForward className="icon" />
-            </Btn2>
+                <Switch htmlFor="s">
+                  <input
+                    type="checkbox"
+                    name="s"
+                    id="s"
+                    checked={settings.bouyomi.enable}
+                    onChange={() => {
+                      settingsUpdater({
+                        type: 'CHANGE_SAVE',
+                        data: {
+                          ...settings,
+                          bouyomi: {
+                            ...settings.bouyomi,
+                            enable: !settings.bouyomi.enable,
+                          },
+                        },
+                      });
+                    }}
+                  />
+                  <span className="slider"></span>
+                </Switch>
 
-            <Btn2 onClick={() => requestBouyomi("clear", settings.bouyomi)}>
-              <MdSkipNext className="icon" />
-            </Btn2>
+                <Btn2 onClick={() => requestBouyomi('skip', settings.bouyomi)}>
+                  <MdFastForward className="icon" />
+                </Btn2>
 
+                <Btn2 onClick={() => requestBouyomi('clear', settings.bouyomi)}>
+                  <MdSkipNext className="icon" />
+                </Btn2>
+              </Line>
 
-          </Line>
+              <hr />
 
-          <hr />
+              {/* テスト用機能 */}
+              <DummySender />
+              <DummySender2 />
+            </MenuPanel>
+          )}
 
-          {/* テスト用機能 */}
-          <DummySender />
-          <DummySender2 />
-        </MenuPanel>
-      )}
-
-      <DebugPanel>
-        <button className="btn-base-2" onClick={() => {}}>
-          <MdPlayArrow className="icon" />
-        </button>
-        <button className="btn-base-2" onClick={() => {}}>
-          <MdPause className="icon" />
-        </button>
-        <button className="btn-base-2" onClick={() => {}}>
-          <MdPlayArrow className="icon" />
-        </button>
-      </DebugPanel>
-    </ChatControl>
-    <ChatView chatItems={chatItemContext} />
-    {isShowSettings && <SettingsView closeHandler={onCloseSettings} scrollPos={settingScrollPos.current} tab={settingTab.current} />}
-  </Main>
-  
-</Wrap>)
-}
-
-
+          <DebugPanel>
+            <button className="btn-base-2" onClick={() => {}}>
+              <MdPlayArrow className="icon" />
+            </button>
+            <button className="btn-base-2" onClick={() => {}}>
+              <MdPause className="icon" />
+            </button>
+            <button className="btn-base-2" onClick={() => {}}>
+              <MdPlayArrow className="icon" />
+            </button>
+          </DebugPanel>
+        </ChatControl>
+        <ChatView chatItems={chatItemContext} />
+        {isShowSettings && (
+          <SettingsView
+            closeHandler={onCloseSettings}
+            scrollPos={settingScrollPos.current}
+            tab={settingTab.current}
+          />
+        )}
+      </Main>
+    </Wrap>
+  );
+};
 
 const Wrap = styled.div`
   position: relative;
@@ -316,13 +356,14 @@ const ChatControl = styled.div`
   background: var(--c-sub);
   border-bottom: 1px solid var(--c-border-1);
   &:after {
-    content: "";
+    content: '';
     position: absolute;
     top: 100%;
-    left: -${ctlShadowSize*2}px;
-    width: calc(100% + ${ctlShadowSize*2}px);
+    left: -${ctlShadowSize * 2}px;
+    width: calc(100% + ${ctlShadowSize * 2}px);
     height: ${ctlShadowSize}px;
-    box-shadow: inset 20px ${ctlShadowSize}px ${ctlShadowSize}px -${ctlShadowSize}px var(--c-shadow);
+    box-shadow: inset 20px ${ctlShadowSize}px ${ctlShadowSize}px -${ctlShadowSize}px
+      var(--c-shadow);
     pointer-events: none;
   }
   .url {
@@ -339,7 +380,7 @@ const ChatControl = styled.div`
       outline: 1px solid var(--c-input-c);
     }
     &:read-only {
-      color: var(--c-input-c-2)
+      color: var(--c-input-c-2);
     }
     &:read-only:focus {
       outline: none;
@@ -382,8 +423,6 @@ const ChatControl = styled.div`
     }
   }
 `;
-
-
 
 export const Line = styled.div`
   display: flex;
@@ -433,7 +472,6 @@ const InfoBarRight = styled.div`
   display: flex;
   flex-direction: row;
 `;
-
 
 const MenuPanel = styled.div`
   background: var(--c-menu-bg);
@@ -488,7 +526,7 @@ export const Switch = styled.label`
     transition: background-color 200ms;
     user-select: none;
     &:before {
-      content: "off";
+      content: 'off';
       position: absolute;
       font-size: 10px;
       top: 0;
@@ -499,7 +537,7 @@ export const Switch = styled.label`
       transition: 200ms;
     }
     &:after {
-      content: "";
+      content: '';
       position: absolute;
       width: 16px;
       height: 16px;
@@ -518,7 +556,7 @@ export const Switch = styled.label`
   input:checked + .slider {
     background: var(--c-switch-bg-2);
     &:before {
-      content: "on";
+      content: 'on';
       color: var(--c-switch-on);
       left: 8px;
     }
@@ -529,7 +567,6 @@ export const Switch = styled.label`
     }
   }
 `;
-
 
 export const Btn2 = styled.button`
   display: flex;

@@ -1,27 +1,38 @@
-import { invoke as invokeOrigin } from "@tauri-apps/api";
-import React, { useCallback, useState } from "react";
-import { MdPause, MdPlayArrow, MdOpenInBrowser, MdDashboard, MdSettings, MdPerson, MdDeleteForever } from "react-icons/md";
-import styled from "styled-components";
-import { useLiveChat } from "../hooks/useLiveChat";
-import { LiveChat } from "../services/liveChatService";
+import { invoke as invokeOrigin } from '@tauri-apps/api';
+import React, { useCallback, useState } from 'react';
+import {
+  MdPause,
+  MdPlayArrow,
+  MdOpenInBrowser,
+  MdDashboard,
+  MdSettings,
+  MdPerson,
+  MdDeleteForever,
+} from 'react-icons/md';
+import styled from 'styled-components';
+import { useLiveChat } from '../hooks/useLiveChat';
+import { LiveChat } from '../services/liveChatService';
 
-export const LiveControl: React.VFC<{
+export const LiveControl: React.FC<{
   liveChat: LiveChat;
 }> = ({ liveChat }) => {
   const [url, setUrl] = useState<string>(liveChat.url);
   const { liveChatUpdater } = useLiveChat();
 
-  const onChangeUrl = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    liveChatUpdater({
-      type: "CHANGE_URL",
-      targetId: liveChat.id,
-      url: event.target.value
-    });
-  }, [liveChatUpdater, liveChat]);
+  const onChangeUrl = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      liveChatUpdater({
+        type: 'CHANGE_URL',
+        targetId: liveChat.id,
+        url: event.target.value,
+      });
+    },
+    [liveChatUpdater, liveChat]
+  );
 
-  const onOpenInBrowser = (useAdmin: boolean = false) => {
-    let url = "";
-    if (liveChat.type === "YouTube") {
+  const onOpenInBrowser = (useAdmin = false) => {
+    let url = '';
+    if (liveChat.type === 'YouTube') {
       const liveId = liveChat.api.liveId;
       if (liveId) {
         url = useAdmin
@@ -30,73 +41,88 @@ export const LiveControl: React.VFC<{
       } else {
         url = liveChat.url;
       }
-    } else if (liveChat.type === "Twitch") {
+    } else if (liveChat.type === 'Twitch') {
       url = liveChat.url;
     } else if (liveChat.url.match(/^(http|https):\/\/.+/)) {
       url = liveChat.url;
     }
 
-    if (url.length > 0) invokeOrigin("open_in_browser", { url });
-  }
+    if (url.length > 0) invokeOrigin('open_in_browser', { url });
+  };
 
-  return <Wrap>
-    <Line>
+  return (
+    <Wrap>
+      <Line>
+        {!liveChat.isStarted && (
+          <Btn1
+            onClick={() =>
+              liveChatUpdater({ type: 'START_CHAT', targetId: liveChat.id })
+            }
+            disabled={liveChat.isLoading}
+          >
+            <MdPlayArrow className="icon" />
+            <span className="hide-400">接続</span>
+          </Btn1>
+        )}
 
-      { !liveChat.isStarted && (
-        <Btn1
-          onClick={() => liveChatUpdater({ type: "START_CHAT", targetId: liveChat.id })}
-          disabled={liveChat.isLoading}
+        {liveChat.isStarted && (
+          <Btn1
+            onClick={() =>
+              liveChatUpdater({ type: 'STOP_CHAT', targetId: liveChat.id })
+            }
+            disabled={liveChat.isLoading}
+            className="warn"
+          >
+            <MdPause className="icon" />
+            <span className="hide-400">切断</span>
+          </Btn1>
+        )}
+
+        <Btn2 onClick={() => onOpenInBrowser()} title="ブラウザで開く">
+          <MdOpenInBrowser className="icon" />
+        </Btn2>
+
+        <Btn2
+          onClick={() => onOpenInBrowser(true)}
+          title="管理画面をブラウザで開く"
         >
-          <MdPlayArrow className="icon" />
-          <span className="hide-400">接続</span>
-        </Btn1>
-      )}
+          <MdDashboard className="icon" />
+        </Btn2>
 
-      { liveChat.isStarted && (
-        <Btn1
-          onClick={() => liveChatUpdater({ type: "STOP_CHAT", targetId: liveChat.id })}
-          disabled={liveChat.isLoading}
+        <UrlInputWrap>
+          <UrlInput
+            type="text"
+            className="url-input"
+            name={liveChat.id}
+            id={liveChat.id}
+            readOnly={liveChat.isStarted}
+            defaultValue={url}
+            onChange={onChangeUrl}
+            placeholder="配信URL or チャンネルURL(推奨)"
+          />
+        </UrlInputWrap>
+
+        <Btn2
           className="warn"
+          title="接続先を削除"
+          onClick={() =>
+            liveChatUpdater({ type: 'DELETE', targetId: liveChat.id })
+          }
         >
-          <MdPause className="icon" />
-          <span className="hide-400">切断</span>
-        </Btn1>
-      )}
+          <MdDeleteForever className="icon" />
+        </Btn2>
+      </Line>
 
-      <Btn2 onClick={() => onOpenInBrowser()} title="ブラウザで開く">
-        <MdOpenInBrowser className="icon" />
-      </Btn2>
-
-      <Btn2 onClick={() => onOpenInBrowser(true)} title="管理画面をブラウザで開く">
-        <MdDashboard className="icon" />
-      </Btn2>
-
-      <UrlInputWrap>
-        <UrlInput type="text"
-          className="url-input"
-          name={liveChat.id} id={liveChat.id}
-          readOnly={liveChat.isStarted}
-          defaultValue={url} onChange={onChangeUrl}
-          placeholder="配信URL or チャンネルURL(推奨)"
-        />
-      </UrlInputWrap>
-      
-      <Btn2 className="warn" title="接続先を削除"
-        onClick={() => liveChatUpdater({ type: "DELETE", targetId: liveChat.id })}>
-        <MdDeleteForever className="icon" />
-      </Btn2>
-
-    </Line>
-
-    {/* <div>
+      {/* <div>
       
     <MdOpenInBrowser className="icon" />
     <MdDashboard className="icon" />
     <MdSettings className="icon" />
     <MdPerson className="icon" />
     </div> */}
-  </Wrap>;
-}
+    </Wrap>
+  );
+};
 
 const Wrap = styled.div`
   display: flex;
@@ -137,7 +163,7 @@ const UrlInput = styled.input`
     outline: 1px solid var(--c-input-c);
   }
   &:read-only {
-    color: var(--c-input-c-2)
+    color: var(--c-input-c-2);
   }
   &:read-only:focus {
     outline: none;

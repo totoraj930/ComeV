@@ -1,9 +1,14 @@
-
 import { window as tauriWindow } from '@tauri-apps/api';
 import { invoke } from '@tauri-apps/api/tauri';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { VscChromeClose, VscChromeMaximize, VscChromeMinimize, VscChromeRestore, VscSettings } from 'react-icons/vsc';
+import {
+  VscChromeClose,
+  VscChromeMaximize,
+  VscChromeMinimize,
+  VscChromeRestore,
+  VscSettings,
+} from 'react-icons/vsc';
 import { AppConfigContext } from '../../context/config';
 
 type TitlebarProps = {
@@ -11,12 +16,12 @@ type TitlebarProps = {
   size?: 's' | 'm' | 'l';
 };
 
-export const Titlebar: React.VFC<TitlebarProps> = (props) => {
-  const {state: config, dispatch} = useContext(AppConfigContext);
+export const Titlebar: React.FC<TitlebarProps> = (props) => {
+  const { state: config, dispatch } = useContext(AppConfigContext);
   const [isMaximized, setMaximized] = useState<boolean>(false);
   const onContextMenu = useCallback((event: React.MouseEvent) => {
     // invoke("test", { message: "hello" });
-    invoke("show_system_menu");
+    invoke('show_system_menu');
     event.preventDefault();
   }, []);
 
@@ -28,43 +33,71 @@ export const Titlebar: React.VFC<TitlebarProps> = (props) => {
 
   return (
     <Header data-tauri-drag-region {...props} onContextMenu={onContextMenu}>
-      <img data-tauri-drag-region draggable="false" src={`${process.env.PUBLIC_URL}/logo192.png`} alt="icon" />
-      <h1 data-tauri-drag-region className="hide-400">{ props.title }</h1>
-      <ul onContextMenu={(event) => { event.stopPropagation(); event.preventDefault(); }}>
+      <img
+        data-tauri-drag-region
+        draggable="false"
+        src={`${process.env.PUBLIC_URL}/logo192.png`}
+        alt="icon"
+      />
+      <h1 data-tauri-drag-region className="hide-400">
+        {props.title}
+      </h1>
+      <ul
+        onContextMenu={(event) => {
+          event.stopPropagation();
+          event.preventDefault();
+        }}
+      >
         <li>
-          <button onClick={() => { dispatch({
-            type: "CHANGE",
-            data: {...config, maxChatItemNum: config.maxChatItemNum + 1}
-          }) }}>
+          <button
+            onClick={() => {
+              dispatch({
+                type: 'CHANGE',
+                data: { ...config, maxChatItemNum: config.maxChatItemNum + 1 },
+              });
+            }}
+          >
             <VscSettings />
           </button>
         </li>
         <li>
-          <button onClick={() => { tauriWindow.appWindow.minimize() }}>
+          <button
+            onClick={() => {
+              tauriWindow.appWindow.minimize();
+            }}
+          >
             <VscChromeMinimize />
           </button>
         </li>
         <li>
-          <button onClick={() => { tauriWindow.appWindow.toggleMaximize() }}>
-            { isMaximized && <VscChromeRestore />}
-            { !isMaximized && <VscChromeMaximize />}
+          <button
+            onClick={() => {
+              tauriWindow.appWindow.toggleMaximize();
+            }}
+          >
+            {isMaximized && <VscChromeRestore />}
+            {!isMaximized && <VscChromeMaximize />}
           </button>
         </li>
         <li>
-          <button className="close" onClick={() => { tauriWindow.appWindow.close() }}>
+          <button
+            className="close"
+            onClick={() => {
+              tauriWindow.appWindow.close();
+            }}
+          >
             <VscChromeClose />
           </button>
         </li>
       </ul>
     </Header>
   );
-}
-
+};
 
 Titlebar.defaultProps = {
   title: 'Tauri App',
-  size: 'l'
-}
+  size: 'l',
+};
 
 const Header = styled.header<TitlebarProps>`
   display: flex;
@@ -81,12 +114,16 @@ const Header = styled.header<TitlebarProps>`
   }
   h1 {
     flex: 1;
-    font-size: ${props => {
+    font-size: ${(props) => {
       switch (props.size) {
-        case 's': return '12px';
-        case 'm': return '13px';
-        case 'l': return '14px';
-        default: return '14px';
+        case 's':
+          return '12px';
+        case 'm':
+          return '13px';
+        case 'l':
+          return '14px';
+        default:
+          return '14px';
       }
     }};
     font-weight: normal;

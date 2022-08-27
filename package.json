@@ -15,22 +15,16 @@
     "styled-components": "^5.3.5",
     "tmi.js": "^1.8.5",
     "typed-emitter": "1.4.0",
-    "typescript": "^4.8.0-dev.20220513",
     "web-vitals": "^2.1.0",
     "youtube-chat-tauri": "git+https://github.com/totoraj930/youtube-chat.git#e329ef1ea52c96cf042d51b47083a9149de63936"
   },
   "scripts": {
-    "start": "cross-env BROWSER=none react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "tauri": "tauri"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "start": "cross-env BROWSER=none react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-app-rewired eject",
+    "tauri": "tauri",
+    "lint-fix": "eslint --cache --fix src/ && prettier --write src/"
   },
   "browserslist": {
     "production": [
@@ -49,11 +43,19 @@
     "@tauri-apps/tauricon": "^1.0.3",
     "@types/jest": "^27.0.1",
     "@types/node": "^16.7.13",
-    "@types/react": "^17.0.20",
-    "@types/react-dom": "^17.0.9",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
     "@types/styled-components": "^5.1.25",
     "@types/tmi.js": "^1.8.1",
+    "@typescript-eslint/eslint-plugin": "^5.35.1",
+    "@typescript-eslint/parser": "^5.35.1",
     "cross-env": "^7.0.3",
-    "node-fetch": "^3.2.6"
+    "eslint": "^8.23.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-react": "^7.31.1",
+    "node-fetch": "^3.2.6",
+    "prettier": "^2.7.1",
+    "react-app-rewired": "^2.2.1",
+    "typescript": "^4.8.2"
   }
 }

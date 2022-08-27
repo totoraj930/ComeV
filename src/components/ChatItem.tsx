@@ -1,8 +1,21 @@
-import { ChatItem as YTChatItemData, EmojiItem, ImageItem, MessageItem } from "youtube-chat-tauri/dist/types/data";
-import styled from "styled-components";
-import { ChatItem, AppChatItemData } from "../services/liveChatService";
-import { useMemo } from "react";
-import { TwitchNormalChatItem, TwitchEmote, TwitchUser, TwitchCheerItem, TwitchCheermoteMessage, TwitchSubItem, TwitchSubMysteryGiftItem } from "../utils/twitch";
+import {
+  ChatItem as YTChatItemData,
+  EmojiItem,
+  ImageItem,
+  MessageItem,
+} from 'youtube-chat-tauri/dist/types/data';
+import styled from 'styled-components';
+import { ChatItem, AppChatItemData } from '../services/liveChatService';
+import React, { useMemo } from 'react';
+import {
+  TwitchNormalChatItem,
+  TwitchEmote,
+  TwitchUser,
+  TwitchCheerItem,
+  TwitchCheermoteMessage,
+  TwitchSubItem,
+  TwitchSubMysteryGiftItem,
+} from '../utils/twitch';
 
 export interface ChatItemViewOptions {
   showTime?: boolean;
@@ -11,349 +24,383 @@ export interface ChatItemViewOptions {
   showAuthorBadge?: boolean;
 }
 
-const AuthorIcon: React.VFC<{
+const AuthorIcon: React.FC<{
   imageItem?: ImageItem;
 }> = ({ imageItem }) => {
-  return !imageItem
-    ? <div className="icon no-image"></div>
-    : <img className="icon" src={imageItem.url} alt={imageItem.alt} />;
-}
+  return !imageItem ? (
+    <div className="icon no-image"></div>
+  ) : (
+    <img className="icon" src={imageItem.url} alt={imageItem.alt} />
+  );
+};
 
-const YTChatMessage: React.VFC<{
-  items: MessageItem[]
+const YTChatMessage: React.FC<{
+  items: MessageItem[];
 }> = ({ items }) => {
-
   if (items.length <= 0) return <></>;
 
-  return <p className="message">
-    {items.map((item, i) => {
-      const text = (item as { text: string });
-      const emoji = (item as EmojiItem);
-      if (text.text) {
-        return <span key={i}>{text.text}</span>;
-      } else if (emoji.emojiText) {
-        if (emoji.url) {
-          return <img className="emoji" src={emoji.url} alt={emoji.alt} key={i} />
-        } else {
-          return <span className="emoji">{emoji.emojiText}</span>
+  return (
+    <p className="message">
+      {items.map((item, i) => {
+        const text = item as { text: string };
+        const emoji = item as EmojiItem;
+        if (text.text) {
+          return <span key={i}>{text.text}</span>;
+        } else if (emoji.emojiText) {
+          if (emoji.url) {
+            return (
+              <img className="emoji" src={emoji.url} alt={emoji.alt} key={i} />
+            );
+          } else {
+            return (
+              <span className="emoji" key={i}>
+                {emoji.emojiText}
+              </span>
+            );
+          }
         }
-      }
-      return '';
-    })}
-  </p>;
-}
-
+        return '';
+      })}
+    </p>
+  );
+};
 
 const convertTime = (date: Date) => {
   const h = ('0' + date.getHours()).slice(-2);
   const m = ('0' + date.getMinutes()).slice(-2);
   const s = ('0' + date.getSeconds()).slice(-2);
   return `${h}:${m}:${s}`;
-}
+};
 
 // YouTubeのチャット
-const YTChatItemView: React.VFC<{
+const YTChatItemView: React.FC<{
   data: YTChatItemData;
 }> = ({ data }) => {
-  return <Item data-type="YouTube">
-    <p className="time">
-      {convertTime(data.timestamp)}
-    </p>
-    <NormalChat>
-      <div className="author"
-        data-is-member={data.isMembership}
-        data-is-owner={data.isOwner}
-        data-is-moderator={data.isModerator}
-      >
-        <AuthorIcon imageItem={data.author.thumbnail} />
-        <p className="name" title={data.author.name}>
+  return (
+    <Item data-type="YouTube">
+      <p className="time">{convertTime(data.timestamp)}</p>
+      <NormalChat>
+        <div
+          className="author"
+          data-is-member={data.isMembership}
+          data-is-owner={data.isOwner}
+          data-is-moderator={data.isModerator}
+        >
+          <AuthorIcon imageItem={data.author.thumbnail} />
+          <p className="name" title={data.author.name}>
             {data.author.name}
             {data.author.badge && (
               <img
                 className="badge"
                 src={data.author.badge.thumbnail.url}
                 alt={data.author.badge.thumbnail.alt}
-                title={data.author.badge.label} />
+                title={data.author.badge.label}
+              />
             )}
-        </p>
-      </div>
-      <YTChatMessage items={data.message} />
-    </NormalChat>
-  </Item>;
-}
+          </p>
+        </div>
+        <YTChatMessage items={data.message} />
+      </NormalChat>
+    </Item>
+  );
+};
 
 // YouTubeのスーパーチャット
-const YTSuperChatItemView: React.VFC<{
+const YTSuperChatItemView: React.FC<{
   data: YTChatItemData;
 }> = ({ data }) => {
   if (!data.superchat) return <></>;
-  return <Item data-type="YouTube">
-    <p className="time">
-      {convertTime(data.timestamp)}
-    </p>
-    <SuperChat style={{ borderColor: data.superchat.color }}>
-      <div className="author"
+  return (
+    <Item data-type="YouTube">
+      <p className="time">{convertTime(data.timestamp)}</p>
+      <SuperChat style={{ borderColor: data.superchat.color }}>
+        <div
+          className="author"
           data-is-member={data.isMembership}
           data-is-owner={data.isOwner}
-          data-is-moderator={data.isModerator}>
+          data-is-moderator={data.isModerator}
+        >
           <AuthorIcon imageItem={data.author.thumbnail} />
           <div>
             <p className="name" title={data.author.name}>
-                <span>{data.author.name}</span>
-                {data.author.badge && (
-                  <img
-                    className="badge"
-                    src={data.author.badge.thumbnail.url}
-                    alt={data.author.badge.thumbnail.alt}
-                    title={data.author.badge.label} />
-                )}
+              <span>{data.author.name}</span>
+              {data.author.badge && (
+                <img
+                  className="badge"
+                  src={data.author.badge.thumbnail.url}
+                  alt={data.author.badge.thumbnail.alt}
+                  title={data.author.badge.label}
+                />
+              )}
             </p>
-            <p className="amount">
-              {data.superchat.amount}
-            </p>
+            <p className="amount">{data.superchat.amount}</p>
           </div>
-      </div>
+        </div>
 
-      <YTChatMessage items={data.message} />
-      { data.superchat.sticker && (
-        <img
-          className="sticker"
-          src={data.superchat.sticker.url}
-          alt={data.superchat.sticker.alt} />
-      )}
-    </SuperChat>
-  </Item>;
-}
+        <YTChatMessage items={data.message} />
+        {data.superchat.sticker && (
+          <img
+            className="sticker"
+            src={data.superchat.sticker.url}
+            alt={data.superchat.sticker.alt}
+          />
+        )}
+      </SuperChat>
+    </Item>
+  );
+};
 
 // YouTubeのメンバーシップ
-const YTMembershipItemView: React.VFC<{
+const YTMembershipItemView: React.FC<{
   data: YTChatItemData;
 }> = ({ data }) => {
   if (!data.membership) return <></>;
-  return <Item data-type="YouTube">
-    <p className="time">
-      {convertTime(data.timestamp)}
-    </p>
-    <SuperChat style={{ borderColor: "var(--c-member-body-bg)" }}>
-      <div className="author"
+  return (
+    <Item data-type="YouTube">
+      <p className="time">{convertTime(data.timestamp)}</p>
+      <SuperChat style={{ borderColor: 'var(--c-member-body-bg)' }}>
+        <div
+          className="author"
           data-is-member={data.isMembership}
           data-is-owner={data.isOwner}
-          data-is-moderator={data.isModerator}>
+          data-is-moderator={data.isModerator}
+        >
           <AuthorIcon imageItem={data.author.thumbnail} />
           <div>
             <p className="name" title={data.author.name}>
-                <span>{data.author.name}</span>
-                {data.author.badge && (
-                  <img
-                    className="badge"
-                    src={data.author.badge.thumbnail.url}
-                    alt={data.author.badge.thumbnail.alt}
-                    title={data.author.badge.label} />
-                )}
+              <span>{data.author.name}</span>
+              {data.author.badge && (
+                <img
+                  className="badge"
+                  src={data.author.badge.thumbnail.url}
+                  alt={data.author.badge.thumbnail.alt}
+                  title={data.author.badge.label}
+                />
+              )}
             </p>
             <YTChatMessage items={data.membership.text} />
           </div>
-      </div>
+        </div>
 
-      <YTChatMessage items={data.message} />
-    </SuperChat>
-  </Item>;
-}
+        <YTChatMessage items={data.message} />
+      </SuperChat>
+    </Item>
+  );
+};
 
 // メンバーシップギフト
 
-const YTMembershipGiftView: React.VFC<{
+const YTMembershipGiftView: React.FC<{
   data: YTChatItemData;
 }> = ({ data }) => {
   const bgImage = useMemo(() => {
     return `url(${
       data.membershipGift?.image?.url ||
-      "https://www.gstatic.com/youtube/img/sponsorships/sponsorships_gift_purchase_announcement_artwork.png"
+      'https://www.gstatic.com/youtube/img/sponsorships/sponsorships_gift_purchase_announcement_artwork.png'
     })`;
   }, [data]);
   if (!data.membershipGift) return <></>;
-  return <Item data-type="YouTube">
-    <p className="time">
-      {convertTime(data.timestamp)}
-    </p>
-    <SuperChat style={{
-      borderColor: "var(--c-member-body-bg)",
-      backgroundImage: bgImage,
-    }}>
-      <div className="author"
+  return (
+    <Item data-type="YouTube">
+      <p className="time">{convertTime(data.timestamp)}</p>
+      <SuperChat
+        style={{
+          borderColor: 'var(--c-member-body-bg)',
+          backgroundImage: bgImage,
+        }}
+      >
+        <div
+          className="author"
           data-is-member={data.isMembership}
           data-is-owner={data.isOwner}
-          data-is-moderator={data.isModerator}>
+          data-is-moderator={data.isModerator}
+        >
           <AuthorIcon imageItem={data.author.thumbnail} />
           <div>
             <p className="name" title={data.author.name}>
-                <span>{data.author.name}</span>
-                {data.author.badge && (
-                  <img
-                    className="badge"
-                    src={data.author.badge.thumbnail.url}
-                    alt={data.author.badge.thumbnail.alt}
-                    title={data.author.badge.label} />
-                )}
+              <span>{data.author.name}</span>
+              {data.author.badge && (
+                <img
+                  className="badge"
+                  src={data.author.badge.thumbnail.url}
+                  alt={data.author.badge.thumbnail.alt}
+                  title={data.author.badge.label}
+                />
+              )}
             </p>
             <p className="message">メンバーシップ ギフト</p>
           </div>
-      </div>
-      <YTChatMessage items={data.membershipGift.message} />
-    </SuperChat>
-  </Item>;
-}
+        </div>
+        <YTChatMessage items={data.membershipGift.message} />
+      </SuperChat>
+    </Item>
+  );
+};
 
 const TTVAuthor: React.FC<{
   author: TwitchUser;
+  children?: React.ReactNode;
 }> = ({ author, children }) => {
-  return (<>
-    <div
-      className="author"
-      data-is-member={author.isSubscriber}
-      data-is-moderator={author.isModerator}
-    >
-      {author.badges.map((badge, i) => {
-        if (!badge.url) return "";
-        return (
-          <img
-            className="ttv-badge"
-            src={badge.url}
-            alt={badge.info || ""}
-            key={i}
-          />
-        );
-      })}
-      <p className="name" title={author.name}>
-        {author.displayName || author.name}
-      </p>
-      {children}
-    </div>
-  </>);
-}
-
-const TTVChatMessage: React.VFC<{
-  items: (TwitchCheermoteMessage | TwitchEmote | string)[];
-}> = ({ items }) => {
-  return (<p className="message">
-    {items.map((item, i) => {
-      if (typeof item === "string") {
-        return <span key={i}>{item}</span>
-      } else if ("bits" in item) {
-        const cheer = item.cheermote;
-        return (<span className="bits" key={i}>
-          <img src={cheer.animated_url.dark} alt="bits" />
-          <span style={{color: cheer.color}}>{item.bits}</span>
-        </span>)
-      } else {
-        return <img
-          className="emoji"
-          src={item.animated_url || item.url}
-          alt={item.name}
-          key={i}
-        />
-      }
-    })}
-  </p>);
-}
-
-// TwitchNormal
-const TTVChatItemView: React.VFC<{
-  data: TwitchNormalChatItem;
-}> = ({ data }) => {
-
-  return (<Item data-type="Twitch">
-    <p className="time">
-      {convertTime(data.timestamp)}
-    </p>
-    <NormalChat data-is-highlight={!!data.isHighlight}>
-      <TTVAuthor author={data.author}></TTVAuthor>
-      <TTVChatMessage items={data.message} />
-    </NormalChat>
-
-  </Item>);
-}
-
-// TwitchCheer
-const TTVCheerItemView: React.VFC<{
-  data: TwitchCheerItem;
-}> = ({ data }) => {
-  
-  return (<Item data-type="Twitch">
-    <p className="time">
-      {convertTime(data.timestamp)}
-    </p>
-    
-    <SuperChat style={{ borderColor: "var(--c-twitch-cheer)" }}>
-      <TTVAuthor author={data.author}></TTVAuthor>
-      <p className="amount-bits">{data.bits} <span>Bits</span></p>
-      <TTVChatMessage items={data.message} />
-    </SuperChat>
-  </Item>);
-}
-
-// TwitchSub
-const TTVSubItemView: React.VFC<{
-  data: TwitchSubItem;
-}> = ({ data }) => {
-  return (<Item data-type="Twitch">
-    <p className="time">
-      {convertTime(data.timestamp)}
-    </p>
-
-    <SuperChat style={{ borderColor: "var(--c-member-body-bg)" }}>
-      <TTVAuthor author={data.author}></TTVAuthor>
-
-      <p className="message fw-b">
-        {data.methods.prime && "Primeで"}
-        サブスクしました
-      </p>
-    </SuperChat>
-  </Item>);
-}
-
-// TwitchSub
-const TTVSubGiftItemView: React.VFC<{
-  data: TwitchSubMysteryGiftItem;
-}> = ({ data }) => {
-  return (<Item data-type="Twitch">
-    <p className="time">
-      {convertTime(data.timestamp)}
-    </p>
-
-    <SuperChat style={{ borderColor: "var(--c-member-body-bg)" }}>
-      <TTVAuthor author={data.author}></TTVAuthor>
-
-      <p className="message fw-b">
-        <span>{data.num}</span> 個のサブスクギフト
-      </p>
-    </SuperChat>
-  </Item>);
-}
-
-
-
-// システム通知
-const AppChatItemView: React.VFC<{
-  data: AppChatItemData;
-}> = ({ data }) => {
-  return <Item>
-    <p className="time">
-      { convertTime(data.timestamp) }
-    </p>
-    <p className="app-message" data-type={data.type}>
-      { data.message }
-    </p>
-  </Item>;
+  return (
+    <>
+      <div
+        className="author"
+        data-is-member={author.isSubscriber}
+        data-is-moderator={author.isModerator}
+      >
+        {author.badges.map((badge, i) => {
+          if (!badge.url) return '';
+          return (
+            <img
+              className="ttv-badge"
+              src={badge.url}
+              alt={badge.info || ''}
+              key={i}
+            />
+          );
+        })}
+        <p className="name" title={author.name}>
+          {author.displayName || author.name}
+        </p>
+        {children}
+      </div>
+    </>
+  );
 };
 
-export const ChatItemView: React.VFC<{
+const TTVChatMessage: React.FC<{
+  items: (TwitchCheermoteMessage | TwitchEmote | string)[];
+}> = ({ items }) => {
+  return (
+    <p className="message">
+      {items.map((item, i) => {
+        if (typeof item === 'string') {
+          return <span key={i}>{item}</span>;
+        } else if ('bits' in item) {
+          const cheer = item.cheermote;
+          return (
+            <span className="bits" key={i}>
+              <img src={cheer.animated_url.dark} alt="bits" />
+              <span style={{ color: cheer.color }}>{item.bits}</span>
+            </span>
+          );
+        } else {
+          return (
+            <img
+              className="emoji"
+              src={item.animated_url || item.url}
+              alt={item.name}
+              key={i}
+            />
+          );
+        }
+      })}
+    </p>
+  );
+};
+
+// TwitchNormal
+const TTVChatItemView: React.FC<{
+  data: TwitchNormalChatItem;
+}> = ({ data }) => {
+  return (
+    <Item data-type="Twitch">
+      <p className="time">{convertTime(data.timestamp)}</p>
+      <NormalChat data-is-highlight={!!data.isHighlight}>
+        <TTVAuthor author={data.author}></TTVAuthor>
+        <TTVChatMessage items={data.message} />
+      </NormalChat>
+    </Item>
+  );
+};
+
+// TwitchCheer
+const TTVCheerItemView: React.FC<{
+  data: TwitchCheerItem;
+}> = ({ data }) => {
+  return (
+    <Item data-type="Twitch">
+      <p className="time">{convertTime(data.timestamp)}</p>
+
+      <SuperChat style={{ borderColor: 'var(--c-twitch-cheer)' }}>
+        <TTVAuthor author={data.author} />
+        <p className="amount-bits">
+          {data.bits} <span>Bits</span>
+        </p>
+        <TTVChatMessage items={data.message} />
+      </SuperChat>
+    </Item>
+  );
+};
+
+// TwitchSub
+const TTVSubItemView: React.FC<{
+  data: TwitchSubItem;
+}> = ({ data }) => {
+  return (
+    <Item data-type="Twitch">
+      <p className="time">{convertTime(data.timestamp)}</p>
+
+      <SuperChat style={{ borderColor: 'var(--c-member-body-bg)' }}>
+        <TTVAuthor author={data.author}></TTVAuthor>
+
+        <p className="message fw-b">
+          {data.methods.prime && 'Primeで'}
+          サブスクしました
+        </p>
+      </SuperChat>
+    </Item>
+  );
+};
+
+// TwitchSub
+const TTVSubGiftItemView: React.FC<{
+  data: TwitchSubMysteryGiftItem;
+}> = ({ data }) => {
+  return (
+    <Item data-type="Twitch">
+      <p className="time">{convertTime(data.timestamp)}</p>
+
+      <SuperChat style={{ borderColor: 'var(--c-member-body-bg)' }}>
+        <TTVAuthor author={data.author} />
+
+        <p className="message fw-b">
+          <span>{data.num}</span> 個のサブスクギフト
+        </p>
+      </SuperChat>
+    </Item>
+  );
+};
+
+// システム通知
+const AppChatItemView: React.FC<{
+  data: AppChatItemData;
+}> = ({ data }) => {
+  return (
+    <Item>
+      <p className="time">{convertTime(data.timestamp)}</p>
+      <p className="app-message" data-type={data.type}>
+        {data.message}
+      </p>
+    </Item>
+  );
+};
+
+export const ChatItemView: React.FC<{
   chatItem: ChatItem;
   options?: ChatItemViewOptions;
-}> = ({ chatItem, options = {showTime: true, showAuthorName: true, showAuthorBadge: true, showAuthorIcon: true} }) => {
-  if (chatItem.type === "YouTube") {
+}> = ({
+  chatItem,
+  options = {
+    showTime: true,
+    showAuthorName: true,
+    showAuthorBadge: true,
+    showAuthorIcon: true,
+  },
+}) => {
+  if (chatItem.type === 'YouTube') {
     if (chatItem.data.superchat) {
-      return <YTSuperChatItemView data={chatItem.data} />
+      return <YTSuperChatItemView data={chatItem.data} />;
     } else {
       if (chatItem.data.membership) {
         return <YTMembershipItemView data={chatItem.data} />;
@@ -362,31 +409,29 @@ export const ChatItemView: React.VFC<{
       }
       return <YTChatItemView data={chatItem.data} />;
     }
-  } else if (chatItem.type === "App") {
+  } else if (chatItem.type === 'App') {
     return <AppChatItemView data={chatItem.data} />;
-  } else if (chatItem.type === "Twitch") {
+  } else if (chatItem.type === 'Twitch') {
     switch (chatItem.data.type) {
-      case "Normal": {
+      case 'Normal': {
         return <TTVChatItemView data={chatItem.data} />;
       }
-      case "Cheer": {
+      case 'Cheer': {
         return <TTVCheerItemView data={chatItem.data} />;
       }
-      case "Sub": {
+      case 'Sub': {
         return <TTVSubItemView data={chatItem.data} />;
       }
-      case "SubGift": {
+      case 'SubGift': {
         break;
       }
-      case "SubMysteryGift": {
+      case 'SubMysteryGift': {
         return <TTVSubGiftItemView data={chatItem.data} />;
       }
     }
   }
   return <></>;
-}
-
-
+};
 
 const Item = styled.div`
   display: flex;
@@ -396,7 +441,7 @@ const Item = styled.div`
   border-bottom: 1px solid var(--c-border-2);
   position: relative;
   &:before {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
@@ -404,10 +449,10 @@ const Item = styled.div`
     height: 100%;
     pointer-events: none;
   }
-  &[data-type=Twitch]:before {
+  &[data-type='Twitch']:before {
     background-color: var(--c-mark-twitch);
   }
-  &[data-type=YouTube]:before {
+  &[data-type='YouTube']:before {
     background-color: var(--c-mark-youtube);
   }
 
@@ -417,10 +462,10 @@ const Item = styled.div`
   }
 
   .app-message {
-    &[data-type=error] {
+    &[data-type='error'] {
       color: var(--c-text-warn);
     }
-    &[data-type=log] {
+    &[data-type='log'] {
       color: var(--c-text-2);
     }
   }
@@ -565,13 +610,13 @@ const NormalChat = styled.div`
     color: var(--c-text-2);
     width: 180px;
     min-width: 180px;
-    &[data-is-member=true] {
+    &[data-is-member='true'] {
       color: var(--c-text-member);
     }
-    &[data-is-moderator=true] {
+    &[data-is-moderator='true'] {
       color: var(--c-text-moderator);
     }
-    &[data-is-owner=true] {
+    &[data-is-owner='true'] {
       color: var(--c-text-owner);
     }
     .icon {
@@ -640,7 +685,7 @@ const NormalChat = styled.div`
       font-size: 24px;
     }
   }
-  &[data-is-highlight=true] {
+  &[data-is-highlight='true'] {
     .message {
       span {
         border-bottom: 2px solid var(--c-accent-1);

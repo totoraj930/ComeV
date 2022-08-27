@@ -1,16 +1,16 @@
-import { createContext, Dispatch } from "react";
+import { createContext, Dispatch } from 'react';
 
 export const defaultConfig: AppConfig = {
   maxChatItemNum: 500,
   useSmoothScroll: true,
   intervalMs: 3000,
-  themeName: "dark",
-  prevUrl: [""],
+  themeName: 'dark',
+  prevUrl: [''],
   enableAnonyView: false,
   updateCheck: false,
   twitch: {
-    clientId: "u7y21ic3v3nsrl9jmxsij78eciy3fl",
-    token: "",
+    clientId: 'u7y21ic3v3nsrl9jmxsij78eciy3fl',
+    token: '',
   },
   apiServer: {
     enable: true,
@@ -21,33 +21,33 @@ export const defaultConfig: AppConfig = {
     port: 50080,
     includeEmoji: false,
     youtube: {
-      normal: "$(Message)",
-      superchat: "$(Name)さんが$(Amount)スーパーチャットしました $(Message)",
-      membership: "$(Name)さんがメンバーになりました",
-      membershipGift: "$(Name)さんがメンバーシップギフトを送りました",
+      normal: '$(Message)',
+      superchat: '$(Name)さんが$(Amount)スーパーチャットしました $(Message)',
+      membership: '$(Name)さんがメンバーになりました',
+      membershipGift: '$(Name)さんがメンバーシップギフトを送りました',
     },
     twitch: {
-      normal: "$(Message)",
-      cheer: "$(Name)さんが$(Amount)ビッツ送りました $(Message)",
-      sub: "$(Name)さんがサブスクしました",
-      subPrime: "$(Name)さんがプライムでサブスクしました",
-      subGift: "$(Name)さんがサブスクギフトを$(GiftNum)個送りました",
-    }
+      normal: '$(Message)',
+      cheer: '$(Name)さんが$(Amount)ビッツ送りました $(Message)',
+      sub: '$(Name)さんがサブスクしました',
+      subPrime: '$(Name)さんがプライムでサブスクしました',
+      subGift: '$(Name)さんがサブスクギフトを$(GiftNum)個送りました',
+    },
   },
-}
+};
 
 export function copyConfig(settings: AppConfig): AppConfig {
   return {
     ...settings,
     apiServer: { ...settings.apiServer },
-    bouyomi: { ...settings.bouyomi }
+    bouyomi: { ...settings.bouyomi },
   };
 }
 
 export type ApiServerConfig = {
   enable: boolean;
   port: number;
-}
+};
 
 export type BouyomiConfig = {
   enable: boolean;
@@ -55,14 +55,14 @@ export type BouyomiConfig = {
   includeEmoji: boolean;
   youtube: BouyomiYouTubeConfig;
   twitch: BouyomiTwitchConfig;
-}
+};
 
 export type BouyomiYouTubeConfig = {
   normal: string;
   superchat: string;
   membership: string;
   membershipGift: string;
-}
+};
 
 export type BouyomiTwitchConfig = {
   normal: string;
@@ -70,13 +70,12 @@ export type BouyomiTwitchConfig = {
   sub: string;
   subPrime: string;
   subGift: string;
-}
+};
 
 export type TwitchConfig = {
   clientId: string;
   token: string;
-}
-
+};
 
 export interface AppConfig {
   maxChatItemNum: number;
@@ -92,16 +91,13 @@ export interface AppConfig {
 }
 
 function isString(data: unknown) {
-  return typeof data === "string";
+  return typeof data === 'string';
 }
 function isObject(data: unknown) {
-  return typeof data === "object";
+  return typeof data === 'object';
 }
 function isNumber(data: unknown) {
-  return (
-    typeof data === "number"
-    && !isNaN(data)
-  );
+  return typeof data === 'number' && !isNaN(data);
 }
 function isSameType(a: unknown, b: unknown) {
   return typeof a === typeof b;
@@ -128,12 +124,12 @@ export function parseApiServerConfig(raw: any, def: ApiServerConfig) {
   const res = { ...def, ...raw } as ApiServerConfig;
 
   res.enable = !!res.enable;
-  
+
   res.port = res.port - 0;
   if (!isFinite(res.port)) {
     res.port = def.port;
   }
-  
+
   return res;
 }
 
@@ -211,34 +207,34 @@ export function parseObj(rawJson: any, def: AppConfig) {
         urlList.push(url);
       }
     }
-    res.prevUrl = urlList.length ? urlList : [""];
+    res.prevUrl = urlList.length ? urlList : [''];
   }
 
   res.twitch = parseTwitchConfig(res.twitch, def.twitch);
   res.apiServer = parseApiServerConfig(res.apiServer, def.apiServer);
   res.bouyomi = parseBouyomiConfig(res.bouyomi, def.bouyomi);
 
-
   return res;
 }
 
-export type AppConfigAction =
-  ChangeConfigAction;
+export type AppConfigAction = ChangeConfigAction;
 
 interface BaseAction {
   type: string;
 }
 
 interface ChangeConfigAction extends BaseAction {
-  type: "CHANGE";
+  type: 'CHANGE';
   data: AppConfig;
 }
 
-
-export function appConfigReducer(state: AppConfig, action: AppConfigAction): AppConfig {
+export function appConfigReducer(
+  state: AppConfig,
+  action: AppConfigAction
+): AppConfig {
   let res = state;
   switch (action.type) {
-    case "CHANGE": {
+    case 'CHANGE': {
       res = parseObj(action.data, copyConfig(defaultConfig));
       break;
     }
@@ -247,9 +243,9 @@ export function appConfigReducer(state: AppConfig, action: AppConfigAction): App
 }
 
 export const AppConfigContext = createContext<{
-  state: AppConfig,
-  dispatch: Dispatch<AppConfigAction>
+  state: AppConfig;
+  dispatch: Dispatch<AppConfigAction>;
 }>({
-  state: {...defaultConfig},
-  dispatch: () => {}
+  state: { ...defaultConfig },
+  dispatch: () => {},
 });

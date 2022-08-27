@@ -1,34 +1,39 @@
-import { MdPerson } from "react-icons/md";
-import { SiTwitch, SiYoutube } from "react-icons/si"
-import styled from "styled-components"
-import { LiveChat } from "../services/liveChatService";
+import { MdPerson } from 'react-icons/md';
+import { SiTwitch, SiYoutube } from 'react-icons/si';
+import styled from 'styled-components';
+import { LiveChat } from '../services/liveChatService';
 
-export const LiveInfoView: React.VFC<{
+export const LiveInfoView: React.FC<{
   liveChatList: LiveChat[];
 }> = ({ liveChatList }) => {
-
-  return (<>
-    <Wrap>
-      { liveChatList.map((liveChat) => {
-        if (!liveChat.isStarted) return "";
-        return (<Viewership key={liveChat.id}>
-          { liveChat.type === "YouTube" && <SiYoutube className="icon" /> }
-          { liveChat.type === "Twitch" && <SiTwitch className="icon" /> }
-          { liveChat.type === "Empty" && <MdPerson className="icon" /> }
-          <span>{liveChat.metaData.viewership || " "}</span>
-          { liveChat.metaData.title && <span className="live-title">{ liveChat.metaData.title }</span>}
-        </Viewership>);
-      }) }
-    </Wrap>
-  </>);
-}
+  return (
+    <>
+      <Wrap>
+        {liveChatList.map((liveChat) => {
+          if (!liveChat.isStarted) return '';
+          return (
+            <Viewership key={liveChat.id}>
+              {liveChat.type === 'YouTube' && <SiYoutube className="icon" />}
+              {liveChat.type === 'Twitch' && <SiTwitch className="icon" />}
+              {liveChat.type === 'Empty' && <MdPerson className="icon" />}
+              <span>{liveChat.metaData.viewership || ' '}</span>
+              {liveChat.metaData.title && (
+                <span className="live-title">{liveChat.metaData.title}</span>
+              )}
+            </Viewership>
+          );
+        })}
+      </Wrap>
+    </>
+  );
+};
 
 const Wrap = styled.div`
   display: flex;
   gap: 5px;
 `;
 
-const Viewership = styled.p `
+const Viewership = styled.p`
   display: flex;
   align-items: center;
   gap: 0 3px;
@@ -55,4 +60,4 @@ const Viewership = styled.p `
   &:hover .live-title {
     opacity: 0.9;
   }
-`
+`;
