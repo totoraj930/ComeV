@@ -19,7 +19,7 @@ fn start_chat_server(app_handle: tauri::AppHandle, chat_server: State<Mutex<Chat
   let (tx, rx) = mpsc::channel::<()>();
   let (tx2, rx2) = mpsc::channel::<Data<Broadcaster>>();
   chat_server.tx_stop = Some(Mutex::new(tx));
-  let path = app_handle.path_resolver().app_dir().unwrap();
+  let path = app_handle.path_resolver().app_data_dir().unwrap();
   let path = path.into_os_string().into_string().unwrap();
   thread::spawn(move || {
     let i:&'static str = Box::leak(path.into_boxed_str());
