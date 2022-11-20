@@ -1,11 +1,11 @@
 {
-  "name": "0.3.2",
-  "notes": "Test version 0.3.2",
-  "pub_date": "2022-08-20T17:39:46.469Z",
+  "name": "0.4.0",
+  "notes": "Test version 0.4.0",
+  "pub_date": "2022-11-20T09:34:39.090Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUcjI2MHFrVm90SS9DYUZ5U0ErdjVWbGxvZEdUTytja3FzRy94REd1b2dqY3NmWkZFOE9jcGh3ZGlvS0haVFlld3dPQndabUxZZHhjQXQvMTZkYWFKTUdQVVJpejhkRmdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNjYxMDE3MTM2CWZpbGU6Q29tZVZfMC4zLjJfeDY0X2pwLUpQLm1zaS56aXAKaU1pbzdvMC9WOS9JT0lETExDTXRBSmhpcXlyZUNZWVVuQVdhVDhlZjU3TGFZSUUwZ1IrYTZWL1djZjdBWGczMTJDZUE4MnJadjVJUWdXOHdiNmV5RFE9PQo=",
-      "url": "https://github.com/totoraj930/ComeV/releases/download/0.3.2/ComeV_0.3.2_x64_jp-JP.msi.zip"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUcjI2MHFrVm90STFMSnoyTVF4L2FHWkhhaHpYMm02ZHV5UXpsZXoxRUhFQ1RIRG9DMGc5by9Db0VTVFUwZ212L2JIQzg1dDRaZlc2OFNFVkJVSXpGb3lUYU90bWlWb1FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNjY4OTM2NjgzCWZpbGU6Q29tZVZfMC40LjBfeDY0X2phLUpQLm1zaS56aXAKa0MzKzBvT1U3dGhlSjhlK0FKY3M1bzBqY0lrYjJhS24rUmpNclJ6YXlnQk1Fc1BGYjBMbnBiVDhGQ3FIbnNjTEpVODVJcnF0Q3dZUUJxZlhmYlVpREE9PQo=",
+      "url": "https://github.com/totoraj930/ComeV/releases/download/0.4.0/ComeV_0.4.0_x64_ja-JP.msi.zip"
     }
   }
 }
