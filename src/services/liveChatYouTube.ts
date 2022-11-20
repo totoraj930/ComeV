@@ -114,14 +114,53 @@ export function initYouTubeListener(
 
   liveChat.api.on('chatlist', (data) => {
     // まとめてdispatch
-    const items: YTChatItem[] = data.map((item) => {
+    const items: YTChatItem[] = data.flatMap((item) => {
+      const message = item.message
+        .map((s) => {
+          if ('text' in s) {
+            return s.text;
+          } else {
+            return s.emojiText;
+          }
+        })
+        .join('');
+
+      // 禁止ワードが含まれていないか確認
+      const containBlockedWord = settings.blockedWords.find((word) => {
+        if (word.length === 0) return false;
+        if (word.startsWith('/') && word.endsWith('/')) {
+          try {
+            const re = new RegExp(word.replace(/^\/|\/$/g, ''));
+            return message.match(re);
+          } catch {}
+        }
+        return message.includes(word);
+      });
+
+      // 禁止ワードが含まれていたらログを出力
+      if (containBlockedWord) {
+        dispatchChatItem({
+          config: settings,
+          type: 'ADD',
+          actionId: uuid(),
+          chatItem: [
+            createAppChatItem(
+              'log',
+              `禁止ワード: ${item.author.name}「${message}」`,
+              new Date()
+            ),
+          ],
+        });
+        return [];
+      }
+
       const res: YTChatItem = {
         type: 'YouTube',
         id: uuid(),
         data: item,
       };
       if (!_isFirst) sendChatApi('youtube', res);
-      return res;
+      return [res];
     });
     if (!_isFirst) sendChatApi('youtube-list', items);
 

@@ -160,6 +160,43 @@ export function initTwitchListener(
 
   liveChat.api.on('chat', (item) => {
     // console.log(item);
+
+    // 禁止ワードが含まれていないか確認
+    if (item.type === 'Normal') {
+      const message = item.message
+        .map((mi) => {
+          return typeof mi === 'string' ? mi : `:${mi.name}:`;
+        })
+        .join('');
+      const containBlockedWord = settings.blockedWords.find((word) => {
+        if (word.length === 0) return false;
+        if (word.startsWith('/') && word.endsWith('/')) {
+          try {
+            const re = new RegExp(word.replace(/^\/|\/$/g, ''));
+            return message.match(re);
+          } catch {}
+        }
+        return message.includes(word);
+      });
+
+      // 禁止ワードが含まれていたらログを出力
+      if (containBlockedWord) {
+        dispatchChatItem({
+          config: settings,
+          type: 'ADD',
+          actionId: uuid(),
+          chatItem: [
+            createAppChatItem(
+              'log',
+              `禁止ワード: ${item.author.name}「${message}」`,
+              new Date()
+            ),
+          ],
+        });
+        return;
+      }
+    }
+
     if (settings.bouyomi.enable) {
       sendBouyomiTTV(item, settings.bouyomi);
     }

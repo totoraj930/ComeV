@@ -64,6 +64,8 @@ export function BlockedWordsSetting({
           <div>
             <p className="description">
               指定したワードが含まれるチャットは表示されなくなります。
+              <br />
+              「/」で囲むと正規表現として扱います。(例: 「/(http|https):.+/」)
             </p>
             {config.blockedWords.map((text, index) => {
               return (
