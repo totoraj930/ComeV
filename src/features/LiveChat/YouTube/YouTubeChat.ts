@@ -52,6 +52,14 @@ export class YouTubeChat extends LiveChatBase<YouTubeChatEvents> {
         data.map((item) => parseChatItem(item, this.watchId || ''))
       );
     });
+
+    this.#api.on('start', (liveId) => {
+      this.status = 'START';
+    });
+
+    this.#api.on('end', (reason) => {
+      this.status = 'STOP';
+    });
   }
 
   async start() {

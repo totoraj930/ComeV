@@ -37,6 +37,14 @@ export class TwitchChat extends LiveChatBase<TwitchChatEvents> {
       this.emit('chat', parsedItem);
       this.emit('chatlist', [parsedItem]);
     });
+
+    this.#api.on('start', (channel) => {
+      this.status = 'START';
+    });
+
+    this.#api.on('end', () => {
+      this.status = 'STOP';
+    });
   }
 
   async start() {

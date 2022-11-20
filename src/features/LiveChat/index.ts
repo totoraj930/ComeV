@@ -1,5 +1,7 @@
+import { uuid } from '@/utils/uuid';
 import { EventEmitter } from 'events';
 import TypedEmitter from 'typed-emitter';
+import { TwitchChat } from './Twitch/TwitchChat';
 import { YouTubeChat } from './YouTube/YouTubeChat';
 
 /**
@@ -31,6 +33,8 @@ export class LiveChatBase<T> extends (EventEmitter as {
   new <T>(): TypedEmitter<T>;
 })<T> {
   readonly source: string = 'Base';
+  readonly id: string = uuid();
+  status: 'START' | 'STOP' = 'STOP';
 
   start() {}
 
@@ -40,4 +44,4 @@ export class LiveChatBase<T> extends (EventEmitter as {
 /**
  * まとめるやつ
  */
-export type LiveChat = YouTubeChat;
+export type LiveChat = YouTubeChat | TwitchChat;
