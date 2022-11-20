@@ -57,7 +57,7 @@ export async function initConfigDir() {
   try {
     await fs.readDir('./', { dir: BASE_DIR });
   } catch {
-    return await fs.createDir(await path.appDir());
+    return await fs.createDir(await path.appConfigDir());
   }
 }
 

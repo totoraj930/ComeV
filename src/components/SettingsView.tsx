@@ -15,10 +15,11 @@ import {
   defaultConfig,
 } from '../context/config';
 import { useSettings } from '../hooks/useSettings';
+import { BlockedWordsSetting } from './BlockedWordsSetting';
 import { ComeViewSetting } from './ComeViewSetting';
 import { Switch } from './LiveView';
 
-export type SettingTab = 'main' | 'obs';
+export type SettingTab = 'main' | 'obs' | 'blocked';
 
 export const SettingsView: React.FC<{
   tab?: SettingTab;
@@ -79,10 +80,23 @@ export const SettingsView: React.FC<{
                 外部連携コメビュ設定
               </Btn2>
             </li>
+            <li>
+              <Btn2 onClick={() => setActiveTab('blocked')}>
+                <MdSettings className="icon" />
+                禁止ワード設定
+              </Btn2>
+            </li>
           </ul>
         </Header>
 
         <hr />
+
+        {activeTab === 'blocked' && (
+          <BlockedWordsSetting initConfig={copiedS} onChange={setCopiedS} />
+        )}
+
+        {/* obs ------------------------------------------------------------------------------------ */}
+        {activeTab === 'obs' && <ComeViewSetting copiedS={copiedS} />}
 
         {/* main ------------------------------------------------------------------------------------ */}
         {activeTab === 'main' && (
@@ -94,7 +108,7 @@ export const SettingsView: React.FC<{
                   className="ml-a"
                   onClick={async () => {
                     invokeOrigin('open_in_explorer', {
-                      path: await path.appDir(),
+                      path: await path.appConfigDir(),
                     });
                   }}
                 >
@@ -483,9 +497,6 @@ export const SettingsView: React.FC<{
             </section>
           </>
         )}
-
-        {/* obs ------------------------------------------------------------------------------------ */}
-        {activeTab === 'obs' && <ComeViewSetting copiedS={copiedS} />}
       </Main>
 
       <Footer>

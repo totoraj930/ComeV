@@ -348,7 +348,9 @@ export const ComeViewSetting: React.FC<{
           <HeaderBtns className="ml-a">
             <Btn1
               onClick={async () => {
-                invokeOrigin('open_in_explorer', { path: await path.appDir() });
+                invokeOrigin('open_in_explorer', {
+                  path: await path.appConfigDir(),
+                });
               }}
             >
               <MdFolderOpen className="icon" />
