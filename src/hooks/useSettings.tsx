@@ -78,7 +78,11 @@ export function useSettings() {
             rawText = await fs.readTextFile(FILE_PATH, { dir: BASE_DIR });
             break;
           }
-          const rawJson = JSON.parse(rawText);
+          let rawJson: any = {};
+          try {
+            rawJson = JSON.parse(rawText);
+          } catch {}
+
           const res = parseObj(rawJson, state);
           saveConfig(res).catch(() => {
             dispatchChatItem({
