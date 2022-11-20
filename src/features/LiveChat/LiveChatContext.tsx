@@ -1,7 +1,6 @@
 import React from 'react';
 import { createContext, useReducer } from 'react';
-import { LiveChat } from '../services/liveChatService';
-import { ChatItemContext, chatItemReducer } from './chatItem';
+import { LiveChat } from '.';
 
 export const LiveChatContext = createContext<LiveChatContextProps>({
   state: {},
@@ -10,7 +9,12 @@ export const LiveChatContext = createContext<LiveChatContextProps>({
 
 const initialState = {};
 
-type LiveChatContextState = { [key: string]: LiveChat };
+type LiveChatContextState = {
+  [key: string]: {
+    url: string;
+    liveChat: LiveChat;
+  };
+};
 interface LiveChatContextProps {
   state: LiveChatContextState;
   dispatch: (action: LiveChatContextAction) => void;
@@ -42,27 +46,17 @@ function liveChatReducer(
 ) {
   switch (action.type) {
     case 'ADD': {
-      if (!(action.liveChat.id in state)) {
-        state[action.liveChat.id] = action.liveChat;
-      }
+      return {
+        ...state,
+        [action.liveChat.id]: { url: '', liveChat: action.liveChat },
+      };
       break;
     }
     case 'UPDATE': {
-      if (action.targetId in state) {
-        state[action.targetId] = action.liveChat;
-      }
       break;
     }
     case 'DELETE': {
-      if (action.targetId in state) {
-        const target = state[action.targetId];
-        delete state[action.targetId];
-        if (target.type === 'YouTube') {
-          target.api.stop();
-        } else if (target.type === 'Twitch') {
-          target.api.stop();
-        }
-      }
+      break;
     }
   }
   return { ...state };
@@ -72,17 +66,9 @@ export const LiveChatProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [state, dispatch] = useReducer(liveChatReducer, initialState);
-  const [chatItemContextState, chatItemDispatch] = useReducer(chatItemReducer, {
-    items: [],
-    views: [],
-  });
   return (
     <LiveChatContext.Provider value={{ state: state, dispatch: dispatch }}>
-      <ChatItemContext.Provider
-        value={{ state: chatItemContextState, dispatch: chatItemDispatch }}
-      >
-        {children}
-      </ChatItemContext.Provider>
+      {children}
     </LiveChatContext.Provider>
   );
 };

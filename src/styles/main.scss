@@ -1,13 +1,15 @@
-
-*, *:before, *:after {
+*,
+*:before,
+*:after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   border: 0;
-  font-family: "Roboto","Arial",sans-serif;
+  font-family: 'Roboto', 'Arial', sans-serif;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   // background: #222;
@@ -94,7 +96,7 @@ html, body {
   --c-text-member: #aaff20;
   --c-text-moderator: #1cbfff;
   --c-text-owner: #ff8b2c;
-  
+
   --c-superchat-bg: #111;
   --c-superchat-c: #fff;
 
@@ -127,7 +129,7 @@ html, body {
   --c-mark-youtube: rgba(255, 22, 22, 0.4);
 }
 
-[data-anony-blur=true] {
+[data-anony-blur='true'] {
   .message,
   .author,
   .url-input {
@@ -152,24 +154,24 @@ html, body {
 
 @media screen and (max-width: 550px) {
   .hide-550 {
-    display: none!important;
+    display: none !important;
   }
 }
 
 @media screen and (max-width: 450px) {
   .hide-450 {
-    display: none!important;
+    display: none !important;
   }
 }
 
 @media screen and (max-width: 400px) {
   .hide-400 {
-    display: none!important;
+    display: none !important;
   }
 }
 
 @media screen and (max-width: 350px) {
   .hide-350 {
-    display: none!important;
+    display: none !important;
   }
 }

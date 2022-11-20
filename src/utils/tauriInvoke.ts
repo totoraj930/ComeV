@@ -4,39 +4,41 @@
  * https://github.com/tauri-apps/tauri/commit/f72cace36821dc675a6d25268ae85a21bdbd6296
  */
 
-import { fs } from "@tauri-apps/api";
+import { fs } from '@tauri-apps/api';
 
 interface Window {
-  __TAURI_IPC__: (obj: Object) => void
-  _19990930: () => void // 適当な数字
+  __TAURI_IPC__: (obj: object) => void;
+  _19990930: () => void; // 適当な数字
 }
 
-declare var window: Window;
+declare let window: Window;
 
-
-export function writeFile(path: string, contents: string, dir: fs.BaseDirectory) {
+export function writeFile(
+  path: string,
+  contents: string,
+  dir: fs.BaseDirectory
+) {
   const args = {
-    __tauriModule: "Fs",
+    __tauriModule: 'Fs',
     message: {
-      cmd: "writeFile",
+      cmd: 'writeFile',
       path: path,
       contents: Array.from(new TextEncoder().encode(contents)),
       options: {
-        dir: dir
-      }
-    }
+        dir: dir,
+      },
+    },
   };
-  invoke("tauri", args);
+  invoke('tauri', args);
 }
 
-
-export function invoke(cmd: string, args?: Object) {
+export function invoke(cmd: string, args?: object) {
   const _a = args || {};
   window._19990930 = () => {};
   window.__TAURI_IPC__({
     cmd: cmd,
     callback: 19990930,
     error: 19990930,
-    ..._a
+    ..._a,
   });
 }
