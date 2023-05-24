@@ -1,0 +1,88 @@
+{
+  "build": {
+    "beforeDevCommand": "yarn dev",
+    "beforeBuildCommand": "yarn build",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist",
+    "withGlobalTauri": true
+  },
+  "package": {
+    "productName": "ComeV",
+    "version": "1.0.0"
+  },
+  "tauri": {
+    "bundle": {
+      "active": true,
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "net.totoraj.comev",
+      "targets": "all",
+      "resources": [],
+      "externalBin": [],
+      "copyright": "© 2022 Reona Oshima(totoraj) All Rights Reserved",
+      "category": "DeveloperTool",
+      "shortDescription": "コメントビューア",
+      "longDescription": "YouTube LiveとTwitchのコメントを表示するやつ",
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": "",
+        "wix": {
+          "language": "ja-JP"
+        }
+      }
+    },
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://github.com/totoraj930/ComeV/releases/download/updater/update.json"
+      ],
+      "dialog": false,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDIzMkQ1QTkxMkFBRERCRUIKUldUcjI2MHFrVm90STNCczBQZWY5emFEaStUck1kcGVtVGVMeHZYNFpGQWZ4NkI0STErU3NBRlYK"
+    },
+    "allowlist": {
+      "all": true,
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": ["https://www.youtube.com/*", "http://**", "https://**"]
+      },
+      "window": {
+        "all": true
+      },
+      "fs": {
+        "all": true,
+        "scope": ["$RESOURCE/*", "$RESOURCE", "$APP/*", "$APP"]
+      },
+      "path": {
+        "all": true
+      },
+      "shell": {
+        "all": false,
+        "open": true
+      }
+    },
+    "windows": [
+      {
+        "title": "ComeV",
+        "width": 800,
+        "height": 600,
+        "minWidth": 300,
+        "minHeight": 300,
+        "resizable": true,
+        "fullscreen": false,
+        "transparent": false,
+        "decorations": true,
+        "theme": "Dark"
+      }
+    ]
+  }
+}
